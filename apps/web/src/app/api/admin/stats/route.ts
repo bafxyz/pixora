@@ -45,9 +45,12 @@ export async function GET(request: NextRequest) {
       select: { totalAmount: true },
     })
 
-    stats.revenue = orders.reduce((sum, order) => {
-      return sum + (order.totalAmount || 0)
-    }, 0)
+    stats.revenue = orders.reduce(
+      (sum: number, order: { totalAmount: number | null }) => {
+        return sum + (order.totalAmount || 0)
+      },
+      0
+    )
 
     return NextResponse.json({
       stats,
