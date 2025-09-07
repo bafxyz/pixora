@@ -46,6 +46,16 @@ export async function GET(
       )
     }
 
+    // Validate guestId is a valid UUID
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(guestId)) {
+      return NextResponse.json(
+        { error: 'Invalid guest ID format' },
+        { status: 400 }
+      )
+    }
+
     // Get client_id from request headers (set by middleware)
     // For public gallery access, we'll try to find the guest without client_id first
     const clientId = request.headers.get('x-client-id')

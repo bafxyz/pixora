@@ -23,8 +23,8 @@ const GuestGallery = dynamic(
 )
 
 export default function Gallery() {
-  // Generate a guest ID for demo purposes
-  const guestId = `guest-${Date.now()}`
+  // Generate a valid UUID for demo purposes
+  const guestId = crypto.randomUUID()
 
   return (
     <Suspense

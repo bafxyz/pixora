@@ -14,6 +14,7 @@ import { Input } from '@repo/ui/input'
 import { Label } from '@repo/ui/label'
 import { BarChart3, Building, Eye, Plus, Settings, Users } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 interface Client {
   id: string
@@ -107,7 +108,7 @@ export default function SuperAdminPage() {
 
   const handleCreateClient = async () => {
     if (!newClientName.trim() || !newClientEmail.trim()) {
-      alert(_('Fill in all fields'))
+      toast.error(_('Fill in all fields'))
       return
     }
 
@@ -129,13 +130,13 @@ export default function SuperAdminPage() {
         setNewClientName('')
         setNewClientEmail('')
         setShowCreateForm(false)
-        alert(_('Client created successfully!'))
+        toast.success(_('Client created successfully!'))
       } else {
-        alert(_('Error creating client'))
+        toast.error(_('Error creating client'))
       }
     } catch (error) {
       console.error('Error creating client:', error)
-      alert(_('Error creating client'))
+      toast.error(_('Error creating client'))
     }
   }
 
