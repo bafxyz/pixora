@@ -239,7 +239,10 @@ export default function PhotographerPage() {
                     <p className="text-gray-600 text-center mb-4">
                       <Trans>Scan guest QR codes to add them to the list</Trans>
                     </p>
-                    <Button onClick={() => setActiveTab('scan')}>
+                    <Button 
+                      onClick={() => setActiveTab('scan')}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
                       <Trans>Start Scanning</Trans>
                     </Button>
                   </CardContent>

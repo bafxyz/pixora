@@ -277,7 +277,7 @@ export default function SuperAdminPage() {
             </div>
             <Button
               onClick={() => setShowCreateForm(!showCreateForm)}
-              className="bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/90 hover:to-indigo-600/90 shadow-md hover:shadow-lg transition-all duration-200"
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
             >
               <Plus className="w-4 h-4 mr-2" />
               {showCreateForm ? (
@@ -362,7 +362,10 @@ export default function SuperAdminPage() {
                 <p className="text-gray-600 text-center mb-4">
                   <Trans>Create the first client to get started</Trans>
                 </p>
-                <Button onClick={() => setShowCreateForm(true)}>
+                <Button 
+                  onClick={() => setShowCreateForm(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   <Trans>Add Client</Trans>
                 </Button>

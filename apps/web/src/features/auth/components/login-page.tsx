@@ -463,8 +463,7 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
                   />
                   <Button
                     type="submit"
-                    variant="outline"
-                    className="w-full h-11 border-2 border-accent/30 bg-white/70 hover:bg-gradient-to-r hover:from-accent/10 hover:to-amber-50/50 text-slate-700 font-medium shadow-sm hover:shadow-md transition-all duration-200"
+                    className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm hover:shadow-md transition-all duration-200"
                   >
                     <Trans>View photos</Trans>
                   </Button>
