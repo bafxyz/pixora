@@ -134,7 +134,7 @@ export function QRGenerator({ guestId, onGenerate }: QRGeneratorProps) {
         <Button
           onClick={generateQR}
           disabled={!guestName.trim() || isGenerating}
-          className="w-full"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {isGenerating ? (
             <Trans>Generating...</Trans>
