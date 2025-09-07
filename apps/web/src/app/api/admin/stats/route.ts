@@ -1,10 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/shared/lib/supabase/server'
+import { prisma } from '@/shared/lib/prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
     // Получаем client_id из заголовков
     const clientId = request.headers.get('x-client-id')
 
@@ -24,47 +22,32 @@ export async function GET(request: NextRequest) {
     }
 
     // Считаем гостей
-    const { count: guestsCount, error: guestsError } = await supabase
-      .from('guests')
-      .select('*', { count: 'exact', head: true })
-      .eq('client_id', clientId)
-
-    if (!guestsError && guestsCount !== null) {
-      stats.totalGuests = guestsCount
-    }
+    stats.totalGuests = await prisma.guest.count({
+      where: { clientId },
+    })
 
     // Считаем фото
-    const { count: photosCount, error: photosError } = await supabase
-      .from('photos')
-      .select('*', { count: 'exact', head: true })
-      .eq('client_id', clientId)
-
-    if (!photosError && photosCount !== null) {
-      stats.totalPhotos = photosCount
-    }
+    stats.totalPhotos = await prisma.photo.count({
+      where: { clientId },
+    })
 
     // Считаем заказы
-    const { count: ordersCount, error: ordersError } = await supabase
-      .from('orders')
-      .select('*', { count: 'exact', head: true })
-      .eq('client_id', clientId)
-
-    if (!ordersError && ordersCount !== null) {
-      stats.totalOrders = ordersCount
-    }
+    stats.totalOrders = await prisma.order.count({
+      where: { clientId },
+    })
 
     // Считаем выручку
-    const { data: orders, error: revenueError } = await supabase
-      .from('orders')
-      .select('total_amount')
-      .eq('client_id', clientId)
-      .not('total_amount', 'is', null)
+    const orders = await prisma.order.findMany({
+      where: {
+        clientId,
+        totalAmount: { not: null },
+      },
+      select: { totalAmount: true },
+    })
 
-    if (!revenueError && orders) {
-      stats.revenue = orders.reduce((sum, order) => {
-        return sum + (order.total_amount || 0)
-      }, 0)
-    }
+    stats.revenue = orders.reduce((sum, order) => {
+      return sum + (order.totalAmount || 0)
+    }, 0)
 
     return NextResponse.json({
       stats,

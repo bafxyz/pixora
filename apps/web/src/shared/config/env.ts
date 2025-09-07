@@ -2,17 +2,11 @@
  * Environment configuration with type safety
  */
 
-const getEnvVar = (key: string, fallback?: string): string => {
-  const value = process.env[key] || fallback
-  if (!value) {
-    throw new Error(`Missing environment variable: ${key}`)
-  }
-  return value
-}
-
 // Get environment variables with fallbacks
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+const SUPABASE_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const SUPABASE_ANON_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
 
 export const env = {
   supabase: {
@@ -31,10 +25,14 @@ export const env = {
 // Validate required environment variables in development
 if (typeof window === 'undefined' && process.env.NODE_ENV === 'development') {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    console.warn('⚠️  Missing NEXT_PUBLIC_SUPABASE_URL - using placeholder value')
+    console.warn(
+      '⚠️  Missing NEXT_PUBLIC_SUPABASE_URL - using placeholder value'
+    )
   }
   if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    console.warn('⚠️  Missing NEXT_PUBLIC_SUPABASE_ANON_KEY - using placeholder value')
+    console.warn(
+      '⚠️  Missing NEXT_PUBLIC_SUPABASE_ANON_KEY - using placeholder value'
+    )
   }
 }
 

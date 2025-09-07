@@ -13,7 +13,7 @@ This agent specializes in managing internationalization (i18n) using [Lingui.dev
 - **Framework**: Lingui.dev v5.4.1
 - **Locales**: English (en) - source, Russian (ru)
 - **Catalogs**: `src/shared/locales/{locale}/messages.po`
-- **Compilation**: Compiled to JSON files (`.json`) for Next.js compatibility
+- **Compilation**: Compiled to MJS files for ES module compatibility
 - **Integration**: Next.js 15 with SWC plugin
 
 ### File Structure
@@ -29,10 +29,10 @@ src/
 │   └── locales/
 │       ├── en/
 │       │   ├── messages.po            # English translation catalog
-│       │   └── messages.json          # Compiled English translations
+│       │   └── messages.mjs           # Compiled English translations
 │       └── ru/
 │           ├── messages.po            # Russian translation catalog
-│           └── messages.json          # Compiled Russian translations
+│           └── messages.mjs           # Compiled Russian translations
 ├── features/
 │   └── [feature]/
 │       └── components/                # Components with translations
@@ -47,7 +47,7 @@ src/
 # Extract translatable strings from code
 pnpm extract
 
-# Compile translations for production
+# Compile translations for runtime
 pnpm compile
 
 # Development workflow
@@ -60,6 +60,11 @@ pnpm extract && pnpm compile && pnpm dev
 3. **Translate** in `.po` files (add `msgstr` values)
 4. **Compile** with `pnpm compile`
 5. **Test** language switching in browser
+
+### Important Notes
+- **Compilation required** - PO files are compiled to MJS for performance
+- **Always compile** after changing translations
+- **MJS format** is used for ES module compatibility
 
 ## Translation Patterns
 
@@ -216,11 +221,17 @@ i18n.activate('ru')
 locales: ['en', 'ru', 'es'], // Add Spanish
 ```
 
-2. **Create catalog**: `mkdir src/shared/locales/es`
+2. **Create catalog directories**: 
+```bash
+mkdir src/shared/locales/es
+mkdir public/locales/es
+```
 
 3. **Extract and translate**: `pnpm extract` then translate
 
 4. **Update types**: Add to `LocaleCode` type in `i18n.ts`
+
+5. **Sync to public**: Copy PO file to public directory
 
 ### Language Detection Priority
 1. User's stored preference (localStorage)
@@ -272,7 +283,7 @@ export function MyComponent() {
 **Solution**: 
 - Run `pnpm extract` to update catalogs
 - Check `.po` files have `msgstr` values
-- Run `pnpm compile` to generate JS files
+- Compile translations: `pnpm compile`
 
 ### 2. Build Errors
 **Problem**: Next.js build fails with Lingui
@@ -289,17 +300,18 @@ export function MyComponent() {
 ### 4. Runtime Errors
 **Problem**: Translations not loading
 **Solution**: 
-- Check compiled message files exist (`.json` files in locale directories)
-- Verify locale loading imports from `.json` files
+- Check compiled message files exist (`.mjs` files in locale directories)
+- Verify locale loading imports from `.mjs` files
 - Ensure catalogs are compiled with `pnpm compile`
-- Check that import accesses `catalog.messages` for JSON format
+- Check that import accesses `catalog.messages` for MJS format
 
 ## Maintenance Tasks
 
 ### Regular Tasks
 - **Weekly**: Review untranslated strings (`pnpm extract`)
-- **Before releases**: Ensure all translations are complete
-- **After major features**: Extract and translate new strings
+- **Before releases**: Ensure all translations are complete and compiled
+- **After major features**: Extract, translate, and compile new strings
+- **After any PO file changes**: Compile translations (`pnpm compile`)
 
 ### Monitoring
 - Check translation coverage in PO files

@@ -1,5 +1,11 @@
-import { env } from '@/shared/config/env'
-import type { LoginCredentials, RegisterCredentials, User } from '../types'
+import type { LoginCredentials, RegisterCredentials } from '../types'
+
+export interface User {
+  id: string
+  email: string
+  name?: string
+  role?: 'photographer' | 'admin' | 'guest' | 'super-admin'
+}
 
 class AuthError extends Error {
   errorType: string
@@ -11,16 +17,13 @@ class AuthError extends Error {
   }
 }
 
-const API_BASE_URL = `${env.supabase.url}/functions/v1/make-server-2e5a4e91`
-
 const headers = {
   'Content-Type': 'application/json',
-  Authorization: `Bearer ${env.supabase.anonKey}`,
 }
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<User> {
-    const response = await fetch(`${API_BASE_URL}/login`, {
+    const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers,
       body: JSON.stringify(credentials),
@@ -36,10 +39,16 @@ export const authService = {
   },
 
   async register(credentials: RegisterCredentials): Promise<User> {
-    const response = await fetch(`${API_BASE_URL}/register-photographer`, {
+    const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers,
-      body: JSON.stringify(credentials),
+      body: JSON.stringify({
+        email: credentials.email,
+        password: credentials.password,
+        firstName: credentials.firstName,
+        lastName: credentials.lastName,
+        studioName: credentials.studioName,
+      }),
     })
 
     const result = await response.json()
@@ -75,29 +84,9 @@ export const authService = {
         const result = await response.json()
         throw new Error(result.error || 'Logout failed')
       }
-
-      // Clear any local storage (if needed for legacy reasons)
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('user')
-      }
     } catch (error) {
       console.error('Logout error:', error)
-      // Still clear local storage even if API call fails
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('user')
-      }
       throw error
     }
-  },
-
-  async getCurrentUser(): Promise<User | null> {
-    // Implement get current user logic
-    if (typeof window !== 'undefined') {
-      const userStr = localStorage.getItem('user')
-      return userStr ? JSON.parse(userStr) : null
-    }
-    return null
   },
 }

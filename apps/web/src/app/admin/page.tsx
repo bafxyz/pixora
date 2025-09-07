@@ -121,7 +121,9 @@ export default function AdminPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка...</p>
+          <p className="text-gray-600">
+            <Trans>Loading...</Trans>
+          </p>
         </div>
       </div>
     )
@@ -327,11 +329,17 @@ export default function AdminPage() {
                               {guest.name}
                             </h3>
                             <p className="text-xs lg:text-sm text-gray-600 truncate">
-                              {guest.email || 'Email not specified'}
+                              {guest.email || (
+                                <Trans>Email not specified</Trans>
+                              )}
                             </p>
                             <p className="text-xs text-gray-500">
                               <Trans>Created</Trans>:{' '}
-                              {new Date(guest.created_at).toLocaleDateString()}
+                              {guest.created_at
+                                ? new Date(
+                                    guest.created_at
+                                  ).toLocaleDateString()
+                                : 'N/A'}
                             </p>
                           </div>
                         </div>
@@ -367,7 +375,9 @@ export default function AdminPage() {
 
           <TabsContent value="orders" className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Управление заказами</h2>
+              <h2 className="text-xl font-semibold">
+                <Trans>Order Management</Trans>
+              </h2>
             </div>
 
             <div className="grid gap-4">
@@ -376,10 +386,12 @@ export default function AdminPage() {
                   <CardContent className="flex flex-col items-center justify-center py-12">
                     <ShoppingCart className="w-12 h-12 text-gray-400 mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      Нет заказов
+                      <Trans>No orders</Trans>
                     </h3>
                     <p className="text-gray-600 text-center">
-                      Заказы появятся здесь после того, как гости оформят их
+                      <Trans>
+                        Orders will appear here after guests place them
+                      </Trans>
                     </p>
                   </CardContent>
                 </Card>
@@ -390,14 +402,17 @@ export default function AdminPage() {
                       <div className="flex items-center justify-between mb-4">
                         <div>
                           <h3 className="font-medium text-gray-900">
-                            Заказ #{order.id.slice(-8)}
+                            <Trans>Order</Trans> #{order.id.slice(-8)}
                           </h3>
                           <p className="text-sm text-gray-600">
-                            Гость: {order.guests?.name || 'Неизвестен'}
+                            <Trans>Guest</Trans>:{' '}
+                            {order.guests?.name || <Trans>Unknown</Trans>}
                           </p>
                           <p className="text-sm text-gray-600">
-                            Фотограф:{' '}
-                            {order.photographers?.name || 'Неизвестен'}
+                            <Trans>Photographer</Trans>:{' '}
+                            {order.photographers?.name || (
+                              <Trans>Unknown</Trans>
+                            )}
                           </p>
                         </div>
                         <div className="text-right">
@@ -405,14 +420,18 @@ export default function AdminPage() {
                             ${order.total_amount}
                           </p>
                           <p className="text-sm text-gray-600">
-                            {new Date(order.created_at).toLocaleDateString()}
+                            {order.created_at
+                              ? new Date(order.created_at).toLocaleDateString()
+                              : 'N/A'}
                           </p>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">Статус:</span>
+                          <span className="text-sm text-gray-600">
+                            <Trans>Status</Trans>:
+                          </span>
                           <select
                             value={order.status}
                             onChange={async (e) => {
@@ -449,15 +468,24 @@ export default function AdminPage() {
                                     : 'bg-gray-100 text-gray-800 border-gray-200'
                             }`}
                           >
-                            <option value="new">Новый</option>
-                            <option value="ready">Готов</option>
-                            <option value="completed">Завершен</option>
-                            <option value="cancelled">Отменен</option>
+                            <option value="new">
+                              <Trans>New</Trans>
+                            </option>
+                            <option value="ready">
+                              <Trans>Ready</Trans>
+                            </option>
+                            <option value="completed">
+                              <Trans>Completed</Trans>
+                            </option>
+                            <option value="cancelled">
+                              <Trans>Cancelled</Trans>
+                            </option>
                           </select>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-gray-600">
-                            Фото: {order.photo_ids?.length || 0}
+                            <Trans>Photos</Trans>:{' '}
+                            {order.photo_ids?.length || 0}
                           </span>
                           {order.status === 'ready' && (
                             <Button
@@ -466,7 +494,7 @@ export default function AdminPage() {
                               onClick={() => setSelectedOrderForDelivery(order)}
                             >
                               <Send className="w-3 h-3 mr-1" />
-                              Notify Guest
+                              <Trans>Notify Guest</Trans>
                             </Button>
                           )}
                         </div>
@@ -480,8 +508,8 @@ export default function AdminPage() {
 
           {/* Delivery Notification Modal */}
           {selectedOrderForDelivery && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-background rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border">
                 <div className="p-6">
                   <DeliveryNotification
                     order={{
@@ -514,7 +542,7 @@ export default function AdminPage() {
                       variant="outline"
                       onClick={() => setSelectedOrderForDelivery(null)}
                     >
-                      Close
+                      <Trans>Close</Trans>
                     </Button>
                   </div>
                 </div>
@@ -533,29 +561,52 @@ export default function AdminPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Управление QR-кодами</CardTitle>
+                  <CardTitle>
+                    <Trans>QR Code Management</Trans>
+                  </CardTitle>
                   <CardDescription>
-                    Создавайте QR-коды для новых гостей
+                    <Trans>Create QR codes for new guests</Trans>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <h4 className="font-medium">Как использовать QR-коды:</h4>
+                    <h4 className="font-medium">
+                      <Trans>How to use QR codes</Trans>:
+                    </h4>
                     <ol className="text-sm text-gray-600 space-y-1">
-                      <li>1. Создайте QR-код для гостя</li>
-                      <li>2. Распечатайте или отправьте его гостю</li>
-                      <li>3. Фотограф отсканирует QR на мероприятии</li>
-                      <li>4. Фото автоматически попадут в галерею гостя</li>
+                      <li>
+                        1. <Trans>Create QR code for guest</Trans>
+                      </li>
+                      <li>
+                        2. <Trans>Print or send it to the guest</Trans>
+                      </li>
+                      <li>
+                        3. <Trans>Photographer scans QR at event</Trans>
+                      </li>
+                      <li>
+                        4.{' '}
+                        <Trans>Photos automatically go to guest gallery</Trans>
+                      </li>
                     </ol>
                   </div>
 
                   <div className="space-y-2">
-                    <h4 className="font-medium">Преимущества:</h4>
+                    <h4 className="font-medium">
+                      <Trans>Benefits</Trans>:
+                    </h4>
                     <ul className="text-sm text-gray-600 space-y-1">
-                      <li>• Быстрая идентификация гостей</li>
-                      <li>• Автоматическое создание галерей</li>
-                      <li>• Удобный доступ к фото</li>
-                      <li>• Отслеживание заказов</li>
+                      <li>
+                        • <Trans>Fast guest identification</Trans>
+                      </li>
+                      <li>
+                        • <Trans>Automatic gallery creation</Trans>
+                      </li>
+                      <li>
+                        • <Trans>Convenient photo access</Trans>
+                      </li>
+                      <li>
+                        • <Trans>Order tracking</Trans>
+                      </li>
                     </ul>
                   </div>
                 </CardContent>
@@ -566,24 +617,30 @@ export default function AdminPage() {
           <TabsContent value="settings" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Настройки студии</CardTitle>
+                <CardTitle>
+                  <Trans>Studio Settings</Trans>
+                </CardTitle>
                 <CardDescription>
-                  Настройте параметры вашей фото-студии
+                  <Trans>Configure your photo studio settings</Trans>
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="studioName">Название студии</Label>
+                    <Label htmlFor="studioName">
+                      <Trans>Studio Name</Trans>
+                    </Label>
                     <Input
                       id="studioName"
-                      placeholder="Моя Фото-Студия"
+                      placeholder="My Photo Studio"
                       className="mt-1"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="contactEmail">Email для связи</Label>
+                    <Label htmlFor="contactEmail">
+                      <Trans>Contact Email</Trans>
+                    </Label>
                     <Input
                       id="contactEmail"
                       type="email"
@@ -593,16 +650,20 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="phone">Телефон</Label>
+                    <Label htmlFor="phone">
+                      <Trans>Phone</Trans>
+                    </Label>
                     <Input
                       id="phone"
-                      placeholder="+7 (999) 123-45-67"
+                      placeholder="+1 (555) 123-4567"
                       className="mt-1"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="website">Веб-сайт</Label>
+                    <Label htmlFor="website">
+                      <Trans>Website</Trans>
+                    </Label>
                     <Input
                       id="website"
                       placeholder="https://studio.com"
@@ -612,7 +673,9 @@ export default function AdminPage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button>Сохранить настройки</Button>
+                  <Button>
+                    <Trans>Save Settings</Trans>
+                  </Button>
                 </div>
               </CardContent>
             </Card>

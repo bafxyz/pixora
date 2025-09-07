@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2025-09-07 01:47+0200\n"
+"POT-Creation-Date: 2025-09-07 15:33+0200\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -13,18 +13,817 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/shared/components/demo-translation.tsx:13
-msgid "Create Account"
+#: src/app/page.tsx:81
+msgid "Access advanced features for managing your photography business and portfolio."
+msgstr "Получите доступ к продвинутым функциям для управления вашим фотобизнесом и портфолио."
+
+#: src/app/super-admin/page.tsx:263
+msgid "Add a new photo studio to the system"
+msgstr "Добавьте новую фотостудию в систему"
+
+#: src/app/super-admin/page.tsx:252
+#: src/app/super-admin/page.tsx:319
+msgid "Add Client"
+msgstr "Добавить клиента"
+
+#: src/features/gallery/components/guest-gallery.tsx:170
+msgid "Add to Cart"
+msgstr "Добавить в корзину"
+
+#: src/features/gallery/components/checkout.tsx:245
+msgid "Address"
+msgstr "Адрес"
+
+#: src/features/gallery/components/checkout.tsx:36
+msgid "Address is required"
+msgstr "Адрес обязателен"
+
+#: src/app/admin/page.tsx:142
+msgid "Admin Panel"
+msgstr "Панель администратора"
+
+#: src/app/super-admin/page.tsx:280
+msgid "Administrator Email"
+msgstr "Email администратора"
+
+#: src/app/admin/page.tsx:602
+msgid "Automatic gallery creation"
+msgstr "Автоматическое создание галерей"
+
+#: src/app/photographer/page.tsx:173
+msgid "Automatic personal gallery creation"
+msgstr "Автоматическое создание личных галерей"
+
+#: src/app/admin/page.tsx:595
+msgid "Benefits"
+msgstr "Преимущества"
+
+#: src/features/auth/components/login-page.tsx:223
+msgid "Branding"
+msgstr "Брендинг"
+
+#: src/app/page.tsx:37
+msgid "Browse Gallery"
+msgstr "Просмотреть галерею"
+
+#: src/features/qr/components/qr-scanner.tsx:230
+msgid "Camera access denied. Please allow camera access in browser settings."
+msgstr "Доступ к камере запрещен. Пожалуйста, разрешите доступ к камере в настройках браузера."
+
+#: src/app/super-admin/page.tsx:252
+#: src/app/super-admin/page.tsx:297
+msgid "Cancel"
+msgstr "Отмена"
+
+#: src/app/admin/page.tsx:481
+msgid "Cancelled"
+msgstr "Отменен"
+
+#: src/features/gallery/components/guest-gallery.tsx:102
+msgid "Cart"
+msgstr "Корзина"
+
+#: src/features/gallery/components/cart.tsx:148
+#: src/features/gallery/components/checkout.tsx:125
+msgid "Checkout"
+msgstr "Оформить заказ"
+
+#: src/app/photographer/page.tsx:183
+msgid "Click Generate"
+msgstr "Нажмите Генерировать"
+
+#: src/app/super-admin/page.tsx:131
+msgid "Client created successfully!"
+msgstr "Клиент успешно создан!"
+
+#: src/app/super-admin/page.tsx:178
+#: src/app/super-admin/page.tsx:248
+msgid "Clients"
+msgstr "Клиенты"
+
+#: src/app/admin/page.tsx:545
+#: src/features/gallery/components/checkout.tsx:111
+msgid "Close"
+msgstr "Закрыть"
+
+#: src/features/qr/components/qr-scanner.tsx:244
+msgid "Code Scanned"
+msgstr "Код отсканирован"
+
+#: src/features/auth/components/login-page.tsx:226
+msgid "Complete customization for your style"
+msgstr "Полная кастомизация для вашего стиля"
+
+#: src/app/admin/page.tsx:478
+msgid "Completed"
+msgstr "Завершен"
+
+#: src/app/admin/page.tsx:624
+msgid "Configure your photo studio settings"
+msgstr "Настройте параметры вашей фотостудии"
+
+#: src/app/page.tsx:63
+msgid "Connect with Others"
+msgstr "Связаться с другими"
+
+#: src/app/admin/page.tsx:642
+msgid "Contact Email"
+msgstr "Email для связи"
+
+#: src/features/gallery/components/checkout.tsx:174
+msgid "Contact Information"
+msgstr "Контактная информация"
+
+#: src/features/gallery/components/cart.tsx:53
+#: src/features/gallery/components/cart.tsx:138
+msgid "Continue Shopping"
+msgstr "Продолжить покупки"
+
+#: src/app/admin/page.tsx:605
+#: src/app/photographer/page.tsx:174
+msgid "Convenient photo access"
+msgstr "Удобный доступ к фото"
+
+#: src/features/auth/components/login-page.tsx:423
+msgid "Create account"
 msgstr "Создать аккаунт"
 
-#: src/shared/components/demo-translation.tsx:11
+#: src/features/auth/components/login-page.tsx:320
+msgid "Create an account for your photo studio"
+msgstr "Создайте аккаунт для вашей фотостудии"
+
+#: src/app/super-admin/page.tsx:299
+msgid "Create Client"
+msgstr "Создать клиента"
+
+#: src/app/admin/page.tsx:298
+msgid "Create Guest"
+msgstr "Создать гостя"
+
+#: src/app/super-admin/page.tsx:261
+msgid "Create New Client"
+msgstr "Создать нового клиента"
+
+#: src/app/photographer/page.tsx:112
+msgid "Create QR"
+msgstr "Создать QR"
+
+#: src/app/admin/page.tsx:314
+msgid "Create QR Code"
+msgstr "Создать QR-код"
+
+#: src/app/admin/page.tsx:578
+msgid "Create QR code for guest"
+msgstr "Создайте QR-код для гостя"
+
+#: src/features/qr/components/qr-generator.tsx:116
+msgid "Create QR code for photo session guest"
+msgstr "Создайте QR-код для гостя фотосессии"
+
+#: src/app/admin/page.tsx:568
+msgid "Create QR codes for new guests"
+msgstr "Создавайте QR-коды для новых гостей"
+
+#: src/app/super-admin/page.tsx:315
+msgid "Create the first client to get started"
+msgstr "Создайте первого клиента для начала работы"
+
+#: src/app/page.tsx:103
+msgid "Create Your Account"
+msgstr "Создать аккаунт"
+
+#: src/app/admin/page.tsx:311
+msgid "Create your first guest using a QR code"
+msgstr "Создайте первого гостя с помощью QR-кода"
+
+#: src/app/admin/page.tsx:337
+#: src/app/super-admin/page.tsx:337
+msgid "Created"
+msgstr "Создано"
+
+#: src/features/auth/components/login-page.tsx:423
+msgid "Creating..."
+msgstr "Создание..."
+
+#: src/app/page.tsx:21
+msgid "Discover and showcase stunning photography. Connect with photographers, explore galleries, and share your visual stories."
+msgstr "Откройте для себя потрясающую фотографию. Свяжитесь с фотографами, исследуйте галереи и делитесь своими визуальными историями."
+
+#: src/features/auth/components/login-page.tsx:349
+msgid "Doe"
+msgstr "Иванов"
+
+#: src/features/auth/components/login-page.tsx:367
+msgid "Doe Studio"
+msgstr "Студия Иванова"
+
+#: src/features/qr/components/qr-generator.tsx:151
+msgid "Download QR Code"
+msgstr "Скачать QR-код"
+
+#: src/features/auth/components/login-page.tsx:263
+#: src/features/auth/components/login-page.tsx:380
+#: src/features/gallery/components/checkout.tsx:203
+msgid "Email"
+msgstr "Электронная почта"
+
+#: src/features/gallery/components/checkout.tsx:34
+msgid "Email is invalid"
+msgstr "Неверный email"
+
+#: src/features/gallery/components/checkout.tsx:32
+msgid "Email is required"
+msgstr "Email обязателен"
+
+#: src/app/admin/page.tsx:333
+#: src/app/photographer/page.tsx:223
+msgid "Email not specified"
+msgstr "Email не указан"
+
+#: src/features/auth/components/login-page.tsx:444
+msgid "Enter guest ID (e.g., GUEST123)"
+msgstr "Введите ID гостя (например, GUEST123)"
+
+#: src/app/photographer/page.tsx:182
+#: src/features/qr/components/qr-generator.tsx:126
+msgid "Enter guest name"
+msgstr "Введите имя гостя"
+
+#: src/features/qr/components/qr-scanner.tsx:224
+msgid "Enter Manually"
+msgstr "Ввести вручную"
+
+#: src/features/qr/components/qr-scanner.tsx:150
+msgid "Enter QR data manually:"
+msgstr "Введите данные QR вручную:"
+
+#: src/features/auth/components/login-page.tsx:438
+msgid "Enter your guest ID to view photos"
+msgstr "Введите ID гостя для просмотра фото"
+
+#: src/app/super-admin/page.tsx:133
+#: src/app/super-admin/page.tsx:137
+msgid "Error creating client"
+msgstr "Ошибка при создании клиента"
+
+#: src/app/photographer/page.tsx:65
+msgid "Error scanning QR code"
+msgstr "Ошибка сканирования QR-кода"
+
+#. placeholder {0}: result.error
+#: src/app/photographer/page.tsx:61
+msgid "Error: {0}"
+msgstr "Ошибка: {0}"
+
+#: src/features/qr/components/qr-scanner.tsx:115
+msgid "Failed to access camera"
+msgstr "Не удалось получить доступ к камере"
+
+#: src/app/admin/page.tsx:599
+#: src/app/photographer/page.tsx:172
+msgid "Fast guest identification"
+msgstr "Быстрая идентификация гостей"
+
+#: src/features/auth/components/login-page.tsx:199
+msgid "Fast upload"
+msgstr "Быстрая загрузка"
+
+#: src/app/super-admin/page.tsx:109
+msgid "Fill in all fields"
+msgstr "Заполните все поля"
+
+#: src/features/auth/components/login-page.tsx:328
+msgid "First name"
+msgstr "Имя"
+
+#: src/features/gallery/components/checkout.tsx:182
+msgid "Full Name"
+msgstr "Полное имя"
+
+#: src/app/admin/page.tsx:355
+msgid "Gallery"
+msgstr "Галерея"
+
+#: src/features/qr/components/qr-generator.tsx:135
+msgid "Generate QR Code"
+msgstr "Сгенерировать QR-код"
+
+#: src/app/photographer/page.tsx:165
+msgid "Generate QR codes for new guests"
+msgstr "Генерируйте QR-коды для новых гостей"
+
+#: src/features/qr/components/qr-generator.tsx:135
+msgid "Generating..."
+msgstr "Генерация..."
+
+#: src/app/page.tsx:31
+msgid "Get Started"
+msgstr "Начать"
+
+#: src/app/admin/page.tsx:408
+msgid "Guest"
+msgstr "Гость"
+
+#. placeholder {0}: result.guest.name
+#: src/app/photographer/page.tsx:59
+msgid "Guest {0} successfully added!"
+msgstr "Гость {0} успешно добавлен!"
+
+#: src/features/auth/components/login-page.tsx:435
+msgid "Guest access"
+msgstr "Гостевой доступ"
+
+#: src/app/photographer/page.tsx:185
+msgid "Guest can scan it at the event"
+msgstr "Гость может отсканировать его на мероприятии"
+
+#: src/features/auth/components/login-page.tsx:211
+msgid "Guest convenience"
+msgstr "Удобство для гостей"
+
+#: src/features/gallery/components/guest-gallery.tsx:85
+msgid "Guest Gallery"
+msgstr "Гостевая галерея"
+
+#: src/app/admin/page.tsx:290
+msgid "Guest Management"
+msgstr "Управление гостями"
+
+#: src/features/qr/components/qr-generator.tsx:121
+msgid "Guest Name"
+msgstr "Имя гостя"
+
+#: src/app/admin/page.tsx:175
+#: src/app/admin/page.tsx:178
+#: src/app/photographer/page.tsx:116
+#: src/app/super-admin/page.tsx:192
+#: src/app/super-admin/page.tsx:348
+msgid "Guests"
+msgstr "Гости"
+
+#: src/app/photographer/page.tsx:128
+msgid "How to scan guest QR codes"
+msgstr "Как сканировать QR-коды гостей"
+
+#: src/app/photographer/page.tsx:180
+msgid "How to use"
+msgstr "Как использовать"
+
+#: src/app/admin/page.tsx:574
+msgid "How to use QR codes"
+msgstr "Как использовать QR-коды"
+
+#: src/features/auth/components/login-page.tsx:202
+msgid "Instant photo sync from mobile device"
+msgstr "Мгновенная синхронизация фото с мобильного устройства"
+
+#: src/app/photographer/page.tsx:126
+msgid "Instructions"
+msgstr "Инструкция"
+
+#: src/features/qr/components/qr-scanner.tsx:86
+msgid "Invalid QR code format. Guest code expected."
+msgstr "Неверный формат QR-кода. Ожидается код гостя."
+
+#: src/features/auth/components/login-page.tsx:332
+msgid "John"
+msgstr "Иван"
+
+#: src/app/page.tsx:94
+msgid "Join thousands of photographers already using our platform to showcase their work."
+msgstr "Присоединяйтесь к тысячам фотографов, которые уже используют нашу платформу для демонстрации своей работы."
+
+#: src/features/auth/components/login-page.tsx:345
+msgid "Last name"
+msgstr "Фамилия"
+
+#: src/features/gallery/components/guest-gallery.tsx:72
+msgid "Loading photos..."
+msgstr "Загрузка фото..."
+
+#: src/features/gallery/components/guest-gallery.tsx:121
+msgid "Loading virtual gallery..."
+msgstr "Загрузка виртуальной галереи..."
+
+#: src/app/admin/page.tsx:125
+#: src/app/super-admin/page.tsx:151
+msgid "Loading..."
+msgstr "Загрузка..."
+
+#: src/features/auth/components/login-page.tsx:242
 msgid "Login"
 msgstr "Вход"
 
-#: src/shared/components/demo-translation.tsx:12
+#: src/features/auth/components/login-page.tsx:78
+msgid "Login failed"
+msgstr "Ошибка входа"
+
+#: src/features/auth/components/login-page.tsx:145
+#~ msgid "Login failed after registration"
+#~ msgstr "Ошибка входа после регистрации"
+
+#: src/app/photographer/page.tsx:135
+msgid "Make sure you have camera access"
+msgstr "Убедитесь, что у вас есть доступ к камере"
+
+#: src/app/super-admin/page.tsx:168
+msgid "Manage all platform clients"
+msgstr "Управление всеми клиентами платформы"
+
+#: src/app/admin/page.tsx:145
+msgid "Manage guests and track statistics"
+msgstr "Управляйте гостями и отслеживайте статистику"
+
+#: src/app/photographer/page.tsx:96
+msgid "Manage guests and upload photos"
+msgstr "Управляйте гостями и загружайте фото"
+
+#: src/app/super-admin/page.tsx:274
+msgid "My Photo Studio"
+msgstr "Моя фотостудия"
+
+#: src/features/gallery/components/checkout.tsx:31
+msgid "Name is required"
+msgstr "Имя обязательно"
+
+#: src/app/page.tsx:66
+msgid "Network with fellow photographers and art enthusiasts in our community."
+msgstr "Общайтесь с коллегами-фотографами и любителями искусства в нашем сообществе."
+
+#: src/app/admin/page.tsx:472
+msgid "New"
+msgstr "Новый"
+
+#: src/app/super-admin/page.tsx:312
+msgid "No clients"
+msgstr "Нет клиентов"
+
+#: src/app/admin/page.tsx:308
+msgid "No guests yet"
+msgstr "Пока нет гостей"
+
+#: src/app/admin/page.tsx:389
+msgid "No orders"
+msgstr "Нет заказов"
+
+#: src/features/gallery/components/guest-gallery.tsx:110
+msgid "No photos available yet."
+msgstr "Фото пока недоступны."
+
+#: src/app/photographer/page.tsx:200
+msgid "No scanned guests"
+msgstr "Нет отсканированных гостей"
+
+#: src/app/admin/page.tsx:497
+msgid "Notify Guest"
+msgstr "Уведомить гостя"
+
+#: src/app/admin/page.tsx:405
+msgid "Order"
+msgstr "Заказ"
+
+#: src/features/gallery/components/checkout.tsx:98
+msgid "Order Complete!"
+msgstr "Заказ выполнен!"
+
+#: src/app/admin/page.tsx:379
+msgid "Order Management"
+msgstr "Управление заказами"
+
+#: src/features/gallery/components/checkout.tsx:140
+msgid "Order Summary"
+msgstr "Сводка заказа"
+
+#: src/app/admin/page.tsx:608
+#: src/app/photographer/page.tsx:175
+msgid "Order tracking"
+msgstr "Отслеживание заказов"
+
+#: src/app/admin/page.tsx:188
+#: src/app/admin/page.tsx:191
+#: src/app/admin/page.tsx:259
+#: src/app/super-admin/page.tsx:220
+#: src/app/super-admin/page.tsx:356
+msgid "Orders"
+msgstr "Заказы"
+
+#: src/app/admin/page.tsx:392
+msgid "Orders will appear here after guests place them"
+msgstr "Заказы появятся здесь после того, как гости оформят их"
+
+#: src/app/admin/page.tsx:163
+#: src/app/admin/page.tsx:166
+msgid "Overview"
+msgstr "Обзор"
+
+#: src/features/auth/components/login-page.tsx:281
+#: src/features/auth/components/login-page.tsx:398
 msgid "Password"
 msgstr "Пароль"
 
-#: src/shared/components/demo-translation.tsx:14
+#: src/features/auth/components/login-page.tsx:214
+msgid "Passwordless access to personal galleries"
+msgstr "Доступ к личным галереям без пароля"
+
+#: src/features/gallery/components/checkout.tsx:70
+msgid "Payment session creation failed"
+msgstr "Не удалось создать сессию оплаты"
+
+#: src/app/admin/page.tsx:654
+#: src/features/gallery/components/checkout.tsx:224
+msgid "Phone"
+msgstr "Телефон"
+
+#: src/features/gallery/components/checkout.tsx:35
+msgid "Phone is required"
+msgstr "Телефон обязателен"
+
+#. placeholder {0}: item.id.slice(-8)
+#: src/features/gallery/components/cart.tsx:75
+msgid "Photo {0}"
+msgstr "Фото {0}"
+
+#. placeholder {0}: item.id.slice(-8)
+#. placeholder {1}: item.type
+#. placeholder {2}: item.quantity
+#: src/features/gallery/components/checkout.tsx:150
+msgid "Photo {0} ({1}) x{2}"
+msgstr "Фото {0} ({1}) x{2}"
+
+#: src/app/admin/page.tsx:412
+#: src/features/gallery/components/guest-gallery.tsx:89
+msgid "Photographer"
+msgstr "Фотограф"
+
+#: src/app/photographer/page.tsx:93
+msgid "Photographer Panel"
+msgstr "Панель фотографа"
+
+#: src/features/auth/components/login-page.tsx:317
+msgid "Photographer registration"
+msgstr "Регистрация фотографа"
+
+#: src/app/admin/page.tsx:584
+msgid "Photographer scans QR at event"
+msgstr "Фотограф сканирует QR на мероприятии"
+
+#: src/features/auth/components/login-page.tsx:268
+#: src/features/auth/components/login-page.tsx:385
+msgid "photographer@studio.com"
+msgstr "fotograf@studiya.com"
+
+#: src/app/admin/page.tsx:243
+#: src/app/admin/page.tsx:487
+#: src/app/photographer/page.tsx:226
+#: src/app/super-admin/page.tsx:206
+#: src/app/super-admin/page.tsx:352
+#: src/features/gallery/components/guest-gallery.tsx:94
+msgid "Photos"
+msgstr "Фото"
+
+#: src/app/admin/page.tsx:588
+msgid "Photos automatically go to guest gallery"
+msgstr "Фото автоматически попадают в галерею гостя"
+
+#: src/features/gallery/components/checkout.tsx:270
+msgid "Place Order"
+msgstr "Разместить заказ"
+
+#: src/features/auth/components/login-page.tsx:190
 msgid "Platform for digitizing photo services"
-msgstr "Платформа для цифровизации фото-услуг"
+msgstr "Платформа для цифровизации фотоуслуг"
+
+#: src/app/photographer/page.tsx:142
+msgid "Point camera at guest QR code"
+msgstr "Наведите камеру на QR-код гостя"
+
+#: src/app/admin/page.tsx:581
+msgid "Print or send it to the guest"
+msgstr "Распечатайте или отправьте его гостю"
+
+#: src/app/photographer/page.tsx:184
+msgid "Print or send QR code"
+msgstr "Распечатайте или отправьте QR-код"
+
+#: src/features/gallery/components/checkout.tsx:270
+msgid "Processing..."
+msgstr "Обработка..."
+
+#: src/app/page.tsx:78
+msgid "Professional Tools"
+msgstr "Профессиональные инструменты"
+
+#: src/app/admin/page.tsx:365
+msgid "QR Code"
+msgstr "QR-код"
+
+#: src/features/qr/components/qr-scanner.tsx:90
+msgid "QR code contains invalid data. Please try a different code."
+msgstr "QR-код содержит неверные данные. Попробуйте другой код."
+
+#: src/app/photographer/page.tsx:163
+msgid "QR Code Creation"
+msgstr "Создание QR-кода"
+
+#: src/features/qr/components/qr-generator.tsx:113
+msgid "QR Code Generator"
+msgstr "Генератор QR-кодов"
+
+#: src/app/admin/page.tsx:565
+msgid "QR Code Management"
+msgstr "Управление QR-кодами"
+
+#: src/features/qr/components/qr-scanner.tsx:98
+msgid "QR code not found. Please bring it closer to the camera."
+msgstr "QR-код не найден. Пожалуйста, поднесите его ближе к камере."
+
+#: src/features/qr/components/qr-scanner.tsx:164
+msgid "QR Code Scanner"
+msgstr "Сканер QR-кодов"
+
+#: src/features/qr/components/qr-scanner.tsx:106
+msgid "QR code scanning error: {errorMessage}"
+msgstr "Ошибка сканирования QR-кода: {errorMessage}"
+
+#: src/app/admin/page.tsx:200
+msgid "QR Codes"
+msgstr "QR-коды"
+
+#: src/app/admin/page.tsx:475
+msgid "Ready"
+msgstr "Готов"
+
+#: src/app/page.tsx:91
+msgid "Ready to Start Your Journey?"
+msgstr "Готовы начать свое путешествие?"
+
+#: src/features/auth/components/login-page.tsx:245
+msgid "Registration"
+msgstr "Регистрация"
+
+#: src/features/auth/components/login-page.tsx:125
+msgid "Registration failed"
+msgstr "Ошибка регистрации"
+
+#: src/features/auth/components/login-page.tsx:133
+msgid "Registration successful! Please check your email to confirm your account, then log in."
+msgstr "Регистрация прошла успешно! Проверьте электронную почту для подтверждения аккаунта, затем войдите."
+
+#: src/app/admin/page.tsx:275
+#: src/app/super-admin/page.tsx:234
+msgid "Revenue"
+msgstr "Доход"
+
+#: src/app/admin/page.tsx:677
+msgid "Save Settings"
+msgstr "Сохранить настройки"
+
+#: src/app/photographer/page.tsx:108
+msgid "Scan"
+msgstr "Сканировать"
+
+#: src/features/qr/components/qr-scanner.tsx:166
+msgid "Scan guest QR code"
+msgstr "Сканируйте QR-код гостя"
+
+#: src/app/photographer/page.tsx:203
+msgid "Scan guest QR codes to add them to the list"
+msgstr "Отсканируйте QR-коды гостей, чтобы добавить их в список"
+
+#: src/features/qr/components/qr-scanner.tsx:104
+msgid "Scanning error: {errorMessage}"
+msgstr "Ошибка сканирования: {errorMessage}"
+
+#: src/app/admin/page.tsx:210
+#: src/app/admin/page.tsx:213
+msgid "Settings"
+msgstr "Настройки"
+
+#: src/features/qr/components/qr-generator.tsx:156
+msgid "Show QR Code Data"
+msgstr "Показать данные QR-кода"
+
+#: src/app/page.tsx:48
+msgid "Showcase Your Work"
+msgstr "Покажите свою работу"
+
+#: src/features/auth/components/login-page.tsx:253
+#: src/features/auth/components/login-page.tsx:306
+msgid "Sign in"
+msgstr "Войти"
+
+#: src/features/auth/components/login-page.tsx:256
+msgid "Sign in to your photographer account"
+msgstr "Войдите в свой аккаунт фотографа"
+
+#: src/features/auth/components/login-page.tsx:306
+msgid "Signing in..."
+msgstr "Вход..."
+
+#: src/app/photographer/page.tsx:206
+#: src/features/qr/components/qr-scanner.tsx:204
+msgid "Start Scanning"
+msgstr "Начать сканирование"
+
+#: src/app/admin/page.tsx:433
+msgid "Status"
+msgstr "Статус"
+
+#: src/app/photographer/page.tsx:133
+msgid "Step 1: Preparation"
+msgstr "Шаг 1: Подготовка"
+
+#: src/app/photographer/page.tsx:140
+msgid "Step 2: Scanning"
+msgstr "Шаг 2: Сканирование"
+
+#: src/app/photographer/page.tsx:147
+msgid "Step 3: Confirmation"
+msgstr "Шаг 3: Подтверждение"
+
+#: src/features/qr/components/qr-scanner.tsx:209
+msgid "Stop"
+msgstr "Остановить"
+
+#: src/features/auth/components/login-page.tsx:363
+msgid "Studio name"
+msgstr "Название студии"
+
+#: src/app/admin/page.tsx:631
+#: src/app/super-admin/page.tsx:269
+msgid "Studio Name"
+msgstr "Название студии"
+
+#: src/app/admin/page.tsx:621
+msgid "Studio Settings"
+msgstr "Настройки студии"
+
+#: src/app/super-admin/page.tsx:166
+msgid "Super Administrator"
+msgstr "Супер-администратор"
+
+#: src/app/photographer/page.tsx:149
+msgid "System will automatically add guest to list"
+msgstr "Система автоматически добавит гостя в список"
+
+#: src/features/qr/components/qr-scanner.tsx:214
+msgid "Test"
+msgstr "Тест"
+
+#: src/features/gallery/components/checkout.tsx:101
+msgid "Thank you for your order. We'll process it shortly and send you a confirmation email."
+msgstr "Спасибо за ваш заказ. Мы обработаем его в ближайшее время и отправим вам подтверждение по электронной почте."
+
+#: src/app/admin/page.tsx:227
+msgid "Total Guests"
+msgstr "Всего гостей"
+
+#: src/features/gallery/components/cart.tsx:125
+#: src/features/gallery/components/checkout.tsx:164
+msgid "Total:"
+msgstr "Итого:"
+
+#: src/app/admin/page.tsx:409
+#: src/app/admin/page.tsx:414
+msgid "Unknown"
+msgstr "Неизвестен"
+
+#: src/app/page.tsx:51
+msgid "Upload and display your photography portfolio with professional presentation."
+msgstr "Загружайте и показывайте свое фотопортфолио с профессиональной подачей."
+
+#: src/app/photographer/page.tsx:236
+msgid "Upload Photos"
+msgstr "Загрузить фото"
+
+#: src/features/auth/components/login-page.tsx:117
+msgid "User already exists. Please switch to the Login tab."
+msgstr "Пользователь уже существует. Пожалуйста, перейдите на вкладку Вход."
+
+#: src/app/super-admin/page.tsx:366
+msgid "View"
+msgstr "Просмотр"
+
+#: src/features/auth/components/login-page.tsx:450
+msgid "View photos"
+msgstr "Посмотреть фото"
+
+#: src/app/admin/page.tsx:665
+msgid "Website"
+msgstr "Веб-сайт"
+
+#: src/app/page.tsx:18
+msgid "Welcome to Photography Gallery"
+msgstr "Добро пожаловать в фотогалерею"
+
+#: src/app/photographer/page.tsx:170
+msgid "Why do we need QR codes?"
+msgstr "Зачем нужны QR-коды?"
+
+#: src/features/gallery/components/cart.tsx:31
+msgid "Your Cart"
+msgstr "Ваша корзина"
+
+#: src/features/gallery/components/cart.tsx:46
+msgid "Your cart is empty"
+msgstr "Ваша корзина пуста"

@@ -1,10 +1,14 @@
-import { Trans } from '@lingui/macro'
+import { Trans, t } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
+import { Button } from '@repo/ui/button'
 import { Trash2, X } from 'lucide-react'
 import React from 'react'
+
 import { useCartTotal, useGalleryStore } from '@/shared/stores/gallery.store'
 import { ImageWithFallback } from './image-with-fallback'
 
 export function Cart() {
+  const { _ } = useLingui()
   const {
     cart,
     showCart,
@@ -19,32 +23,35 @@ export function Cart() {
   if (!showCart) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-background rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border">
         <div className="p-4 lg:p-6">
           <div className="flex justify-between items-center mb-4 lg:mb-6">
-            <h2 className="text-xl lg:text-2xl font-bold text-gray-900">
+            <h2 className="text-xl lg:text-2xl font-bold text-foreground">
               <Trans>Your Cart</Trans>
             </h2>
-            <button
+            <Button
               type="button"
               onClick={() => setShowCart(false)}
-              className="text-gray-400 hover:text-gray-600"
+              variant="ghost"
+              size="icon"
             >
               <X className="w-6 h-6" />
-            </button>
+            </Button>
           </div>
 
           {cart.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-500 text-lg">Your cart is empty</p>
-              <button
+              <p className="text-muted-foreground text-lg">
+                <Trans>Your cart is empty</Trans>
+              </p>
+              <Button
                 type="button"
                 onClick={() => setShowCart(false)}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="mt-4"
               >
-                Continue Shopping
-              </button>
+                <Trans>Continue Shopping</Trans>
+              </Button>
             </div>
           ) : (
             <>
@@ -56,7 +63,7 @@ export function Cart() {
                   >
                     <div className="w-16 h-16 flex-shrink-0">
                       <ImageWithFallback
-                        src={item.fileName}
+                        src={item.file_path}
                         alt="Cart item"
                         width={64}
                         height={64}
@@ -64,75 +71,82 @@ export function Cart() {
                       />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">
-                        Photo {item.id.slice(-8)}
+                      <h3 className="font-medium text-foreground">
+                        {_(t`Photo ${item.id.slice(-8)}`)}
                       </h3>
-                      <p className="text-sm text-gray-500 capitalize">
+                      <p className="text-sm text-muted-foreground capitalize">
                         {item.type}
                       </p>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-foreground">
                         ${item.type === 'digital' ? item.price : item.price * 2}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <button
+                      <Button
                         type="button"
                         onClick={() =>
                           updateQuantity(item.id, item.type, item.quantity - 1)
                         }
-                        className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
+                        variant="outline"
+                        size="icon"
+                        className="w-8 h-8"
                       >
                         -
-                      </button>
+                      </Button>
                       <span className="w-8 text-center">{item.quantity}</span>
-                      <button
+                      <Button
                         type="button"
                         onClick={() =>
                           updateQuantity(item.id, item.type, item.quantity + 1)
                         }
-                        className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
+                        variant="outline"
+                        size="icon"
+                        className="w-8 h-8"
                       >
                         +
-                      </button>
+                      </Button>
                     </div>
-                    <button
+                    <Button
                       type="button"
                       onClick={() => removeFromCart(item.id, item.type)}
-                      className="text-red-500 hover:text-red-700"
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive/80"
                     >
                       <Trash2 className="w-5 h-5" />
-                    </button>
+                    </Button>
                   </div>
                 ))}
               </div>
 
               <div className="border-t pt-4">
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-lg font-medium text-gray-900">
-                    Total:
+                  <span className="text-lg font-medium text-foreground">
+                    <Trans>Total:</Trans>
                   </span>
-                  <span className="text-lg font-bold text-gray-900">
+                  <span className="text-lg font-bold text-foreground">
                     ${total.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex space-x-3">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setShowCart(false)}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                    variant="outline"
+                    className="flex-1"
                   >
-                    Continue Shopping
-                  </button>
-                  <button
+                    <Trans>Continue Shopping</Trans>
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => {
                       setShowCart(false)
                       setShowCheckout(true)
                     }}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    className="flex-1"
                   >
-                    Checkout
-                  </button>
+                    <Trans>Checkout</Trans>
+                  </Button>
                 </div>
               </div>
             </>

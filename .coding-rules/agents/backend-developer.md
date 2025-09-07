@@ -5,7 +5,7 @@ globs: "**/*.ts, **/*.tsx, **/route.ts, **/actions.ts"
 
 ## Overview
 
-This project uses **Next.js 15 with App Router** for backend functionality, leveraging Server Components, Server Actions, and Route Handlers for API endpoints. The backend integrates with Supabase for data persistence and authentication.
+This project uses **Next.js 15 with App Router** for backend functionality, leveraging Server Components, Server Actions, and Route Handlers for API endpoints. The backend integrates with Prisma ORM for data persistence and PostgreSQL database.
 
 ## Project Structure
 
@@ -17,15 +17,19 @@ The monorepo follows this structure:
 │   └── web                    # Next.js 15 application
 │       ├── src
 │       │   ├── app           # App Router structure
-│       │   │   ├── api       # Route handlers
+│       │       │   ├── api       # Route handlers
 │       │   │   │   └── [endpoint]
 │       │   │   │       └── route.ts
 │       │   │   ├── actions  # Server actions
 │       │   │   └── [...pages]
 │       │   ├── components    # React components
+│       │   ├── shared
+│       │   │   └── lib
+│       │   │       └── prisma  # Prisma client setup
 │       │   └── utils         # Utilities
-│       │       └── supabase  # Supabase client setup
 │       └── package.json
+│       └── prisma            # Prisma schema and migrations
+│           └── schema.prisma
 ├── packages
 │   ├── ui                    # Shared UI components
 │   └── typescript-config     # Shared TS configs
@@ -41,24 +45,22 @@ Use Route Handlers for RESTful API endpoints in `app/api/**/route.ts`:
 ```typescript
 // app/api/photos/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { prisma } from '@/shared/lib/prisma/client';
 
 export async function GET(request: NextRequest) {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from('photos')
-    .select('*');
-  
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-  
-  return NextResponse.json(data);
+  const photos = await prisma.photo.findMany({
+    include: {
+      guest: true,
+      photographer: true,
+    },
+  });
+
+  return NextResponse.json(photos);
 }
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  // Handle POST logic
+  // Handle POST logic with Prisma
   return NextResponse.json({ success: true });
 }
 ```
@@ -72,75 +74,75 @@ Use Server Actions for form submissions and mutations:
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/utils/supabase/server';
+import { prisma } from '@/shared/lib/prisma/client';
 
 export async function uploadPhoto(formData: FormData) {
-  const supabase = createClient();
-  
   const file = formData.get('file') as File;
   const title = formData.get('title') as string;
-  
-  // Upload to Supabase Storage
-  const { data, error } = await supabase.storage
-    .from('photos')
-    .upload(`public/${file.name}`, file);
-  
-  if (error) throw error;
-  
+
+  // Upload file to storage (implement your storage solution)
+  const filePath = await uploadToStorage(file);
+
   // Save metadata to database
-  await supabase.from('photos').insert({
-    title,
-    url: data.path,
+  await prisma.photo.create({
+    data: {
+      filePath,
+      fileName: file.name,
+      // Add other required fields like photographerId, clientId, etc.
+    },
   });
-  
+
   revalidatePath('/gallery');
 }
 ```
 
-## Supabase Integration
+## Prisma Integration
 
-### Server-Side Client
+### Prisma Client Setup
 
-Create Supabase clients for server-side operations:
+Create Prisma client for database operations:
 
 ```typescript
-// utils/supabase/server.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+// shared/lib/prisma/client.ts
+import { PrismaClient } from '@prisma/client'
 
-export function createClient() {
-  const cookieStore = cookies();
-  
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
 }
+
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: ['query'],
+  })
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 ```
 
-### Client-Side Integration
+### Database Schema
 
-```typescript
-// utils/supabase/client.ts
-import { createBrowserClient } from '@supabase/ssr';
+Define your database schema in `prisma/schema.prisma`:
 
-export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+```prisma
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("users")
 }
 ```
 
@@ -152,19 +154,26 @@ Fetch data directly in Server Components for better performance:
 
 ```tsx
 // app/gallery/page.tsx
-import { createClient } from '@/utils/supabase/server';
+import { prisma } from '@/shared/lib/prisma/client';
 
 export default async function GalleryPage() {
-  const supabase = createClient();
-  const { data: photos } = await supabase
-    .from('photos')
-    .select('*')
-    .order('created_at', { ascending: false });
-  
+  const photos = await prisma.photo.findMany({
+    where: {
+      isSelected: true,
+    },
+    include: {
+      guest: true,
+      photographer: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
   return (
     <div className="grid grid-cols-3 gap-4">
-      {photos?.map((photo) => (
-        <img key={photo.id} src={photo.url} alt={photo.title} />
+      {photos.map((photo) => (
+        <img key={photo.id} src={photo.filePath} alt={photo.fileName} />
       ))}
     </div>
   );
@@ -178,20 +187,21 @@ Implement proper auth checks in server components and actions:
 ```typescript
 // app/admin/layout.tsx
 import { redirect } from 'next/navigation';
-import { createClient } from '@/utils/supabase/server';
+import { prisma } from '@/shared/lib/prisma/client';
+// Import your auth solution (e.g., NextAuth, Clerk, or custom)
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
+  // Implement your authentication logic
+  const user = await getCurrentUser();
+
   if (!user || user.role !== 'admin') {
     redirect('/login');
   }
-  
+
   return <>{children}</>;
 }
 ```
@@ -203,30 +213,29 @@ Implement consistent error handling patterns:
 ```typescript
 // app/api/photos/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/shared/lib/prisma/client';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from('photos')
-      .select('*')
-      .eq('id', params.id)
-      .single();
-    
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Photo not found' },
-          { status: 404 }
-        );
-      }
-      throw error;
+    const photo = await prisma.photo.findUnique({
+      where: { id: params.id },
+      include: {
+        guest: true,
+        photographer: true,
+      },
+    });
+
+    if (!photo) {
+      return NextResponse.json(
+        { error: 'Photo not found' },
+        { status: 404 }
+      );
     }
-    
-    return NextResponse.json(data);
+
+    return NextResponse.json(photo);
   } catch (error) {
     console.error('Error fetching photo:', error);
     return NextResponse.json(
@@ -260,52 +269,48 @@ export async function updatePhoto(id: string, data: any) {
 
 ### 5. Type Safety
 
-Leverage TypeScript for end-to-end type safety:
+Leverage TypeScript for end-to-end type safety with Prisma:
 
 ```typescript
-// types/database.ts
-export type Photo = {
-  id: string;
-  title: string;
-  url: string;
-  photographer_id: string;
-  created_at: string;
-};
+// Prisma generates types automatically from your schema
+import { prisma } from '@/shared/lib/prisma/client';
 
-export type Database = {
-  public: {
-    Tables: {
-      photos: {
-        Row: Photo;
-        Insert: Omit<Photo, 'id' | 'created_at'>;
-        Update: Partial<Omit<Photo, 'id'>>;
-      };
-    };
-  };
-};
+// Type-safe database operations
+const photos = await prisma.photo.findMany({
+  where: {
+    isSelected: true,
+  },
+  include: {
+    guest: true,
+    photographer: true,
+  },
+});
 
-// Use with Supabase client
-import { Database } from '@/types/database';
-const supabase = createClient<Database>();
+// TypeScript will infer the correct types
+type PhotoWithRelations = typeof photos[0];
+// PhotoWithRelations includes guest and photographer relations
 ```
 
 ### 6. Environment Variables
 
-Manage environment variables properly:
+Manage environment variables for Prisma:
 
 ```typescript
-// .env.local
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_key  # Server-only
+// .env
+DATABASE_URL="postgresql://username:password@localhost:5432/database"
+DIRECT_URL="postgresql://username:password@localhost:5432/database"
+
+// For production (Supabase example)
+DATABASE_URL="postgresql://postgres.isidnagykjibnuggbkdm:[YOUR-PASSWORD]@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres.isidnagykjibnuggbkdm:[YOUR-PASSWORD]@aws-1-eu-central-1.pooler.supabase.com:5432/postgres"
 
 // Validate at runtime
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL');
+if (!process.env.DATABASE_URL) {
+  throw new Error('Missing DATABASE_URL');
 }
 ```
 
-### 7. Middleware for Edge Functions
+### 7. Middleware for Request Handling
 
 Use middleware for auth and request handling:
 
@@ -313,54 +318,49 @@ Use middleware for auth and request handling:
 // middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+// Import your authentication middleware
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
-  
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  
+  // Implement your authentication logic
+  const user = await getCurrentUser(req);
+
   // Protect admin routes
-  if (req.nextUrl.pathname.startsWith('/admin') && !session) {
+  if (req.nextUrl.pathname.startsWith('/admin') && !user) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
-  
+
+  // Add client isolation headers
+  const res = NextResponse.next();
+  if (user?.clientId) {
+    res.headers.set('x-client-id', user.clientId);
+  }
+
   return res;
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*'],
+  matcher: ['/admin/:path*', '/api/admin/:path*', '/api/gallery/:path*'],
 };
 ```
 
 ### 8. Database Migrations & Seeding
 
-Manage database schema with Supabase:
+Manage database schema with Prisma:
+
+```bash
+# Generate migration from schema changes
+npx prisma migrate dev --name add_photos_table
+
+# Push schema changes to database
+npx prisma db push
+
+# Generate Prisma client after schema changes
+npx prisma generate
+```
 
 ```sql
--- supabase/migrations/001_create_photos.sql
-CREATE TABLE photos (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  title TEXT NOT NULL,
-  url TEXT NOT NULL,
-  photographer_id UUID REFERENCES auth.users(id),
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Enable RLS
-ALTER TABLE photos ENABLE ROW LEVEL SECURITY;
-
--- Policies
-CREATE POLICY "Photos are viewable by everyone"
-  ON photos FOR SELECT
-  USING (true);
-
-CREATE POLICY "Users can insert their own photos"
-  ON photos FOR INSERT
-  WITH CHECK (auth.uid() = photographer_id);
+-- Custom SQL migrations can be added to prisma/migrations
+-- Prisma handles most schema changes automatically
 ```
 
 ### 9. Testing Backend Logic
@@ -407,8 +407,8 @@ describe('Photos API', () => {
 - **Framework**: Next.js 15 with App Router
 - **Runtime**: Node.js >= 18
 - **Language**: TypeScript 5.9
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: Custom/Auth provider (NextAuth, Clerk, etc.)
 - **Package Manager**: pnpm 9.0.0
 - **Build System**: Turborepo
 - **Development**: Turbopack
@@ -433,11 +433,18 @@ pnpm lint
 
 # Format code
 pnpm format
+
+# Database commands
+npx prisma studio          # Open Prisma Studio
+npx prisma migrate dev     # Create and apply migrations
+npx prisma generate        # Generate Prisma client
+npx prisma db push         # Push schema changes to database
 ```
 
 ## Further Resources
 
 - [Next.js 15 Documentation](https://nextjs.org/docs)
-- [Supabase Documentation](https://supabase.com/docs)
+- [Prisma Documentation](https://www.prisma.io/docs)
 - [App Router Guide](https://nextjs.org/docs/app)
 - [Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations)
+- [Prisma with Next.js](https://www.prisma.io/docs/getting-started/quickstart)

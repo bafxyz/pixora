@@ -1,10 +1,33 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/shared/lib/prisma/client'
 import { createClient } from '@/shared/lib/supabase/server'
+import { loginRateLimiter } from '@/shared/lib/utils/rate-limit'
 import { validateRequestBody } from '@/shared/lib/utils/validation'
 import { loginSchema } from '@/shared/lib/validations/auth.schemas'
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting check
+    const rateLimitKey = request.headers.get('x-forwarded-for') || 'unknown'
+    const rateLimit = loginRateLimiter.isRateLimited(rateLimitKey)
+
+    if (rateLimit.limited) {
+      return NextResponse.json(
+        {
+          error: 'Too many login attempts. Please try again later.',
+          retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000),
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil(
+              (rateLimit.resetTime - Date.now()) / 1000
+            ).toString(),
+          },
+        }
+      )
+    }
+
     const body = await request.json()
 
     // Validate request body
@@ -15,40 +38,95 @@ export async function POST(request: NextRequest) {
 
     const { email, password } = validation.data
 
+    // Create Supabase client
+    console.log('🔗 Creating Supabase client for login...')
     const supabase = await createClient()
+    console.log('✅ Supabase client created for login')
 
+    // Authenticate with Supabase
+    console.log('🔐 Authenticating with Supabase:', {
+      email,
+      hasPassword: !!password,
+    })
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
     if (error) {
+      console.error('❌ Supabase login error:', error)
       return NextResponse.json({ error: error.message }, { status: 401 })
     }
 
-    // Получаем информацию о клиенте пользователя
-    const user = data.user
-    let clientId = user?.user_metadata?.client_id
+    console.log('✅ Supabase login successful:', {
+      userId: data.user?.id,
+      confirmed: !!data.user?.email_confirmed_at,
+    })
 
-    // Если client_id не указан в метаданных, ищем его в таблице clients
-    if (!clientId && user?.email) {
-      const { data: clientData } = await supabase
-        .from('clients')
-        .select('id')
-        .eq('email', user.email)
-        .single()
-
-      if (clientData) {
-        clientId = clientData.id
-      }
+    if (!data.user) {
+      return NextResponse.json(
+        { error: 'Authentication failed' },
+        { status: 401 }
+      )
     }
 
+    // Check user role from metadata
+    const userRole = data.user.user_metadata?.role || 'photographer'
+
+    // Only create photographer record if user is actually a photographer
+    if (userRole === 'photographer') {
+      // Get or create photographer record in database
+      let photographer = await prisma.photographer.findFirst({
+        where: { email },
+        include: {
+          client: true,
+        },
+      })
+
+      // If photographer doesn't exist, create one with a default client
+      if (!photographer) {
+        // Create a default client for the user
+        const client = await prisma.client.create({
+          data: {
+            name: data.user.user_metadata?.name || email.split('@')[0],
+            email,
+          },
+        })
+
+        photographer = await prisma.photographer.create({
+          data: {
+            email,
+            clientId: client.id,
+            name: data.user.user_metadata?.name,
+          },
+          include: {
+            client: true,
+          },
+        })
+      }
+
+      return NextResponse.json({
+        user: {
+          id: photographer.id,
+          email: photographer.email,
+          name: photographer.name,
+          role: userRole,
+        },
+        clientId: photographer.clientId,
+      })
+    }
+
+    // For non-photographer users, just return user data without database record
     return NextResponse.json({
-      user: data.user,
-      session: data.session,
-      clientId,
+      user: {
+        id: data.user.id,
+        email: data.user.email || email,
+        name: data.user.user_metadata?.name || email.split('@')[0],
+        role: userRole,
+      },
     })
-  } catch (_error) {
+  } catch (error) {
+    console.error('Login error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

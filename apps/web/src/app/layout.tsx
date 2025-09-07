@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
+import { Header } from '@/shared/components/header'
 import { ServiceWorkerRegister } from '@/shared/components/service-worker-register'
 import { WebVitals } from '@/shared/components/web-vitals'
 import { AuthProvider } from '@/shared/providers/auth-provider'
@@ -34,7 +35,8 @@ export default function RootLayout({
       >
         <LinguiProvider>
           <AuthProvider>
-            {children}
+            <Header />
+            <main className="min-h-screen">{children}</main>
             <ServiceWorkerRegister />
             <WebVitals />
           </AuthProvider>

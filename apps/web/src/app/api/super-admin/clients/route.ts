@@ -1,61 +1,33 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/shared/lib/supabase/server'
+import { prisma } from '@/shared/lib/prisma/client'
 
 export async function GET() {
   try {
-    const supabase = await createClient()
+    // Получаем всех клиентов со статистикой
+    const clients = await prisma.client.findMany({
+      include: {
+        _count: {
+          select: {
+            guests: true,
+            photos: true,
+            orders: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
 
-    // Получаем всех клиентов
-    const { data: clients, error } = await supabase
-      .from('clients')
-      .select(`
-        id,
-        name,
-        email,
-        created_at,
-        guests:guests(count),
-        photos:photos(count),
-        orders:orders(count)
-      `)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('Error fetching clients:', error)
-      return NextResponse.json(
-        { error: 'Error fetching clients' },
-        { status: 500 }
-      )
-    }
-
-    // Получаем статистику для каждого клиента
-    const clientsWithStats = await Promise.all(
-      (clients || []).map(async (client) => {
-        // Считаем гостей
-        const { count: guestsCount } = await supabase
-          .from('guests')
-          .select('*', { count: 'exact', head: true })
-          .eq('client_id', client.id)
-
-        // Считаем фото
-        const { count: photosCount } = await supabase
-          .from('photos')
-          .select('*', { count: 'exact', head: true })
-          .eq('client_id', client.id)
-
-        // Считаем заказы
-        const { count: ordersCount } = await supabase
-          .from('orders')
-          .select('*', { count: 'exact', head: true })
-          .eq('client_id', client.id)
-
-        return {
-          ...client,
-          guestsCount: guestsCount || 0,
-          photosCount: photosCount || 0,
-          ordersCount: ordersCount || 0,
-        }
-      })
-    )
+    const clientsWithStats = clients.map((client) => ({
+      id: client.id,
+      name: client.name,
+      email: client.email,
+      createdAt: client.createdAt,
+      guestsCount: client._count.guests,
+      photosCount: client._count.photos,
+      ordersCount: client._count.orders,
+    }))
 
     return NextResponse.json({
       clients: clientsWithStats,
@@ -81,14 +53,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = await createClient()
-
     // Проверяем, существует ли клиент с таким email
-    const { data: existingClient } = await supabase
-      .from('clients')
-      .select('id')
-      .eq('email', email.trim())
-      .single()
+    const existingClient = await prisma.client.findUnique({
+      where: { email: email.trim() },
+    })
 
     if (existingClient) {
       return NextResponse.json(
@@ -98,22 +66,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Создаем нового клиента
-    const { data: client, error } = await supabase
-      .from('clients')
-      .insert({
+    const client = await prisma.client.create({
+      data: {
         name: name.trim(),
         email: email.trim(),
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Error creating client:', error)
-      return NextResponse.json(
-        { error: 'Error creating client' },
-        { status: 500 }
-      )
-    }
+      },
+    })
 
     return NextResponse.json({
       success: true,

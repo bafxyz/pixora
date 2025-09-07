@@ -11,16 +11,33 @@ export type LocaleCode = keyof typeof locales
 
 // Initialize i18n instance
 export async function initI18n(locale: LocaleCode) {
-  const catalog = await import(`../locales/${locale}/messages.json`)
-  i18n.load(locale, catalog.messages)
-  i18n.activate(locale)
+  try {
+    const catalog = await import(`../locales/${locale}/messages.mjs`)
+    console.log(
+      `Loaded ${Object.keys(catalog.messages).length} messages for locale ${locale}`
+    )
+    i18n.load(locale, catalog.messages)
+    i18n.activate(locale)
+  } catch (error) {
+    console.error(`Failed to load locale ${locale}:`, error)
+    // Fallback to empty messages
+    i18n.load(locale, {})
+    i18n.activate(locale)
+  }
 }
 
 // Function to dynamically load locale
 export async function loadLocale(locale: LocaleCode) {
-  const catalog = await import(`../locales/${locale}/messages.json`)
-  i18n.load(locale, catalog.messages)
-  i18n.activate(locale)
+  try {
+    const catalog = await import(`../locales/${locale}/messages.mjs`)
+    console.log(
+      `Switched to ${locale} with ${Object.keys(catalog.messages).length} messages`
+    )
+    i18n.load(locale, catalog.messages)
+    i18n.activate(locale)
+  } catch (error) {
+    console.error(`Failed to switch to locale ${locale}:`, error)
+  }
 }
 
 // Get default locale from browser or fallback to 'en'

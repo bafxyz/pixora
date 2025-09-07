@@ -17,7 +17,14 @@
       "Bash(find:*)",
       "Bash(node:*)",
       "Bash(NEXT_PUBLIC_SUPABASE_URL=https://isidnagykjibnuggbkdm.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzaWRuYWd5a2ppYm51Z2dia2RtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxOTc3MjYsImV4cCI6MjA3Mjc3MzcyNn0.yEWjR5VhJdB0_tqpUMp2dsWfT6DvnRVjCgQva9Mt0cY pnpm dev)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(mkdir:*)",
+      "Bash(echo:*)",
+      "Bash(pnpm sync-translations:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(pnpm seed:users:*)",
+      "Bash(pnpm lingui:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

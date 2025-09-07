@@ -1,5 +1,6 @@
 'use client'
 
+import { Trans, t } from '@lingui/macro'
 import { Button } from '@repo/ui/button'
 import {
   Card,
@@ -12,6 +13,7 @@ import { Input } from '@repo/ui/input'
 import { Label } from '@repo/ui/label'
 import { BarChart3, Building, Eye, Plus, Settings, Users } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { LanguageSwitcher } from '@/shared/components/language-switcher'
 
 interface Client {
   id: string
@@ -54,20 +56,49 @@ export default function SuperAdminPage() {
       if (clientsResponse.ok) {
         const clientsData = await clientsResponse.json()
         setClients(clientsData.clients || [])
+      } else {
+        console.error('Failed to load clients:', clientsResponse.status)
+        setClients([])
       }
 
       // Загружаем глобальную статистику
       const statsResponse = await fetch('/api/super-admin/stats')
       if (statsResponse.ok) {
         const statsData = await statsResponse.json()
-        setGlobalStats(statsData.stats || globalStats)
+        setGlobalStats(
+          statsData.stats || {
+            totalClients: 0,
+            totalGuests: 0,
+            totalPhotos: 0,
+            totalOrders: 0,
+            totalRevenue: 0,
+          }
+        )
+      } else {
+        console.error('Failed to load stats:', statsResponse.status)
+        setGlobalStats({
+          totalClients: 0,
+          totalGuests: 0,
+          totalPhotos: 0,
+          totalOrders: 0,
+          totalRevenue: 0,
+        })
       }
     } catch (error) {
       console.error('Error loading data:', error)
+      // Set default values on error
+      setClients([])
+      setGlobalStats({
+        totalClients: 0,
+        totalGuests: 0,
+        totalPhotos: 0,
+        totalOrders: 0,
+        totalRevenue: 0,
+      })
     } finally {
       setIsLoading(false)
     }
-  }, [globalStats])
+  }, [])
 
   useEffect(() => {
     loadData()
@@ -75,7 +106,7 @@ export default function SuperAdminPage() {
 
   const handleCreateClient = async () => {
     if (!newClientName.trim() || !newClientEmail.trim()) {
-      alert('Заполните все поля')
+      alert(t`Fill in all fields`)
       return
     }
 
@@ -97,13 +128,13 @@ export default function SuperAdminPage() {
         setNewClientName('')
         setNewClientEmail('')
         setShowCreateForm(false)
-        alert('Клиент успешно создан!')
+        alert(t`Client created successfully!`)
       } else {
-        alert('Ошибка при создании клиента')
+        alert(t`Error creating client`)
       }
     } catch (error) {
       console.error('Error creating client:', error)
-      alert('Ошибка при создании клиента')
+      alert(t`Error creating client`)
     }
   }
 
@@ -117,7 +148,9 @@ export default function SuperAdminPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка...</p>
+          <p className="text-gray-600">
+            <Trans>Loading...</Trans>
+          </p>
         </div>
       </div>
     )
@@ -126,11 +159,17 @@ export default function SuperAdminPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
+        {/* Language Switcher */}
+        <div className="flex justify-end mb-4">
+          <LanguageSwitcher />
+        </div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Супер-Администратор
+            <Trans>Super Administrator</Trans>
           </h1>
-          <p className="text-gray-600">Управление всеми клиентами платформы</p>
+          <p className="text-gray-600">
+            <Trans>Manage all platform clients</Trans>
+          </p>
         </div>
 
         {/* Глобальная статистика */}
@@ -140,7 +179,9 @@ export default function SuperAdminPage() {
               <div className="flex items-center">
                 <Building className="w-8 h-8 text-blue-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Клиентов</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    <Trans>Clients</Trans>
+                  </p>
                   <p className="text-2xl font-bold text-gray-900">
                     {globalStats.totalClients}
                   </p>
@@ -154,7 +195,9 @@ export default function SuperAdminPage() {
               <div className="flex items-center">
                 <Users className="w-8 h-8 text-green-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Гостей</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    <Trans>Guests</Trans>
+                  </p>
                   <p className="text-2xl font-bold text-gray-900">
                     {globalStats.totalGuests}
                   </p>
@@ -168,7 +211,9 @@ export default function SuperAdminPage() {
               <div className="flex items-center">
                 <BarChart3 className="w-8 h-8 text-purple-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Фото</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    <Trans>Photos</Trans>
+                  </p>
                   <p className="text-2xl font-bold text-gray-900">
                     {globalStats.totalPhotos}
                   </p>
@@ -182,7 +227,9 @@ export default function SuperAdminPage() {
               <div className="flex items-center">
                 <Settings className="w-8 h-8 text-orange-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Заказы</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    <Trans>Orders</Trans>
+                  </p>
                   <p className="text-2xl font-bold text-gray-900">
                     {globalStats.totalOrders}
                   </p>
@@ -196,7 +243,9 @@ export default function SuperAdminPage() {
               <div className="flex items-center">
                 <Eye className="w-8 h-8 text-red-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Выручка</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    <Trans>Revenue</Trans>
+                  </p>
                   <p className="text-2xl font-bold text-gray-900">
                     ${globalStats.totalRevenue}
                   </p>
@@ -210,11 +259,15 @@ export default function SuperAdminPage() {
         <div className="mb-6">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">
-              Клиенты ({clients.length})
+              <Trans>Clients</Trans> ({clients.length})
             </h2>
             <Button onClick={() => setShowCreateForm(!showCreateForm)}>
               <Plus className="w-4 h-4 mr-2" />
-              {showCreateForm ? 'Отмена' : 'Добавить клиента'}
+              {showCreateForm ? (
+                <Trans>Cancel</Trans>
+              ) : (
+                <Trans>Add Client</Trans>
+              )}
             </Button>
           </div>
         </div>
@@ -223,26 +276,32 @@ export default function SuperAdminPage() {
         {showCreateForm && (
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Создать нового клиента</CardTitle>
+              <CardTitle>
+                <Trans>Create New Client</Trans>
+              </CardTitle>
               <CardDescription>
-                Добавьте новую фото-студию в систему
+                <Trans>Add a new photo studio to the system</Trans>
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="clientName">Название студии</Label>
+                  <Label htmlFor="clientName">
+                    <Trans>Studio Name</Trans>
+                  </Label>
                   <Input
                     id="clientName"
                     value={newClientName}
                     onChange={(e) => setNewClientName(e.target.value)}
-                    placeholder="Моя Фото-Студия"
+                    placeholder={t`My Photo Studio`}
                     className="mt-1"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="clientEmail">Email администратора</Label>
+                  <Label htmlFor="clientEmail">
+                    <Trans>Administrator Email</Trans>
+                  </Label>
                   <Input
                     id="clientEmail"
                     type="email"
@@ -259,9 +318,11 @@ export default function SuperAdminPage() {
                   variant="outline"
                   onClick={() => setShowCreateForm(false)}
                 >
-                  Отмена
+                  <Trans>Cancel</Trans>
                 </Button>
-                <Button onClick={handleCreateClient}>Создать клиента</Button>
+                <Button onClick={handleCreateClient}>
+                  <Trans>Create Client</Trans>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -274,14 +335,14 @@ export default function SuperAdminPage() {
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Building className="w-12 h-12 text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Нет клиентов
+                  <Trans>No clients</Trans>
                 </h3>
                 <p className="text-gray-600 text-center mb-4">
-                  Создайте первого клиента для начала работы
+                  <Trans>Create the first client to get started</Trans>
                 </p>
                 <Button onClick={() => setShowCreateForm(true)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Добавить клиента
+                  <Trans>Add Client</Trans>
                 </Button>
               </CardContent>
             </Card>
@@ -299,8 +360,10 @@ export default function SuperAdminPage() {
                       </h3>
                       <p className="text-sm text-gray-600">{client.email}</p>
                       <p className="text-xs text-gray-500">
-                        Создан:{' '}
-                        {new Date(client.created_at).toLocaleDateString()}
+                        <Trans>Created</Trans>:{' '}
+                        {client.created_at
+                          ? new Date(client.created_at).toLocaleDateString()
+                          : 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -308,15 +371,21 @@ export default function SuperAdminPage() {
                   <div className="flex items-center space-x-6 text-sm text-gray-600">
                     <div className="text-center">
                       <p className="font-medium">{client.guestsCount}</p>
-                      <p>Гостей</p>
+                      <p>
+                        <Trans>Guests</Trans>
+                      </p>
                     </div>
                     <div className="text-center">
                       <p className="font-medium">{client.photosCount}</p>
-                      <p>Фото</p>
+                      <p>
+                        <Trans>Photos</Trans>
+                      </p>
                     </div>
                     <div className="text-center">
                       <p className="font-medium">{client.ordersCount}</p>
-                      <p>Заказов</p>
+                      <p>
+                        <Trans>Orders</Trans>
+                      </p>
                     </div>
                   </div>
 
@@ -326,7 +395,7 @@ export default function SuperAdminPage() {
                     size="sm"
                   >
                     <Eye className="w-4 h-4 mr-2" />
-                    Просмотр
+                    <Trans>View</Trans>
                   </Button>
                 </CardContent>
               </Card>

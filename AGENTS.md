@@ -38,8 +38,8 @@ This is a **Turborepo monorepo** with the following structure:
   - Uses Turbopack for development builds
   - Consumes shared UI components from `@repo/ui`
   - TypeScript with shared configs from `@repo/typescript-config`
+### Packages
 
-### Packages  
 - **`packages/ui/`**: Shared React component library
   - Exports components via `./src/*.tsx` pattern
   - Currently includes: Button, Card, Code components

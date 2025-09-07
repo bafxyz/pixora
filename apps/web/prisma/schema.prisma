@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+}
+
+enum OrderStatus {
+  pending
+  processing
+  completed
+  cancelled
+}
+
+model Client {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String   @unique
+  phone     String?
+  address   String?
+  branding  Json?
+  settings  Json?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  photographers Photographer[]
+  guests        Guest[]
+  photos        Photo[]
+  orders        Order[]
+
+  @@map("clients")
+}
+
+model Photographer {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  name      String?
+  clientId  String   @map("client_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  branding  Json?
+
+  client   Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  guests   Guest[]
+  photos   Photo[]
+  orders   Order[]
+
+  @@map("photographers")
+}
+
+model Guest {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  email          String?
+  photographerId String   @map("photographer_id") @db.Uuid
+  clientId       String   @map("client_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  photographer Photographer @relation(fields: [photographerId], references: [id])
+  client       Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  photos       Photo[]
+  orders       Order[]
+
+  @@map("guests")
+}
+
+model Photo {
+  id             String   @id @default(uuid()) @db.Uuid
+  photographerId String   @map("photographer_id") @db.Uuid
+  guestId        String?  @map("guest_id") @db.Uuid
+  clientId       String   @map("client_id") @db.Uuid
+  filePath       String   @map("file_path")
+  fileName       String   @map("file_name")
+  fileSize       Int?     @map("file_size")
+  isSelected     Boolean  @default(false) @map("is_selected")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  photographer Photographer @relation(fields: [photographerId], references: [id])
+  guest         Guest?      @relation(fields: [guestId], references: [id])
+  client        Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  orders        Order[]
+
+  @@map("photos")
+}
+
+model Order {
+  id             String      @id @default(uuid()) @db.Uuid
+  guestId        String      @map("guest_id") @db.Uuid
+  photographerId String      @map("photographer_id") @db.Uuid
+  clientId       String      @map("client_id") @db.Uuid
+  photoIds       String[]    @map("photo_ids")
+  totalAmount    Float?      @map("total_amount")
+  status         OrderStatus @default(pending)
+  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+
+  guest         Guest         @relation(fields: [guestId], references: [id])
+  photographer  Photographer @relation(fields: [photographerId], references: [id])
+  client        Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  photos        Photo[]
+
+  @@map("orders")
+}

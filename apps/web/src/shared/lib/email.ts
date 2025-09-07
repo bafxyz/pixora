@@ -109,7 +109,7 @@ function generateOrderConfirmationHTML(data: OrderEmailData): string {
             <p><strong>Order ID:</strong> ${data.orderId}</p>
             <p><strong>Studio:</strong> ${data.studioName}</p>
             <p><strong>Photographer:</strong> ${data.photographerName}</p>
-            <p><strong>Order Date:</strong> ${new Date(data.orderDate).toLocaleDateString()}</p>
+            <p><strong>Order Date:</strong> ${data.orderDate ? new Date(data.orderDate).toLocaleDateString() : 'N/A'}</p>
 
             <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
               <thead>

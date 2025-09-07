@@ -3,17 +3,31 @@ import { env } from '@/shared/config/env'
 
 export interface Photo {
   id: string
-  fileName: string
-  guestId: string
-  photographerId: string
-  uploadedAt: string
-  price: number
-  status: string
+  photographer_id: string
+  guest_id: string | null
+  client_id: string
+  file_path: string
+  file_name: string
+  file_size: number | null
+  is_selected: boolean
+  created_at: string
+  updated_at: string
 }
 
-export interface CartItem extends Photo {
+export interface CartItem {
+  id: string
+  photographer_id: string
+  guest_id: string | null
+  client_id: string
+  file_path: string
+  file_name: string
+  file_size: number | null
+  is_selected: boolean
+  created_at: string
+  updated_at: string
   quantity: number
   type: 'digital' | 'print'
+  price: number // Add price for cart calculations
 }
 
 export interface PhotographerProfile {
@@ -146,7 +160,17 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
         ),
       })
     } else {
-      set({ cart: [...cart, { ...photo, quantity: 1, type }] })
+      set({
+        cart: [
+          ...cart,
+          {
+            ...photo,
+            quantity: 1,
+            type,
+            price: 25, // Default price, could be configurable
+          },
+        ],
+      })
     }
   },
 
@@ -200,27 +224,45 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
   loadPhotos: async (guestId) => {
     set({ isLoadingPhotos: true })
     try {
-      const response = await fetch(
-        `${env.supabase.url}/functions/v1/make-server-2e5a4e91/guest/${guestId}/photos`,
-        {
-          headers: {
-            Authorization: `Bearer ${env.supabase.anonKey}`,
-          },
-        }
-      )
+      const response = await fetch(`/api/gallery/${guestId}`)
 
       if (response.ok) {
         const result = await response.json()
-        set({ photos: result.photos })
-
-        // Load photographer info if photos exist
-        if (result.photos.length > 0) {
-          const photographerId = result.photos[0].photographerId
-          await get().loadPhotographer(photographerId)
-        }
+        set({
+          photos: result.photos || [],
+          photographer: result.photographer
+            ? {
+                id: result.photographer.id,
+                studioName: result.photographer.name || '',
+                firstName: '',
+                lastName: '',
+                settings: result.photographer.branding || {
+                  brandColor: '#000000',
+                  logoUrl: '',
+                  welcomeMessage: '',
+                },
+              }
+            : null,
+        })
+      } else {
+        // Handle error by setting empty state
+        console.error(
+          'Failed to load photos:',
+          response.status,
+          response.statusText
+        )
+        set({
+          photos: [],
+          photographer: null,
+        })
       }
     } catch (error) {
       console.error('Photos loading error:', error)
+      // Set empty state on error
+      set({
+        photos: [],
+        photographer: null,
+      })
     } finally {
       set({ isLoadingPhotos: false })
     }
@@ -259,7 +301,7 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
         type: item.type,
         quantity: item.quantity,
         price: item.type === 'digital' ? item.price : item.price * 2,
-        photographerId: item.photographerId,
+        photographerId: item.photographer_id,
       }))
 
       const response = await fetch(
@@ -293,11 +335,11 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
             guestName: orderForm.name,
             guestEmail: orderForm.email,
             photographerName: photographer
-              ? `${photographer.firstName} ${photographer.lastName}`
+              ? photographer.studioName
               : 'Photographer',
             studioName: photographer?.studioName || 'Photo Studio',
             items: get().cart.map((item) => ({
-              name: `${item.fileName} (${item.type})`,
+              name: `${item.file_name} (${item.type})`,
               quantity: item.quantity,
               price: item.type === 'digital' ? item.price : item.price * 2,
             })),
