@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    const guestsWithPhotoCount = guests.map((guest) => ({
+    const guestsWithPhotoCount = guests.map((guest: (typeof guests)[0]) => ({
       id: guest.id,
       name: guest.name,
       email: guest.email,

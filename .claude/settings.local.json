@@ -24,7 +24,8 @@
       "Bash(pnpm remove:*)",
       "Bash(pnpm seed:users:*)",
       "Bash(pnpm lingui:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(pnpm run:*)"
     ],
     "deny": [],
     "ask": []
