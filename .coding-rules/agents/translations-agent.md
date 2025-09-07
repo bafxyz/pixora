@@ -7,6 +7,9 @@ globs: "**/*.po, **/*.tsx, **/*.ts, **/lingui.config.ts"
 
 This agent specializes in managing internationalization (i18n) using [Lingui.dev](https://lingui.dev/). It handles translation extraction, management of message catalogs, and ensures proper i18n implementation across the codebase.
 
+### Important Migration Note
+As of recent updates, the `t` macro from `@lingui/macro` is deprecated. Use the `_` function from `useLingui` hook instead. The `Trans` component should be imported from `@lingui/react/macro`.
+
 ## Project i18n Setup
 
 ### Current Configuration
@@ -68,6 +71,17 @@ pnpm extract && pnpm compile && pnpm dev
 
 ## Translation Patterns
 
+### Import Patterns
+```tsx
+// ✅ Recommended imports
+import { Trans } from '@lingui/react/macro'  // For static text
+import { plural } from '@lingui/macro'       // For pluralization
+import { useLingui } from '@lingui/react'    // For dynamic text
+
+// ❌ Deprecated (don't use)
+import { Trans, t } from '@lingui/macro'
+```
+
 ### 1. Static Text Translation
 ```tsx
 import { Trans } from '@lingui/macro'
@@ -80,16 +94,15 @@ import { Trans } from '@lingui/macro'
 
 ### 2. Dynamic Text Translation
 ```tsx
-import { t } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
 
 function MyComponent() {
   const { _ } = useLingui()
-  
-  // Use t macro for dynamic text
-  const buttonText = isLoading ? _(t`Loading...`) : _(t`Submit`)
-  const errorMessage = _(t`Invalid email address`)
-  
+
+  // Use the _ function for dynamic text (t macro is deprecated)
+  const buttonText = isLoading ? _('Loading...') : _('Submit')
+  const errorMessage = _('Invalid email address')
+
   return (
     <div>
       <button>{buttonText}</button>
@@ -101,16 +114,15 @@ function MyComponent() {
 
 ### 3. Attribute Translation
 ```tsx
-import { t } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
 
 function FormComponent() {
   const { _ } = useLingui()
-  
+
   return (
-    <input 
-      placeholder={_(t`Enter your email`)}
-      aria-label={_(t`Email address field`)}
+    <input
+      placeholder={_('Enter your email')}
+      aria-label={_('Email address field')}
     />
   )
 }
@@ -123,7 +135,7 @@ import { useLingui } from '@lingui/react'
 
 function ItemCounter({ count }: { count: number }) {
   const { _ } = useLingui()
-  
+
   return (
     <span>
       {_(plural(count, {
@@ -137,14 +149,13 @@ function ItemCounter({ count }: { count: number }) {
 
 ### 5. Variables in Translations
 ```tsx
-import { t } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
 
 function WelcomeMessage({ userName }: { userName: string }) {
   const { _ } = useLingui()
-  
+
   return (
-    <p>{_(t`Welcome back, ${userName}!`)}</p>
+    <p>{_(`Welcome back, ${userName}!`)}</p>
   )
 }
 ```
@@ -181,7 +192,7 @@ msgstr "{count, plural, one {# фотография} few {# фотографии
 ### 1. Component Organization
 - Group related translations in feature folders
 - Keep translation keys descriptive and contextual
-- Use Trans for text content, t macro for attributes/dynamic content
+- Use Trans for text content, _ function from useLingui for attributes/dynamic content
 
 ### 2. Extraction Strategy
 ```tsx
@@ -195,7 +206,7 @@ msgstr "{count, plural, one {# фотография} few {# фотографии
 ### 3. Error Handling
 ```tsx
 // Always provide fallback text
-const errorMessage = error?.message || _(t`An unexpected error occurred`)
+const errorMessage = error?.message || _('An unexpected error occurred')
 ```
 
 ### 4. Performance
@@ -211,6 +222,18 @@ import { I18nProvider } from '@lingui/react'
 
 // Switch locale in tests
 i18n.activate('ru')
+```
+
+### 6. Migration from Deprecated t Macro
+```tsx
+// ❌ Deprecated (don't use)
+import { t } from '@lingui/macro'
+const message = _(t`Hello world`)
+
+// ✅ Recommended (use this)
+import { useLingui } from '@lingui/react'
+const { _ } = useLingui()
+const message = _('Hello world')
 ```
 
 ## Locale Management
@@ -261,16 +284,16 @@ export default function RootLayout({ children }) {
 ### Component Integration
 ```tsx
 // Any component can use translations
-import { Trans, t } from '@lingui/macro'
+import { Trans } from '@lingui/react/macro'
 import { useLingui } from '@lingui/react'
 
 export function MyComponent() {
   const { _ } = useLingui()
-  
+
   return (
     <div>
       <h1><Trans>Page Title</Trans></h1>
-      <p>{_(t`Dynamic message`)}</p>
+      <p>{_('Dynamic message')}</p>
     </div>
   )
 }
@@ -293,9 +316,11 @@ export function MyComponent() {
 
 ### 3. TypeScript Errors
 **Problem**: TS errors with macro imports
-**Solution**: 
-- Install `@lingui/macro` as dependency
+**Solution**:
+- Install `@lingui/macro` and `@lingui/react` as dependencies
 - Configure SWC plugin properly
+- Use `Trans` from `@lingui/react/macro` instead of `@lingui/macro`
+- Use `_` function from `useLingui` instead of deprecated `t` macro
 
 ### 4. Runtime Errors
 **Problem**: Translations not loading
