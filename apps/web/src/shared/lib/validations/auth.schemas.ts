@@ -32,15 +32,25 @@ export const updateGuestSchema = z.object({
 })
 
 export const createOrderSchema = z.object({
-  guestId: z.string().uuid('Invalid guest ID'),
-  photographerId: z.string().uuid('Invalid photographer ID'),
+  guestId: z.string().min(1, 'Guest ID is required'),
+  photographerId: z.string().min(1, 'Photographer ID is required'),
   photoIds: z
-    .array(z.string().uuid('Invalid photo ID'))
+    .array(z.string().min(1, 'Photo ID is required'))
     .min(1, 'At least one photo must be selected'),
   totalAmount: z.number().positive('Total amount must be positive').optional(),
+})
+
+export const qrDataSchema = z.object({
+  id: z.string().min(1, 'Guest ID is required'),
+  name: z.string().min(1, 'Guest name is required').max(100, 'Name too long'),
+  type: z.literal('guest'),
+  timestamp: z
+    .string()
+    .refine((val) => !Number.isNaN(Date.parse(val)), 'Invalid timestamp'),
 })
 
 export type LoginInput = z.infer<typeof loginSchema>
 export type RegisterInput = z.infer<typeof registerSchema>
 export type UpdateGuestInput = z.infer<typeof updateGuestSchema>
 export type CreateOrderInput = z.infer<typeof createOrderSchema>
+export type QRData = z.infer<typeof qrDataSchema>

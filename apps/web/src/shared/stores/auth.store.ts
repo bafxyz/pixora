@@ -1,5 +1,11 @@
-import type { AuthError, Session, User } from '@supabase/supabase-js'
+import type {
+  AuthChangeEvent,
+  AuthError,
+  Session,
+  User as SupabaseUser,
+} from '@supabase/supabase-js'
 import { create } from 'zustand'
+import type { User } from '@/features/auth/types'
 import { createClient } from '@/shared/lib/supabase/client'
 
 interface AuthState {
@@ -7,6 +13,7 @@ interface AuthState {
   session: Session | null
   loading: boolean
   initialized: boolean
+  supabaseUser: SupabaseUser | null
 }
 
 interface AuthActions {
@@ -35,6 +42,7 @@ export const useAuthStore = create<AuthStore>((set, get) => {
     // Initial state
     user: null,
     session: null,
+    supabaseUser: null,
     loading: true,
     initialized: false,
 
@@ -92,9 +100,19 @@ export const useAuthStore = create<AuthStore>((set, get) => {
           console.error('Error getting session:', error)
         }
 
+        const user = session?.user
+          ? {
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata?.name,
+              role: session.user.user_metadata?.role || 'photographer',
+            }
+          : null
+
         set({
           session,
-          user: session?.user ?? null,
+          user,
+          supabaseUser: session?.user ?? null,
           loading: false,
           initialized: true,
         })
@@ -102,13 +120,25 @@ export const useAuthStore = create<AuthStore>((set, get) => {
         // Listen for auth state changes
         const {
           data: { subscription: _subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
-          set({
-            session,
-            user: session?.user ?? null,
-            loading: false,
-          })
-        })
+        } = supabase.auth.onAuthStateChange(
+          (_event: AuthChangeEvent, session) => {
+            const user = session?.user
+              ? {
+                  id: session.user.id,
+                  email: session.user.email || '',
+                  name: session.user.user_metadata?.name,
+                  role: session.user.user_metadata?.role || 'photographer',
+                }
+              : null
+
+            set({
+              session,
+              user,
+              supabaseUser: session?.user ?? null,
+              loading: false,
+            })
+          }
+        )
 
         // Store cleanup function for later use
         // Note: In a real app, you'd want to handle cleanup properly

@@ -1,10 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/shared/lib/supabase/server'
+import { prisma } from '@/shared/lib/prisma/client'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
     // Get client_id from headers (set by middleware)
     const clientId = request.headers.get('x-client-id')
     if (!clientId) {
@@ -24,42 +22,49 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify guest exists and belongs to this client
-    const { data: guest, error: guestError } = await supabase
-      .from('guests')
-      .select('id')
-      .eq('id', guestId)
-      .eq('client_id', clientId)
-      .single()
+    const guest = await prisma.guest.findFirst({
+      where: {
+        id: guestId,
+        clientId: clientId,
+      },
+      select: {
+        id: true,
+        photographerId: true,
+      },
+    })
 
-    if (guestError || !guest) {
+    if (!guest) {
       return NextResponse.json({ error: 'Guest not found' }, { status: 404 })
     }
 
     // Insert photos into database
     const photosToInsert = photoUrls.map((url: string) => ({
-      guest_id: guestId,
-      client_id: clientId,
-      url,
-      uploaded_at: new Date().toISOString(),
+      guestId: guestId,
+      photographerId: guest.photographerId,
+      clientId: clientId,
+      filePath: url,
+      fileName: url.split('/').pop() || 'photo.jpg',
     }))
 
-    const { data: insertedPhotos, error: insertError } = await supabase
-      .from('photos')
-      .insert(photosToInsert)
-      .select()
-
-    if (insertError) {
-      console.error('Error saving photos:', insertError)
-      return NextResponse.json(
-        { error: 'Failed to save photos' },
-        { status: 500 }
+    // Insert photos into database
+    const insertedPhotos = await Promise.all(
+      photosToInsert.map((photoData) =>
+        prisma.photo.create({
+          data: photoData,
+          select: {
+            id: true,
+            filePath: true,
+            fileName: true,
+            createdAt: true,
+          },
+        })
       )
-    }
+    )
 
     return NextResponse.json({
       success: true,
       photos: insertedPhotos,
-      count: insertedPhotos?.length || 0,
+      count: insertedPhotos.length,
     })
   } catch (error) {
     console.error('Save photos error:', error)

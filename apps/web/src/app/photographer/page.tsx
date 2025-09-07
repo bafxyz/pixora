@@ -1,5 +1,6 @@
 'use client'
 
+import { Trans, t } from '@lingui/macro'
 import { Button } from '@repo/ui/button'
 import {
   Card,
@@ -13,6 +14,7 @@ import { Camera, QrCode, Upload, Users } from 'lucide-react'
 import { useState } from 'react'
 import { QRGenerator } from '@/features/qr/components/qr-generator'
 import { QRScanner } from '@/features/qr/components/qr-scanner'
+import { LanguageSwitcher } from '@/shared/components/language-switcher'
 
 interface Guest {
   id: string
@@ -54,17 +56,22 @@ export default function PhotographerPage() {
           return [...prev, newGuest]
         })
 
-        alert(`Гость ${result.guest.name} успешно добавлен!`)
+        alert(t`Guest ${result.guest.name} successfully added!`)
       } else {
-        alert(`Ошибка: ${result.error}`)
+        alert(t`Error: ${result.error}`)
       }
     } catch (error) {
       console.error('Error scanning QR:', error)
-      alert('Ошибка при сканировании QR-кода')
+      alert(t`Error scanning QR code`)
     }
   }
 
-  const handleQRGenerate = (qrData: string) => {
+  const handleQRGenerate = (qrData: {
+    id: string
+    name: string
+    type: string
+    timestamp: string
+  }) => {
     console.log('Generated QR:', qrData)
     // Здесь можно сохранить QR в базу данных или показать для печати
   }
@@ -77,12 +84,16 @@ export default function PhotographerPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
+        {/* Language Switcher */}
+        <div className="flex justify-end mb-4">
+          <LanguageSwitcher />
+        </div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Панель фотографа
+            <Trans>Photographer Panel</Trans>
           </h1>
           <p className="text-gray-600">
-            Управляйте гостями и загружайте фотографии
+            <Trans>Manage guests and upload photos</Trans>
           </p>
         </div>
 
@@ -94,15 +105,15 @@ export default function PhotographerPage() {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="scan" className="flex items-center gap-2">
               <Camera className="w-4 h-4" />
-              Сканировать
+              <Trans>Scan</Trans>
             </TabsTrigger>
             <TabsTrigger value="generate" className="flex items-center gap-2">
               <QrCode className="w-4 h-4" />
-              Создать QR
+              <Trans>Create QR</Trans>
             </TabsTrigger>
             <TabsTrigger value="guests" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              Гости ({scannedGuests.length})
+              <Trans>Guests</Trans> ({scannedGuests.length})
             </TabsTrigger>
           </TabsList>
 
@@ -112,30 +123,38 @@ export default function PhotographerPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Инструкция</CardTitle>
+                  <CardTitle>
+                    <Trans>Instructions</Trans>
+                  </CardTitle>
                   <CardDescription>
-                    Как сканировать QR-коды гостей
+                    <Trans>How to scan guest QR codes</Trans>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <h4 className="font-medium">Шаг 1: Подготовка</h4>
+                    <h4 className="font-medium">
+                      <Trans>Step 1: Preparation</Trans>
+                    </h4>
                     <p className="text-sm text-gray-600">
-                      Убедитесь, что у вас есть доступ к камере
+                      <Trans>Make sure you have camera access</Trans>
                     </p>
                   </div>
 
                   <div className="space-y-2">
-                    <h4 className="font-medium">Шаг 2: Сканирование</h4>
+                    <h4 className="font-medium">
+                      <Trans>Step 2: Scanning</Trans>
+                    </h4>
                     <p className="text-sm text-gray-600">
-                      Наведите камеру на QR-код гостя
+                      <Trans>Point camera at guest QR code</Trans>
                     </p>
                   </div>
 
                   <div className="space-y-2">
-                    <h4 className="font-medium">Шаг 3: Подтверждение</h4>
+                    <h4 className="font-medium">
+                      <Trans>Step 3: Confirmation</Trans>
+                    </h4>
                     <p className="text-sm text-gray-600">
-                      Система автоматически добавит гостя в список
+                      <Trans>System will automatically add guest to list</Trans>
                     </p>
                   </div>
                 </CardContent>
@@ -149,29 +168,51 @@ export default function PhotographerPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Создание QR-кодов</CardTitle>
+                  <CardTitle>
+                    <Trans>QR Code Creation</Trans>
+                  </CardTitle>
                   <CardDescription>
-                    Генерируйте QR-коды для новых гостей
+                    <Trans>Generate QR codes for new guests</Trans>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <h4 className="font-medium">Для чего нужны QR-коды?</h4>
+                    <h4 className="font-medium">
+                      <Trans>Why do we need QR codes?</Trans>
+                    </h4>
                     <ul className="text-sm text-gray-600 space-y-1">
-                      <li>• Быстрая идентификация гостей</li>
-                      <li>• Автоматическое создание личных галерей</li>
-                      <li>• Удобный доступ к фотографиям</li>
-                      <li>• Отслеживание заказов</li>
+                      <li>
+                        • <Trans>Fast guest identification</Trans>
+                      </li>
+                      <li>
+                        • <Trans>Automatic personal gallery creation</Trans>
+                      </li>
+                      <li>
+                        • <Trans>Convenient photo access</Trans>
+                      </li>
+                      <li>
+                        • <Trans>Order tracking</Trans>
+                      </li>
                     </ul>
                   </div>
 
                   <div className="space-y-2">
-                    <h4 className="font-medium">Как использовать:</h4>
+                    <h4 className="font-medium">
+                      <Trans>How to use</Trans>:
+                    </h4>
                     <ol className="text-sm text-gray-600 space-y-1">
-                      <li>1. Введите имя гостя</li>
-                      <li>2. Нажмите "Сгенерировать"</li>
-                      <li>3. Распечатайте или отправьте QR-код</li>
-                      <li>4. Гость сможет сканировать его на мероприятии</li>
+                      <li>
+                        1. <Trans>Enter guest name</Trans>
+                      </li>
+                      <li>
+                        2. <Trans>Click Generate</Trans>
+                      </li>
+                      <li>
+                        3. <Trans>Print or send QR code</Trans>
+                      </li>
+                      <li>
+                        4. <Trans>Guest can scan it at the event</Trans>
+                      </li>
                     </ol>
                   </div>
                 </CardContent>
@@ -186,13 +227,13 @@ export default function PhotographerPage() {
                   <CardContent className="flex flex-col items-center justify-center py-12">
                     <Users className="w-12 h-12 text-gray-400 mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      Нет отсканированных гостей
+                      <Trans>No scanned guests</Trans>
                     </h3>
                     <p className="text-gray-600 text-center mb-4">
-                      Отсканируйте QR-коды гостей, чтобы добавить их в список
+                      <Trans>Scan guest QR codes to add them to the list</Trans>
                     </p>
                     <Button onClick={() => setActiveTab('scan')}>
-                      Начать сканирование
+                      <Trans>Start Scanning</Trans>
                     </Button>
                   </CardContent>
                 </Card>
@@ -209,10 +250,10 @@ export default function PhotographerPage() {
                             {guest.name}
                           </h3>
                           <p className="text-sm text-gray-600">
-                            {guest.email || 'Email не указан'}
+                            {guest.email || <Trans>Email not specified</Trans>}
                           </p>
                           <p className="text-xs text-gray-500">
-                            Фото: {guest.photosCount || 0}
+                            <Trans>Photos</Trans>: {guest.photosCount || 0}
                           </p>
                         </div>
                       </div>
@@ -222,7 +263,7 @@ export default function PhotographerPage() {
                         size="sm"
                       >
                         <Upload className="w-4 h-4 mr-2" />
-                        Загрузить фото
+                        <Trans>Upload Photos</Trans>
                       </Button>
                     </CardContent>
                   </Card>

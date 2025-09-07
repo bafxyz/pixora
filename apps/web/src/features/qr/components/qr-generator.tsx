@@ -1,5 +1,6 @@
 'use client'
 
+import { Trans, t } from '@lingui/macro'
 import { Button } from '@repo/ui/button'
 import {
   Card,
@@ -12,15 +13,20 @@ import { Input } from '@repo/ui/input'
 import { Label } from '@repo/ui/label'
 import { Download, QrCode } from 'lucide-react'
 import { useState } from 'react'
+import QRCode from 'react-qr-code'
+import {
+  type QRData,
+  qrDataSchema,
+} from '@/shared/lib/validations/auth.schemas'
 
 interface QRGeneratorProps {
   guestId?: string
-  onGenerate?: (qrData: string) => void
+  onGenerate?: (qrData: QRData) => void
 }
 
 export function QRGenerator({ guestId, onGenerate }: QRGeneratorProps) {
   const [guestName, setGuestName] = useState('')
-  const [qrData, setQrData] = useState<string | null>(null)
+  const [qrData, setQrData] = useState<QRData | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
 
   const generateQR = async () => {
@@ -29,24 +35,34 @@ export function QRGenerator({ guestId, onGenerate }: QRGeneratorProps) {
     setIsGenerating(true)
 
     try {
-      // Создаем уникальный ID для гостя
+      // Create unique ID for guest
       const uniqueId =
         guestId ||
         `guest-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
 
-      // Данные для QR-кода
-      const qrPayload = {
+      // Data for QR code
+      const qrPayload: QRData = {
         id: uniqueId,
-        name: guestName,
+        name: guestName.trim(),
         type: 'guest',
         timestamp: new Date().toISOString(),
       }
 
-      const qrString = JSON.stringify(qrPayload)
-      setQrData(qrString)
+      // Validate data
+      const validationResult = qrDataSchema.safeParse(qrPayload)
+      if (!validationResult.success) {
+        console.error('Invalid QR data:', validationResult.error.issues)
+        const errorMessages = validationResult.error.issues
+          .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+          .join('\n')
+        alert(`QR code validation errors:\n${errorMessages}`)
+        return
+      }
+
+      setQrData(qrPayload)
 
       if (onGenerate) {
-        onGenerate(qrString)
+        onGenerate(qrPayload)
       }
     } catch (error) {
       console.error('Error generating QR:', error)
@@ -58,23 +74,35 @@ export function QRGenerator({ guestId, onGenerate }: QRGeneratorProps) {
   const downloadQR = () => {
     if (!qrData) return
 
-    // Создаем ссылку для скачивания
+    // Create canvas for QR code
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Здесь можно интегрировать библиотеку для генерации QR (например, qrcode)
-    // Пока просто создаем текстовый файл
-    const blob = new Blob([qrData], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
+    // Set canvas size
+    const size = 256
+    canvas.width = size
+    canvas.height = size
 
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `qr-${guestName || 'guest'}.txt`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    // Create QR code on canvas
+    const qrCanvas = document.querySelector('canvas') as HTMLCanvasElement
+    if (qrCanvas) {
+      ctx.drawImage(qrCanvas, 0, 0, size, size)
+
+      // Download as image
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `qr-${qrData.name || 'guest'}.png`
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+        }
+      })
+    }
   }
 
   return (
@@ -82,18 +110,22 @@ export function QRGenerator({ guestId, onGenerate }: QRGeneratorProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <QrCode className="w-5 h-5" />
-          Генератор QR-кодов
+          <Trans>QR Code Generator</Trans>
         </CardTitle>
-        <CardDescription>Создайте QR-код для гостя фото-сессии</CardDescription>
+        <CardDescription>
+          <Trans>Create QR code for photo session guest</Trans>
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <Label htmlFor="guestName">Имя гостя</Label>
+          <Label htmlFor="guestName">
+            <Trans>Guest Name</Trans>
+          </Label>
           <Input
             id="guestName"
             value={guestName}
             onChange={(e) => setGuestName(e.target.value)}
-            placeholder="Введите имя гостя"
+            placeholder={t`Enter guest name`}
           />
         </div>
 
@@ -102,19 +134,38 @@ export function QRGenerator({ guestId, onGenerate }: QRGeneratorProps) {
           disabled={!guestName.trim() || isGenerating}
           className="w-full"
         >
-          {isGenerating ? 'Генерируем...' : 'Сгенерировать QR-код'}
+          {isGenerating ? (
+            <Trans>Generating...</Trans>
+          ) : (
+            <Trans>Generate QR Code</Trans>
+          )}
         </Button>
 
         {qrData && (
-          <div className="space-y-2">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600 break-all">{qrData}</p>
+          <div className="space-y-4">
+            <div className="flex justify-center p-4 bg-white rounded-lg border">
+              <QRCode
+                value={JSON.stringify(qrData)}
+                size={200}
+                style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+              />
             </div>
 
-            <Button onClick={downloadQR} variant="outline" className="w-full">
-              <Download className="w-4 h-4 mr-2" />
-              Скачать QR-данные
-            </Button>
+            <div className="space-y-2">
+              <Button onClick={downloadQR} variant="outline" className="w-full">
+                <Download className="w-4 h-4 mr-2" />
+                <Trans>Download QR Code</Trans>
+              </Button>
+
+              <details className="text-xs">
+                <summary className="cursor-pointer text-gray-600 hover:text-gray-800">
+                  <Trans>Show QR Code Data</Trans>
+                </summary>
+                <div className="mt-2 p-2 bg-gray-50 rounded text-xs break-all">
+                  {JSON.stringify(qrData, null, 2)}
+                </div>
+              </details>
+            </div>
           </div>
         )}
       </CardContent>

@@ -1,15 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ImageWithFallback } from './image-with-fallback'
 
-interface Photo {
-  id: string
-  fileName: string
-  guestId: string
-  photographerId: string
-  uploadedAt: string
-  price: number
-  status: string
-}
+import type { Photo } from '@/shared/stores/gallery.store'
+import { ImageWithFallback } from './image-with-fallback'
 
 interface VirtualizedGalleryProps {
   photos: Photo[]
@@ -135,12 +127,12 @@ export function VirtualizedGallery({
                     onPhotoClick?.(photo)
                   }
                 }}
-                aria-label={`View photo ${globalIndex + 1} - $${photo.price}`}
+                aria-label={`View photo ${globalIndex + 1}`}
               >
-                <div className="relative w-full h-full bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                <div className="relative w-full h-full bg-background rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border">
                   <div className="aspect-square relative">
                     <ImageWithFallback
-                      src={photo.fileName}
+                      src={photo.file_path}
                       alt={`Photo ${globalIndex + 1}`}
                       width={300}
                       height={300}
@@ -148,19 +140,16 @@ export function VirtualizedGallery({
                       loading={globalIndex < 4 ? 'eager' : 'lazy'}
                       placeholder="blur"
                       blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+IRjWjBqO6O2mhP//Z"
-                      onLoad={() => handleImageLoad(photo.fileName)}
+                      onLoad={() => handleImageLoad(photo.file_path)}
                     />
-                    {!loadedImages.has(photo.fileName) && (
-                      <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-                        <div className="w-8 h-8 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                    {!loadedImages.has(photo.file_path) && (
+                      <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
+                        <div className="w-8 h-8 border-2 border-muted-foreground/50 border-t-transparent rounded-full animate-spin"></div>
                       </div>
                     )}
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-                    <div className="flex justify-between items-center text-white">
-                      <span className="text-sm font-medium">
-                        ${photo.price}
-                      </span>
+                    <div className="flex justify-end items-center text-white">
                       <span className="text-xs opacity-75">
                         #{globalIndex + 1}
                       </span>

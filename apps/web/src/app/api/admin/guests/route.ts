@@ -1,10 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/shared/lib/supabase/server'
+import { prisma } from '@/shared/lib/prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
     // Получаем client_id из заголовков
     const clientId = request.headers.get('x-client-id')
 
@@ -15,43 +13,31 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Получаем всех гостей клиента
-    const { data: guests, error } = await supabase
-      .from('guests')
-      .select(`
-        id,
-        name,
-        email,
-        created_at,
-        client_id,
-        photos:photos(count)
-      `)
-      .eq('client_id', clientId)
-      .order('created_at', { ascending: false })
+    // Получаем всех гостей клиента с количеством фото
+    const guests = await prisma.guest.findMany({
+      where: {
+        clientId: clientId,
+      },
+      include: {
+        _count: {
+          select: {
+            photos: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
 
-    if (error) {
-      console.error('Error fetching guests:', error)
-      return NextResponse.json(
-        { error: 'Error fetching guests' },
-        { status: 500 }
-      )
-    }
-
-    // Получаем количество фото для каждого гостя
-    const guestsWithPhotoCount = await Promise.all(
-      (guests || []).map(async (guest) => {
-        const { count } = await supabase
-          .from('photos')
-          .select('*', { count: 'exact', head: true })
-          .eq('guest_id', guest.id)
-          .eq('client_id', clientId)
-
-        return {
-          ...guest,
-          photosCount: count || 0,
-        }
-      })
-    )
+    const guestsWithPhotoCount = guests.map((guest) => ({
+      id: guest.id,
+      name: guest.name,
+      email: guest.email,
+      createdAt: guest.createdAt,
+      clientId: guest.clientId,
+      photosCount: guest._count.photos,
+    }))
 
     return NextResponse.json({
       guests: guestsWithPhotoCount,
@@ -77,8 +63,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = await createClient()
-
     // Получаем client_id из заголовков
     const clientId = request.headers.get('x-client-id')
 
@@ -89,28 +73,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Создаем уникальный ID для гостя
-    const guestId = `guest-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
-
     // Создаем гостя
-    const { data: guest, error } = await supabase
-      .from('guests')
-      .insert({
-        id: guestId,
+    const guest = await prisma.guest.create({
+      data: {
         name: name.trim(),
-        client_id: clientId,
+        clientId: clientId,
         email: null,
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Error creating guest:', error)
-      return NextResponse.json(
-        { error: 'Error creating guest' },
-        { status: 500 }
-      )
-    }
+        // Note: You'll need to provide photographerId as well
+        // This might need to be passed from the frontend or determined by business logic
+        photographerId: 'default-photographer-id', // Replace with actual logic
+      },
+    })
 
     return NextResponse.json({
       success: true,

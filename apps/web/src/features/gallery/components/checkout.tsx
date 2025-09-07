@@ -1,8 +1,11 @@
+import { Trans, t } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Check, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { useCartTotal, useGalleryStore } from '@/shared/stores/gallery.store'
 
 export function Checkout() {
+  const { _ } = useLingui()
   const {
     showCheckout,
     setShowCheckout,
@@ -25,12 +28,12 @@ export function Checkout() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!orderForm.name.trim()) newErrors.name = 'Name is required'
-    if (!orderForm.email.trim()) newErrors.email = 'Email is required'
+    if (!orderForm.name.trim()) newErrors.name = _(t`Name is required`)
+    if (!orderForm.email.trim()) newErrors.email = _(t`Email is required`)
     else if (!/\S+@\S+\.\S+/.test(orderForm.email))
-      newErrors.email = 'Email is invalid'
-    if (!orderForm.phone.trim()) newErrors.phone = 'Phone is required'
-    if (!orderForm.address.trim()) newErrors.address = 'Address is required'
+      newErrors.email = _(t`Email is invalid`)
+    if (!orderForm.phone.trim()) newErrors.phone = _(t`Phone is required`)
+    if (!orderForm.address.trim()) newErrors.address = _(t`Address is required`)
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -64,7 +67,7 @@ export function Checkout() {
         // Redirect to payment page
         window.location.href = url
       } else {
-        throw new Error('Payment session creation failed')
+        throw new Error(_(t`Payment session creation failed`))
       }
     } catch (error) {
       console.error('Order submission failed:', error)
@@ -85,25 +88,27 @@ export function Checkout() {
 
   if (orderComplete) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-background rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto border p-6">
           <div className="text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Check className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Order Complete!
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              <Trans>Order Complete!</Trans>
             </h2>
             <p className="text-gray-600 mb-6">
-              Thank you for your order. We'll process it shortly and send you a
-              confirmation email.
+              <Trans>
+                Thank you for your order. We'll process it shortly and send you
+                a confirmation email.
+              </Trans>
             </p>
             <button
               type="button"
               onClick={handleClose}
               className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
-              Close
+              <Trans>Close</Trans>
             </button>
           </div>
         </div>
@@ -112,15 +117,17 @@ export function Checkout() {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-background rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Checkout</h2>
+            <h2 className="text-2xl font-bold text-foreground">
+              <Trans>Checkout</Trans>
+            </h2>
             <button
               type="button"
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-muted-foreground hover:text-foreground"
             >
               <X className="w-6 h-6" />
             </button>
@@ -130,7 +137,7 @@ export function Checkout() {
             {/* Order Summary */}
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Order Summary
+                <Trans>Order Summary</Trans>
               </h3>
               <div className="space-y-3 mb-4">
                 {cart.map((item) => (
@@ -139,7 +146,9 @@ export function Checkout() {
                     className="flex justify-between"
                   >
                     <span className="text-sm text-gray-600">
-                      Photo {item.id.slice(-8)} ({item.type}) x{item.quantity}
+                      {_(
+                        t`Photo ${item.id.slice(-8)} (${item.type}) x${item.quantity}`
+                      )}
                     </span>
                     <span className="text-sm font-medium text-gray-900">
                       $
@@ -151,7 +160,9 @@ export function Checkout() {
               </div>
               <div className="border-t pt-3">
                 <div className="flex justify-between text-lg font-bold">
-                  <span>Total:</span>
+                  <span>
+                    <Trans>Total:</Trans>
+                  </span>
                   <span>${total.toFixed(2)}</span>
                 </div>
               </div>
@@ -160,7 +171,7 @@ export function Checkout() {
             {/* Contact Form */}
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Contact Information
+                <Trans>Contact Information</Trans>
               </h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
@@ -168,7 +179,7 @@ export function Checkout() {
                     htmlFor="name"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Full Name
+                    <Trans>Full Name</Trans>
                   </label>
                   <input
                     type="text"
@@ -189,7 +200,7 @@ export function Checkout() {
                     htmlFor="email"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Email
+                    <Trans>Email</Trans>
                   </label>
                   <input
                     type="email"
@@ -210,7 +221,7 @@ export function Checkout() {
                     htmlFor="phone"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Phone
+                    <Trans>Phone</Trans>
                   </label>
                   <input
                     type="tel"
@@ -231,7 +242,7 @@ export function Checkout() {
                     htmlFor="address"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Address
+                    <Trans>Address</Trans>
                   </label>
                   <textarea
                     id="address"
@@ -256,7 +267,7 @@ export function Checkout() {
                   disabled={isOrdering}
                   className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isOrdering ? 'Processing...' : 'Place Order'}
+                  {isOrdering ? _(t`Processing...`) : _(t`Place Order`)}
                 </button>
               </form>
             </div>

@@ -1,5 +1,9 @@
+import { Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
+import { Button } from '@repo/ui/button'
 import { ShoppingCart } from 'lucide-react'
 import React, { lazy, Suspense, useEffect, useState } from 'react'
+
 import {
   useCartItemCount,
   useGalleryStore,
@@ -20,6 +24,7 @@ interface GuestGalleryProps {
 }
 
 export function GuestGallery({ guestId }: GuestGalleryProps) {
+  const { _ } = useLingui()
   const {
     photos,
     photographer,
@@ -62,8 +67,10 @@ export function GuestGallery({ guestId }: GuestGalleryProps) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading photos...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">
+            <Trans>Loading photos...</Trans>
+          </p>
         </div>
       </div>
     )
@@ -74,30 +81,34 @@ export function GuestGallery({ guestId }: GuestGalleryProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Guest Gallery - {guestId}
+        <h1 className="text-3xl font-bold text-foreground mb-2">
+          <Trans>Guest Gallery</Trans> - {guestId}
         </h1>
         {photographer && (
-          <p className="text-lg text-gray-600">
-            Photographer: {photographer.studioName}
+          <p className="text-lg text-muted-foreground">
+            <Trans>Photographer</Trans>: {photographer.studioName}
           </p>
         )}
-        <div className="flex gap-4 mt-4 text-sm text-gray-500 items-center">
-          <span>Photos: {displayPhotos.length}</span>
-          <button
+        <div className="flex gap-4 mt-4 text-sm text-muted-foreground items-center">
+          <span>
+            <Trans>Photos</Trans>: {displayPhotos.length}
+          </span>
+          <Button
             type="button"
             onClick={() => setShowCart(true)}
-            className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2"
           >
             <ShoppingCart className="w-4 h-4" />
-            Cart ({cartItemCount})
-          </button>
+            <Trans>Cart</Trans> ({cartItemCount})
+          </Button>
         </div>
       </div>
 
       {displayPhotos.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No photos available yet.</p>
+          <p className="text-muted-foreground text-lg">
+            <Trans>No photos available yet.</Trans>
+          </p>
         </div>
       ) : displayPhotos.length > 50 ? (
         // Use virtualized gallery for large datasets
@@ -105,9 +116,9 @@ export function GuestGallery({ guestId }: GuestGalleryProps) {
           fallback={
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                <p className="text-gray-600 text-sm">
-                  Loading virtual gallery...
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                <p className="text-muted-foreground text-sm">
+                  <Trans>Loading virtual gallery...</Trans>
                 </p>
               </div>
             </div>
@@ -133,7 +144,7 @@ export function GuestGallery({ guestId }: GuestGalleryProps) {
             >
               <div className="aspect-square relative">
                 <ImageWithFallback
-                  src={photo.fileName} // Assuming fileName contains the image URL
+                  src={photo.file_path} // Use file_path from database
                   alt={`Photo ${index + 1}`}
                   width={400}
                   height={400}
@@ -141,26 +152,23 @@ export function GuestGallery({ guestId }: GuestGalleryProps) {
                   loading={index < 4 ? 'eager' : 'lazy'} // Load first 4 images eagerly
                   placeholder="blur"
                   blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+IRjWjBqO6O2mhP//Z"
-                  onLoad={() => handleImageLoad(photo.fileName)}
+                  onLoad={() => handleImageLoad(photo.file_path)}
                 />
-                {!loadedImages.has(photo.fileName) && (
-                  <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-                    <div className="w-8 h-8 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                {!loadedImages.has(photo.file_path) && (
+                  <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
+                    <div className="w-8 h-8 border-2 border-muted-foreground/50 border-t-transparent rounded-full animate-spin"></div>
                   </div>
                 )}
               </div>
               <div className="p-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-900">
-                    ${photo.price}
-                  </span>
-                  <button
+                <div className="flex justify-center">
+                  <Button
                     type="button"
                     onClick={() => addToCart(photo, 'digital')}
-                    className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                    size="sm"
                   >
-                    Add to Cart
-                  </button>
+                    <Trans>Add to Cart</Trans>
+                  </Button>
                 </div>
               </div>
             </div>

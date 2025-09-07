@@ -1,54 +1,45 @@
+import type { OrderStatus } from '@prisma/client'
 import { type NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/shared/lib/supabase/server'
+import { prisma } from '@/shared/lib/prisma/client'
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    // Get client_id from request headers (set by middleware)
+    const clientId = request.headers.get('x-client-id')
 
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Get client_id for the current user (assuming user.id maps to client_id)
-    const clientId = user.id
-
-    // Get orders for this client
-    const { data: orders, error } = await supabase
-      .from('orders')
-      .select(`
-        id,
-        guest_id,
-        photographer_id,
-        photo_ids,
-        total_amount,
-        status,
-        created_at,
-        updated_at,
-        guests (
-          id,
-          name,
-          email
-        ),
-        photographers (
-          id,
-          name
-        )
-      `)
-      .eq('client_id', clientId)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('Error fetching orders:', error)
+    if (!clientId) {
       return NextResponse.json(
-        { error: 'Failed to fetch orders' },
-        { status: 500 }
+        { error: 'Client ID is required' },
+        { status: 401 }
       )
     }
 
-    return NextResponse.json({ orders: orders || [] })
+    // Get orders for this client
+    const orders = await prisma.order.findMany({
+      where: {
+        clientId: clientId,
+      },
+      include: {
+        guest: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        photographer: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    return NextResponse.json({ orders })
   } catch (error) {
     console.error('Orders API error:', error)
     return NextResponse.json(
@@ -60,13 +51,14 @@ export async function GET(_request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    // Get client_id from request headers
+    const clientId = request.headers.get('x-client-id')
 
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!clientId) {
+      return NextResponse.json(
+        { error: 'Client ID is required' },
+        { status: 401 }
+      )
     }
 
     const body = await request.json()
@@ -80,38 +72,47 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Validate status
-    const validStatuses = ['new', 'ready', 'completed', 'cancelled']
+    const validStatuses = ['pending', 'processing', 'completed', 'cancelled']
     if (!validStatuses.includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
-    // Get client_id for the current user
-    const clientId = user.id
-
     // Update order status
-    const { data, error } = await supabase
-      .from('orders')
-      .update({
-        status,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', orderId)
-      .eq('client_id', clientId)
-      .select()
+    const updatedOrder = await prisma.order.updateMany({
+      where: {
+        id: orderId,
+        clientId: clientId,
+      },
+      data: {
+        status: status as OrderStatus,
+      },
+    })
 
-    if (error) {
-      console.error('Error updating order:', error)
-      return NextResponse.json(
-        { error: 'Failed to update order' },
-        { status: 500 }
-      )
-    }
-
-    if (!data || data.length === 0) {
+    if (updatedOrder.count === 0) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ order: data[0] })
+    // Get the updated order
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        guest: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        photographer: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    })
+
+    return NextResponse.json({ order })
   } catch (error) {
     console.error('Orders API error:', error)
     return NextResponse.json(

@@ -1,5 +1,6 @@
 'use client'
 
+import { Trans, t } from '@lingui/macro'
 import { Button } from '@repo/ui/button'
 import {
   Card,
@@ -8,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/card'
+import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library'
 import { Camera, CameraOff, CheckCircle } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
@@ -20,12 +22,17 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
   const [isScanning, setIsScanning] = useState(false)
   const [hasPermission, setHasPermission] = useState<boolean | null>(null)
   const [lastScanned, setLastScanned] = useState<string | null>(null)
+  const [scanError, setScanError] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null)
 
   useEffect(() => {
     return () => {
-      // Очистка при размонтировании
+      // Cleanup on unmount
+      if (codeReaderRef.current) {
+        codeReaderRef.current.reset()
+      }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => {
           track.stop()
@@ -37,7 +44,7 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
   const startScanning = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }, // Используем заднюю камеру
+        video: { facingMode: 'environment' }, // Use back camera
       })
 
       setHasPermission(true)
@@ -46,18 +53,76 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
       if (videoRef.current) {
         videoRef.current.srcObject = stream
         setIsScanning(true)
+
+        // Initialize ZXing reader
+        const codeReader = new BrowserMultiFormatReader()
+        codeReaderRef.current = codeReader
+
+        try {
+          const result = await codeReader.decodeOnceFromVideoDevice(
+            undefined,
+            videoRef.current
+          )
+          if (result) {
+            const scannedData = result.getText()
+
+            // Validate scanned data
+            try {
+              const parsedData = JSON.parse(scannedData)
+              // Basic structure validation
+              if (
+                parsedData.id &&
+                parsedData.name &&
+                parsedData.type === 'guest'
+              ) {
+                setLastScanned(scannedData)
+                setScanError(null)
+                if (onScan) {
+                  onScan(scannedData)
+                }
+                // Automatically stop scanning after successful scan
+                stopScanning()
+              } else {
+                setScanError(t`Invalid QR code format. Guest code expected.`)
+              }
+            } catch (_parseError) {
+              setScanError(
+                t`QR code contains invalid data. Please try a different code.`
+              )
+            }
+          }
+        } catch (error) {
+          if (error instanceof NotFoundException) {
+            // QR code not found, continue scanning
+            setScanError(
+              t`QR code not found. Please bring it closer to the camera.`
+            )
+          } else {
+            console.error('Error scanning QR:', error)
+            const errorMessage =
+              error instanceof Error ? error.message : 'Unknown error'
+            setScanError(t`Scanning error: ${errorMessage}`)
+            if (onError) {
+              onError(t`QR code scanning error: ${errorMessage}`)
+            }
+          }
+        }
       }
     } catch (error) {
       console.error('Error accessing camera:', error)
       setHasPermission(false)
       if (onError) {
-        onError('Не удалось получить доступ к камере')
+        onError(t`Failed to access camera`)
       }
     }
   }
 
   const stopScanning = () => {
     setIsScanning(false)
+    if (codeReaderRef.current) {
+      codeReaderRef.current.reset()
+      codeReaderRef.current = null
+    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => {
         track.stop()
@@ -67,10 +132,10 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
   }
 
   const simulateScan = () => {
-    // Имитация сканирования для тестирования
+    // Simulate scanning for testing
     const mockData = JSON.stringify({
       id: 'guest-1234567890-abc123def',
-      name: 'Тестовый Гость',
+      name: 'Test Guest',
       type: 'guest',
       timestamp: new Date().toISOString(),
     })
@@ -82,7 +147,7 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
   }
 
   const handleManualInput = () => {
-    const manualData = prompt('Введите QR-данные вручную:')
+    const manualData = prompt(t`Enter QR data manually:`)
     if (manualData) {
       setLastScanned(manualData)
       if (onScan) {
@@ -96,12 +161,14 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Camera className="w-5 h-5" />
-          Сканер QR-кодов
+          <Trans>QR Code Scanner</Trans>
         </CardTitle>
-        <CardDescription>Отсканируйте QR-код гостя</CardDescription>
+        <CardDescription>
+          <Trans>Scan guest QR code</Trans>
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Видео элемент для камеры */}
+        {/* Video element for camera */}
         <div className="relative">
           <video
             ref={videoRef}
@@ -119,7 +186,7 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
             </div>
           )}
 
-          {/* Оверлей с рамкой для QR */}
+          {/* Overlay with frame for QR */}
           {isScanning && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-48 h-48 border-2 border-blue-500 rounded-lg bg-transparent"></div>
@@ -127,7 +194,7 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
           )}
         </div>
 
-        {/* Кнопки управления */}
+        {/* Control buttons */}
         <div className="flex gap-2">
           {!isScanning ? (
             <Button
@@ -136,43 +203,50 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
               disabled={hasPermission === false}
             >
               <Camera className="w-4 h-4 mr-2" />
-              Начать сканирование
+              <Trans>Start Scanning</Trans>
             </Button>
           ) : (
             <Button onClick={stopScanning} variant="outline" className="flex-1">
               <CameraOff className="w-4 h-4 mr-2" />
-              Остановить
+              <Trans>Stop</Trans>
             </Button>
           )}
 
           <Button onClick={simulateScan} variant="outline" size="sm">
-            Тест
+            <Trans>Test</Trans>
           </Button>
         </div>
 
-        {/* Ручной ввод */}
+        {/* Manual input */}
         <Button
           onClick={handleManualInput}
           variant="outline"
           className="w-full"
         >
-          Ввести вручную
+          <Trans>Enter Manually</Trans>
         </Button>
 
-        {/* Статус */}
+        {/* Status */}
         {hasPermission === false && (
           <p className="text-sm text-red-600">
-            Доступ к камере запрещен. Разрешите доступ в настройках браузера.
+            <Trans>
+              Camera access denied. Please allow camera access in browser
+              settings.
+            </Trans>
           </p>
         )}
 
-        {/* Последний отсканированный код */}
+        {scanError && isScanning && (
+          <p className="text-sm text-orange-600">{scanError}</p>
+        )}
+
+        {/* Last scanned code */}
         {lastScanned && (
           <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle className="w-4 h-4 text-green-600" />
               <span className="text-sm font-medium text-green-800">
-                Код отсканирован
+                <Trans>Code Scanned</Trans>
               </span>
             </div>
             <p className="text-xs text-green-700 break-all">{lastScanned}</p>

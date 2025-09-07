@@ -4,7 +4,7 @@ export type User = {
   firstName?: string
   lastName?: string
   studioName?: string
-  role?: 'photographer' | 'admin' | 'guest'
+  role?: 'photographer' | 'admin' | 'guest' | 'super-admin'
 }
 
 export type LoginCredentials = {
