@@ -66,27 +66,38 @@ export default function DashboardPage() {
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Обзор
-            </TabsTrigger>
-            <TabsTrigger
-              value="quick-actions"
-              className="flex items-center gap-2"
-            >
-              <Settings className="w-4 h-4" />
-              Действия
-            </TabsTrigger>
-            <TabsTrigger value="recent" className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              Активность
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              Настройки
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto">
+            <TabsList className="flex h-14 bg-white/80 backdrop-blur-md border border-white/30 shadow-lg rounded-lg p-2 gap-2 min-w-max">
+              <TabsTrigger
+                value="overview"
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md whitespace-nowrap"
+              >
+                <BarChart3 className="w-4 h-4 flex-shrink-0" />
+                <span>Обзор</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="quick-actions"
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md whitespace-nowrap"
+              >
+                <Settings className="w-4 h-4 flex-shrink-0" />
+                <span>Действия</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="recent"
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent data-[state=active]:to-amber-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md whitespace-nowrap"
+              >
+                <Calendar className="w-4 h-4 flex-shrink-0" />
+                <span>Активность</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="settings"
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md whitespace-nowrap"
+              >
+                <Settings className="w-4 h-4 flex-shrink-0" />
+                <span>Настройки</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid md:grid-cols-3 gap-6">

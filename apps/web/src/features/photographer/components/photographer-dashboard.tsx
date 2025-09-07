@@ -230,18 +230,27 @@ export function PhotographerDashboard({
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="upload">
-              <Upload className="w-4 h-4 mr-2" />
-              Загрузка
+          <TabsList className="grid w-full grid-cols-3 gap-4 h-14 p-4 bg-white/80 backdrop-blur-md border border-white/30 shadow-lg mb-6 rounded-lg">
+            <TabsTrigger
+              value="upload"
+              className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white hover:bg-primary/10 transition-all duration-200"
+            >
+              <Upload className="w-5 h-5 flex-shrink-0" />
+              <span className="text-sm font-medium">Загрузка</span>
             </TabsTrigger>
-            <TabsTrigger value="orders">
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Заказы
+            <TabsTrigger
+              value="orders"
+              className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary data-[state=active]:to-pink-600 data-[state=active]:text-white hover:bg-secondary/10 transition-all duration-200"
+            >
+              <ShoppingCart className="w-5 h-5 flex-shrink-0" />
+              <span className="text-sm font-medium">Заказы</span>
             </TabsTrigger>
-            <TabsTrigger value="settings">
-              <Settings className="w-4 h-4 mr-2" />
-              Настройки
+            <TabsTrigger
+              value="settings"
+              className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent data-[state=active]:to-amber-600 data-[state=active]:text-white hover:bg-accent/10 transition-all duration-200"
+            >
+              <Settings className="w-5 h-5 flex-shrink-0" />
+              <span className="text-sm font-medium">Настройки</span>
             </TabsTrigger>
           </TabsList>
 
