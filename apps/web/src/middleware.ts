@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'
+
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 import { multiTenantMiddleware } from './middleware/multi-tenant'
