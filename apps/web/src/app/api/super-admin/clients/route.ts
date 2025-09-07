@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/lib/prisma/client'
+import type { Client } from '@prisma/client'
 
 export async function GET() {
   try {
@@ -19,15 +20,21 @@ export async function GET() {
       },
     })
 
-    const clientsWithStats = clients.map((client) => ({
-      id: client.id,
-      name: client.name,
-      email: client.email,
-      createdAt: client.createdAt,
-      guestsCount: client._count.guests,
-      photosCount: client._count.photos,
-      ordersCount: client._count.orders,
-    }))
+    const clientsWithStats = clients.map(
+      (
+        client: Client & {
+          _count: { guests: number; photos: number; orders: number }
+        }
+      ) => ({
+        id: client.id,
+        name: client.name,
+        email: client.email,
+        createdAt: client.createdAt,
+        guestsCount: client._count.guests,
+        photosCount: client._count.photos,
+        ordersCount: client._count.orders,
+      })
+    )
 
     return NextResponse.json({
       clients: clientsWithStats,
