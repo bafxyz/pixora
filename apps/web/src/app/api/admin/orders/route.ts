@@ -1,6 +1,7 @@
-import type { OrderStatus } from '@prisma/client'
 import { type NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/lib/prisma/client'
+
+type OrderStatus = 'pending' | 'processing' | 'completed' | 'cancelled'
 
 export async function GET(request: NextRequest) {
   try {
