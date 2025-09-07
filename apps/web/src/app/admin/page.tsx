@@ -26,7 +26,6 @@ import {
 import { useCallback, useEffect, useState } from 'react'
 import { DeliveryNotification } from '@/features/admin/components/delivery-notification'
 import { QRGenerator } from '@/features/qr/components/qr-generator'
-import { LanguageSwitcher } from '@/shared/components/language-switcher'
 
 interface Guest {
   id: string
@@ -130,18 +129,13 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-4 lg:py-8">
-        {/* Language Switcher */}
-        <div className="flex justify-end mb-4">
-          <LanguageSwitcher />
-        </div>
-
-        <div className="mb-6 lg:mb-8">
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
-            <Trans>Admin Panel</Trans>
-          </h1>
-          <p className="text-gray-600 text-sm lg:text-base">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
+      <div className="container mx-auto px-4 py-6 lg:py-8">
+        <div className="mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">
+            <Trans>Dashboard</Trans>
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
             <Trans>Manage guests and track statistics</Trans>
           </p>
         </div>
@@ -153,65 +147,54 @@ export default function AdminPage() {
         >
           {/* Mobile-friendly tabs */}
           <div className="overflow-x-auto">
-            <TabsList className="grid w-max min-w-full grid-cols-5 lg:w-full h-10 lg:h-11">
+            <TabsList className="grid w-max min-w-full grid-cols-5 lg:w-full h-10 sm:h-11 lg:h-12 p-1 bg-white/80 backdrop-blur-md border border-white/30 shadow-lg">
               <TabsTrigger
                 value="overview"
-                className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm px-2 lg:px-4"
+                className="flex items-center gap-1 text-xs px-1 sm:px-2 lg:px-4 font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
               >
-                <BarChart3 className="w-3 h-3 lg:w-4 lg:h-4" />
-                <span className="hidden sm:inline">
-                  <Trans>Overview</Trans>
-                </span>
-                <span className="sm:hidden">
+                <BarChart3 className="w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0" />
+                <span className="hidden xs:inline truncate">
                   <Trans>Overview</Trans>
                 </span>
               </TabsTrigger>
               <TabsTrigger
                 value="guests"
-                className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm px-2 lg:px-4"
+                className="flex items-center gap-1 text-xs px-1 sm:px-2 lg:px-4 font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
               >
-                <Users className="w-3 h-3 lg:w-4 lg:h-4" />
-                <span className="hidden sm:inline">
+                <Users className="w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0" />
+                <span className="hidden xs:inline truncate">
                   <Trans>Guests</Trans>
                 </span>
-                <span className="sm:hidden">
-                  <Trans>Guests</Trans>
-                </span>
-                <span className="ml-1">({guests.length})</span>
+                <span className="text-xs">({guests.length})</span>
               </TabsTrigger>
               <TabsTrigger
                 value="orders"
-                className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm px-2 lg:px-4"
+                className="flex items-center gap-1 text-xs px-1 sm:px-2 lg:px-4 font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
               >
-                <ShoppingCart className="w-3 h-3 lg:w-4 lg:h-4" />
-                <span className="hidden sm:inline">
-                  <Trans>Orders</Trans>
-                </span>
-                <span className="sm:hidden">
+                <ShoppingCart className="w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0" />
+                <span className="hidden xs:inline truncate">
                   <Trans>Orders</Trans>
                 </span>
               </TabsTrigger>
               <TabsTrigger
                 value="qr"
-                className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm px-2 lg:px-4"
+                className="flex items-center gap-1 text-xs px-1 sm:px-2 lg:px-4 font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
               >
-                <QrCode className="w-3 h-3 lg:w-4 lg:h-4" />
-                <span className="hidden sm:inline">
+                <QrCode className="w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0" />
+                <span className="hidden sm:inline truncate">
                   <Trans>QR Codes</Trans>
                 </span>
                 <span className="sm:hidden">QR</span>
               </TabsTrigger>
               <TabsTrigger
                 value="settings"
-                className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm px-2 lg:px-4"
+                className="flex items-center gap-1 text-xs px-1 sm:px-2 lg:px-4 font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent data-[state=active]:to-amber-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
               >
-                <Settings className="w-3 h-3 lg:w-4 lg:h-4" />
-                <span className="hidden sm:inline">
+                <Settings className="w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0" />
+                <span className="hidden sm:inline truncate">
                   <Trans>Settings</Trans>
                 </span>
-                <span className="sm:hidden">
-                  <Trans>Settings</Trans>
-                </span>
+                <span className="sm:hidden">⚙️</span>
               </TabsTrigger>
             </TabsList>
           </div>
