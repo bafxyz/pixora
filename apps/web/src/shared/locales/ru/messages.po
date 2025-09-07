@@ -827,3 +827,23 @@ msgstr "Ваша корзина"
 #: src/features/gallery/components/cart.tsx:46
 msgid "Your cart is empty"
 msgstr "Ваша корзина пуста"
+
+#: src/features/photographer/components/photographer-dashboard.tsx:281
+msgid "Successfully uploaded and saved {count} photos for guest {guestId}!"
+msgstr "Успешно загружено и сохранено {count} фото для гостя {guestId}!"
+
+#: src/features/photographer/components/photographer-dashboard.tsx:198
+msgid "Settings updated successfully"
+msgstr "Настройки успешно обновлены"
+
+#: src/features/photographer/components/photographer-dashboard.tsx:197
+msgid "Error updating settings"
+msgstr "Ошибка при обновлении настроек"
+
+#: src/features/photographer/components/photographer-dashboard.tsx:289
+msgid "Upload successful but failed to save: {error}"
+msgstr "Загрузка успешна, но сохранение не удалось: {error}"
+
+#: src/features/photographer/components/photographer-dashboard.tsx:293
+msgid "Upload failed: {error}"
+msgstr "Ошибка загрузки: {error}"
