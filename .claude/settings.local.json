@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm dev:*)",
+      "Bash(lsof:*)",
+      "Bash(tree:*)",
+      "Bash(pnpm check-types:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm extract:*)",
+      "Bash(pnpm compile:*)",
+      "Bash(npx supabase:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm format:*)",
+      "Bash(pnpm run lint:*)",
+      "Bash(npx biome check:*)",
+      "Bash(find:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "vc-nextjs",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "check-types": "turbo run check-types",
+    "dev": "turbo run dev",
+    "format": "biome format --write",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.2",
+    "turbo": "^2.5.6",
+    "typescript": "5.9.2"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18"
+  }
+}
