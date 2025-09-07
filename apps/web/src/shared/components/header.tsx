@@ -126,12 +126,15 @@ export function Header() {
   const navItems = getNavigationItems()
 
   return (
-    <header className="bg-white border-b border-gray-200 shadow-sm">
+    <header className="bg-white/80 backdrop-blur-md border-b border-white/20 shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Navigation */}
           <div className="flex items-center space-x-8">
-            <Link href="/" className="text-xl font-bold text-gray-900">
+            <Link
+              href="/"
+              className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent"
+            >
               Pixora
             </Link>
 
@@ -144,10 +147,10 @@ export function Header() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                      className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
                         isActive
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                          ? 'bg-gradient-to-r from-primary/10 to-secondary/10 text-primary border border-primary/20 shadow-sm'
+                          : 'text-slate-700 hover:text-primary hover:bg-gradient-to-r hover:from-primary/5 hover:to-secondary/5'
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -162,30 +165,30 @@ export function Header() {
           {/* User Info and Actions */}
           <div className="flex items-center space-x-4">
             {loading ? (
-              <div className="text-sm text-gray-500">Loading...</div>
+              <div className="text-sm text-slate-500">Loading...</div>
             ) : user ? (
               <>
                 <div className="hidden md:flex flex-col items-end">
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
                     {user.name}
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
                     {user.email} • {user.role}
                   </span>
                 </div>
 
                 <div className="flex items-center space-x-2">
                   <div
-                    className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${
                       user.role === 'super-admin'
-                        ? 'bg-purple-100 text-purple-800'
+                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
                         : user.role === 'admin'
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
                           : user.role === 'photographer'
-                            ? 'bg-blue-100 text-blue-800'
+                            ? 'bg-gradient-to-r from-primary to-indigo-600 text-white'
                             : user.role === 'guest'
-                              ? 'bg-gray-100 text-gray-800'
-                              : 'bg-gray-100 text-gray-800'
+                              ? 'bg-gradient-to-r from-secondary to-pink-600 text-white'
+                              : 'bg-gradient-to-r from-slate-500 to-slate-600 text-white'
                     }`}
                   >
                     {user.role.toUpperCase()}
@@ -214,7 +217,7 @@ export function Header() {
 
         {/* Mobile Navigation */}
         {user && (
-          <nav className="md:hidden py-2 border-t border-gray-200">
+          <nav className="md:hidden py-3 border-t border-white/20">
             <div className="flex flex-wrap gap-2">
               {navItems.map((item) => {
                 const Icon = item.icon
@@ -223,10 +226,10 @@ export function Header() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                    className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-lg transition-all duration-300 ${
                       isActive
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'bg-gradient-to-r from-primary/10 to-secondary/10 text-primary border border-primary/20'
+                        : 'text-slate-700 hover:text-primary hover:bg-gradient-to-r hover:from-primary/5 hover:to-secondary/5'
                     }`}
                   >
                     <Icon className="w-3 h-3" />
