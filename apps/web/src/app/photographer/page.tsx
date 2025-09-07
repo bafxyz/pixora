@@ -1,5 +1,6 @@
 'use client'
 
+import { toast } from 'sonner'
 import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/react/macro'
 import { Button } from '@repo/ui/button'
@@ -57,13 +58,13 @@ export default function PhotographerPage() {
           return [...prev, newGuest]
         })
 
-        alert(_(`Guest ${result.guest.name} successfully added!`))
+        toast.success(_(`Guest ${result.guest.name} successfully added!`))
       } else {
-        alert(_(`Error: ${result.error}`))
+        toast.error(_(`Error: ${result.error}`))
       }
     } catch (error) {
       console.error('Error scanning QR:', error)
-      alert(_('Error scanning QR code'))
+      toast.error(_('Error scanning QR code'))
     }
   }
 

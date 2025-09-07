@@ -201,7 +201,7 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
           {!isScanning ? (
             <Button
               onClick={startScanning}
-              className="flex-1"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
               disabled={hasPermission === false}
             >
               <Camera className="w-4 h-4 mr-2" />
@@ -214,7 +214,11 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
             </Button>
           )}
 
-          <Button onClick={simulateScan} variant="outline" size="sm">
+          <Button 
+            onClick={simulateScan} 
+            size="sm"
+            className="bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300"
+          >
             <Trans>Test</Trans>
           </Button>
         </div>
@@ -222,8 +226,7 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
         {/* Manual input */}
         <Button
           onClick={handleManualInput}
-          variant="outline"
-          className="w-full"
+          className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300"
         >
           <Trans>Enter Manually</Trans>
         </Button>

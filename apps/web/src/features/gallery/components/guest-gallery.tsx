@@ -96,7 +96,7 @@ export function GuestGallery({ guestId }: GuestGalleryProps) {
           <Button
             type="button"
             onClick={() => setShowCart(true)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
           >
             <ShoppingCart className="w-4 h-4" />
             <Trans>Cart</Trans> ({cartItemCount})
