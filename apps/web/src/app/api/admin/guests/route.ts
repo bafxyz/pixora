@@ -1,6 +1,15 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/lib/prisma/client'
-import type { Guest } from '@prisma/client'
+
+type Guest = {
+  id: string
+  name: string
+  email: string | null
+  photographerId: string
+  clientId: string
+  createdAt: Date
+  updatedAt: Date
+}
 
 type GuestWithPhotoCount = Guest & {
   _count: {
