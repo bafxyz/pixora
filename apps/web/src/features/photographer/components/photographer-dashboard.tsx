@@ -29,6 +29,7 @@ import { useAuthStore } from '@/shared/stores/auth.store'
 
 const supabase = createClient()
 
+import { toast } from 'sonner'
 import { ImageWithFallback } from '@/features/gallery/components/image-with-fallback'
 import { PhotoUpload } from './photo-upload'
 
@@ -179,7 +180,7 @@ export function PhotographerDashboard({
       )
 
       if (response.ok) {
-        alert('Настройки успешно обновлены')
+        toast.success('Настройки успешно обновлены')
         // Перезагружаем профиль
         if (profile) {
           setProfile({
@@ -193,7 +194,7 @@ export function PhotographerDashboard({
       }
     } catch (error) {
       console.error('Settings update error:', error)
-      alert('Ошибка при обновлении настроек')
+      toast.error('Ошибка при обновлении настроек')
     } finally {
       setIsLoading(false)
     }
@@ -273,7 +274,7 @@ export function PhotographerDashboard({
 
                     if (response.ok) {
                       const result = await response.json()
-                      alert(
+                      toast.success(
                         `Successfully uploaded and saved ${result.count} photos for guest ${guestId}!`
                       )
                     } else {
@@ -282,13 +283,13 @@ export function PhotographerDashboard({
                     }
                   } catch (error) {
                     console.error('Save photos error:', error)
-                    alert(
+                    toast.error(
                       `Upload successful but failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`
                     )
                   }
                 }}
                 onUploadError={(error) => {
-                  alert(`Upload failed: ${error}`)
+                  toast.error(`Upload failed: ${error}`)
                 }}
               />
 
