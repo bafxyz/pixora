@@ -145,56 +145,42 @@ export default function AdminPage() {
           onValueChange={setActiveTab}
           className="space-y-4 lg:space-y-6"
         >
-          {/* Mobile-friendly tabs */}
           <div className="overflow-x-auto">
-            <TabsList className="grid w-max min-w-full grid-cols-5 lg:w-full h-10 sm:h-11 lg:h-12 p-1 bg-white/80 backdrop-blur-md border border-white/30 shadow-lg">
+            <TabsList className="flex h-14 bg-white/80 backdrop-blur-md border border-white/30 shadow-lg rounded-lg p-2 gap-2 min-w-max">
               <TabsTrigger
                 value="overview"
-                className="flex items-center gap-1 text-xs px-1 sm:px-2 lg:px-4 font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md whitespace-nowrap"
               >
-                <BarChart3 className="w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0" />
-                <span className="hidden xs:inline truncate">
-                  <Trans>Overview</Trans>
-                </span>
+                <BarChart3 className="w-4 h-4 flex-shrink-0" />
+                <span>Обзор</span>
               </TabsTrigger>
               <TabsTrigger
                 value="guests"
-                className="flex items-center gap-1 text-xs px-1 sm:px-2 lg:px-4 font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md whitespace-nowrap"
               >
-                <Users className="w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0" />
-                <span className="hidden xs:inline truncate">
-                  <Trans>Guests</Trans>
-                </span>
-                <span className="text-xs">({guests.length})</span>
+                <Users className="w-4 h-4 flex-shrink-0" />
+                <span>Гости ({guests.length})</span>
               </TabsTrigger>
               <TabsTrigger
                 value="orders"
-                className="flex items-center gap-1 text-xs px-1 sm:px-2 lg:px-4 font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md whitespace-nowrap"
               >
-                <ShoppingCart className="w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0" />
-                <span className="hidden xs:inline truncate">
-                  <Trans>Orders</Trans>
-                </span>
+                <ShoppingCart className="w-4 h-4 flex-shrink-0" />
+                <span>Заказы</span>
               </TabsTrigger>
               <TabsTrigger
                 value="qr"
-                className="flex items-center gap-1 text-xs px-1 sm:px-2 lg:px-4 font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md whitespace-nowrap"
               >
-                <QrCode className="w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0" />
-                <span className="hidden sm:inline truncate">
-                  <Trans>QR Codes</Trans>
-                </span>
-                <span className="sm:hidden">QR</span>
+                <QrCode className="w-4 h-4 flex-shrink-0" />
+                <span>QR коды</span>
               </TabsTrigger>
               <TabsTrigger
                 value="settings"
-                className="flex items-center gap-1 text-xs px-1 sm:px-2 lg:px-4 font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent data-[state=active]:to-amber-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent data-[state=active]:to-amber-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md whitespace-nowrap"
               >
-                <Settings className="w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0" />
-                <span className="hidden sm:inline truncate">
-                  <Trans>Settings</Trans>
-                </span>
-                <span className="sm:hidden">⚙️</span>
+                <Settings className="w-4 h-4 flex-shrink-0" />
+                <span>Настройки</span>
               </TabsTrigger>
             </TabsList>
           </div>
