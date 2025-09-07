@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/react/macro'
 import { Button } from '@repo/ui/button'
-import { Trash2, X } from 'lucide-react'
+import { ShoppingCart, Trash2, X } from 'lucide-react'
 import React from 'react'
 
 import { useCartTotal, useGalleryStore } from '@/shared/stores/gallery.store'
@@ -23,11 +23,12 @@ export function Cart() {
   if (!showCart) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-background rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border">
-        <div className="p-4 lg:p-6">
-          <div className="flex justify-between items-center mb-4 lg:mb-6">
-            <h2 className="text-xl lg:text-2xl font-bold text-foreground">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="w-full max-w-4xl max-h-[90vh] bg-background rounded-lg shadow-2xl border overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="p-6 border-b">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-foreground">
               <Trans>Your Cart</Trans>
             </h2>
             <Button
@@ -35,105 +36,133 @@ export function Cart() {
               onClick={() => setShowCart(false)}
               variant="ghost"
               size="icon"
+              className="hover:bg-muted/50 rounded-full"
             >
               <X className="w-6 h-6" />
             </Button>
           </div>
+        </div>
 
+        <div className="flex-1 overflow-y-auto p-6">
           {cart.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground text-lg">
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                <ShoppingCart className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <p className="text-lg font-medium text-foreground mb-2">
                 <Trans>Your cart is empty</Trans>
+              </p>
+              <p className="text-sm text-muted-foreground mb-6">
+                <Trans>Add some photos to get started</Trans>
               </p>
               <Button
                 type="button"
                 onClick={() => setShowCart(false)}
-                className="mt-4"
+                variant="outline"
+                className="px-8"
               >
                 <Trans>Continue Shopping</Trans>
               </Button>
             </div>
           ) : (
             <>
-              <div className="space-y-4 mb-6">
+              <div className="space-y-4 mb-8">
                 {cart.map((item) => (
                   <div
                     key={`${item.id}-${item.type}`}
-                    className="flex items-center space-x-4 border-b pb-4"
+                    className="flex items-center gap-4 p-4 border rounded-lg bg-muted/50"
                   >
-                    <div className="w-16 h-16 flex-shrink-0">
+                    <div className="relative w-20 h-20 flex-shrink-0">
                       <ImageWithFallback
                         src={item.file_path}
                         alt="Cart item"
-                        width={64}
-                        height={64}
-                        className="w-full h-full object-cover rounded"
+                        width={80}
+                        height={80}
+                        className="w-full h-full object-cover rounded-lg"
                       />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-medium text-foreground">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-foreground truncate">
                         {_(`Photo ${item.id.slice(-8)}`)}
                       </h3>
-                      <p className="text-sm text-muted-foreground capitalize">
+                      <p className="text-sm text-muted-foreground capitalize mb-1">
                         {item.type}
                       </p>
-                      <p className="text-sm font-medium text-foreground">
+                      <p className="text-sm font-medium text-foreground mb-2">
                         ${item.type === 'digital' ? item.price : item.price * 2}
                       </p>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          onClick={() =>
+                            updateQuantity(
+                              item.id,
+                              item.type,
+                              item.quantity - 1
+                            )
+                          }
+                          variant="outline"
+                          size="sm"
+                          className="w-10 h-10 rounded-full"
+                        >
+                          -
+                        </Button>
+                        <span className="w-8 text-center font-medium text-foreground">
+                          {item.quantity}
+                        </span>
+                        <Button
+                          type="button"
+                          onClick={() =>
+                            updateQuantity(
+                              item.id,
+                              item.type,
+                              item.quantity + 1
+                            )
+                          }
+                          variant="outline"
+                          size="sm"
+                          className="w-10 h-10 rounded-full"
+                        >
+                          +
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-col items-end gap-2">
+                      <p className="font-semibold text-foreground">
+                        $
+                        {(item.type === 'digital'
+                          ? item.price
+                          : item.price * 2) * item.quantity}
+                      </p>
                       <Button
                         type="button"
-                        onClick={() =>
-                          updateQuantity(item.id, item.type, item.quantity - 1)
-                        }
-                        variant="outline"
+                        onClick={() => removeFromCart(item.id, item.type)}
+                        variant="ghost"
                         size="icon"
-                        className="w-8 h-8"
+                        className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 rounded-full"
                       >
-                        -
-                      </Button>
-                      <span className="w-8 text-center">{item.quantity}</span>
-                      <Button
-                        type="button"
-                        onClick={() =>
-                          updateQuantity(item.id, item.type, item.quantity + 1)
-                        }
-                        variant="outline"
-                        size="icon"
-                        className="w-8 h-8"
-                      >
-                        +
+                        <Trash2 className="w-5 h-5" />
                       </Button>
                     </div>
-                    <Button
-                      type="button"
-                      onClick={() => removeFromCart(item.id, item.type)}
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive hover:text-destructive/80"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </Button>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t pt-4">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-lg font-medium text-foreground">
+              <div className="border-t p-6 bg-muted/30">
+                <div className="flex justify-between items-center mb-4 text-lg">
+                  <span className="font-medium text-foreground">
                     <Trans>Total:</Trans>
                   </span>
-                  <span className="text-lg font-bold text-foreground">
+                  <span className="font-bold text-2xl text-foreground">
                     ${total.toFixed(2)}
                   </span>
                 </div>
-                <div className="flex space-x-3">
+                <div className="flex gap-4">
                   <Button
                     type="button"
                     onClick={() => setShowCart(false)}
                     variant="outline"
-                    className="flex-1"
+                    className="flex-1 h-12"
                   >
                     <Trans>Continue Shopping</Trans>
                   </Button>
@@ -143,7 +172,7 @@ export function Cart() {
                       setShowCart(false)
                       setShowCheckout(true)
                     }}
-                    className="flex-1"
+                    className="flex-1 h-12 bg-primary hover:bg-primary/90"
                   >
                     <Trans>Checkout</Trans>
                   </Button>
