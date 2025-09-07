@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
-import { env } from '@/shared/config/env'
+import { multiTenantMiddleware } from './middleware/multi-tenant'
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -9,7 +9,15 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  const supabase = createServerClient(env.supabase.url, env.supabase.anonKey, {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('Missing Supabase environment variables in middleware')
+    return response
+  }
+
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll()
@@ -33,14 +41,20 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getSession()
 
   // Protected routes that require authentication
-  const protectedRoutes = ['/photographer', '/admin']
+  const protectedRoutes = ['/photographer', '/admin', '/super-admin']
   const authRoutes = ['/login']
+  const publicRoutes = ['/', '/gallery', '/register']
 
   const isProtectedRoute = protectedRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
   )
   const isAuthRoute = authRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
+  )
+  const isPublicRoute = publicRoutes.some(
+    (route) =>
+      request.nextUrl.pathname === route ||
+      request.nextUrl.pathname.startsWith('/gallery/')
   )
 
   // Redirect unauthenticated users from protected routes to login
@@ -50,10 +64,24 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
+  // Apply multi-tenant middleware for authenticated users
+  if (session && !isPublicRoute) {
+    return await multiTenantMiddleware(request)
+  }
+
   // Redirect authenticated users from auth routes to appropriate dashboard
   if (isAuthRoute && session) {
-    // You can add role-based redirection here
-    return NextResponse.redirect(new URL('/photographer', request.url))
+    // Определяем роль пользователя и перенаправляем соответственно
+    const userRole = session.user.user_metadata?.role || 'photographer'
+
+    switch (userRole) {
+      case 'super-admin':
+        return NextResponse.redirect(new URL('/super-admin', request.url))
+      case 'admin':
+        return NextResponse.redirect(new URL('/admin', request.url))
+      default:
+        return NextResponse.redirect(new URL('/photographer', request.url))
+    }
   }
 
   return response

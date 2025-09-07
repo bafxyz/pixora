@@ -18,7 +18,7 @@ interface GalleryResponse {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -33,22 +33,34 @@ export async function GET(
 
     const supabase = await createClient()
 
-    // Get guest information
+    // Get client_id from request headers (set by middleware)
+    const clientId = request.headers.get('x-client-id')
+
+    if (!clientId) {
+      return NextResponse.json(
+        { error: 'Client ID is required' },
+        { status: 401 }
+      )
+    }
+
+    // Get guest information with client isolation
     const { data: guest, error: guestError } = await supabase
       .from('guests')
       .select('*')
       .eq('id', guestId)
+      .eq('client_id', clientId)
       .single()
 
     if (guestError || !guest) {
       return NextResponse.json({ error: 'Guest not found' }, { status: 404 })
     }
 
-    // Get photos for this guest
+    // Get photos for this guest with client isolation
     const { data: photos, error: photosError } = await supabase
       .from('photos')
       .select('*')
       .eq('guest_id', guestId)
+      .eq('client_id', clientId)
       .eq('is_selected', true)
       .order('created_at', { ascending: false })
 
@@ -60,11 +72,12 @@ export async function GET(
       )
     }
 
-    // Get photographer information
+    // Get photographer information with client isolation
     const { data: photographer, error: photographerError } = await supabase
       .from('photographers')
       .select('id, name, branding')
       .eq('id', guest.photographer_id)
+      .eq('client_id', clientId)
       .single()
 
     if (photographerError) {
@@ -119,11 +132,22 @@ export async function PUT(
 
     const supabase = await createClient()
 
-    // Verify guest exists
+    // Get client_id from request headers
+    const clientId = request.headers.get('x-client-id')
+
+    if (!clientId) {
+      return NextResponse.json(
+        { error: 'Client ID is required' },
+        { status: 401 }
+      )
+    }
+
+    // Verify guest exists with client isolation
     const { data: guest, error: guestError } = await supabase
       .from('guests')
       .select('id')
       .eq('id', guestId)
+      .eq('client_id', clientId)
       .single()
 
     if (guestError || !guest) {
@@ -140,6 +164,7 @@ export async function PUT(
         updated_at: new Date().toISOString(),
       })
       .eq('id', guestId)
+      .eq('client_id', clientId)
       .select()
       .single()
 

@@ -11,15 +11,15 @@ export type LocaleCode = keyof typeof locales
 
 // Initialize i18n instance
 export async function initI18n(locale: LocaleCode) {
-  const { messages } = await import(`../locales/${locale}/messages.js`)
-  i18n.load(locale, messages)
+  const catalog = await import(`../locales/${locale}/messages.json`)
+  i18n.load(locale, catalog.messages)
   i18n.activate(locale)
 }
 
 // Function to dynamically load locale
 export async function loadLocale(locale: LocaleCode) {
-  const { messages } = await import(`../locales/${locale}/messages.js`)
-  i18n.load(locale, messages)
+  const catalog = await import(`../locales/${locale}/messages.json`)
+  i18n.load(locale, catalog.messages)
   i18n.activate(locale)
 }
 

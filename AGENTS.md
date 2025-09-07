@@ -81,6 +81,27 @@ Internal packages use `workspace:*` pattern:
 
 Always check existing workspace dependencies before adding external packages.
 
+## Environment Configuration
+
+### Required Environment Variables
+The project uses Supabase for backend services. Required environment variables:
+
+- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anonymous key
+- `NEXT_PUBLIC_APP_URL`: Application URL (defaults to localhost:3000)
+- `NEXT_PUBLIC_APP_NAME`: Application name (defaults to "Photography Gallery")
+
+### Environment Setup
+1. Copy `.env.example` to `.env.local` in `apps/web/`
+2. Fill in your Supabase credentials
+3. Environment variables are automatically loaded by Next.js
+
+### Middleware Environment Variables
+**Important**: Next.js middleware runs in Edge Runtime with different environment variable behavior:
+- Use `process.env.VARIABLE_NAME` directly in middleware
+- Avoid importing the `env` config object in middleware files
+- Always check for variable existence before using them
+
 ## AI Development Workflow
 
 This project is optimized for AI-powered development:

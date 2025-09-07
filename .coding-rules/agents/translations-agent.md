@@ -13,7 +13,7 @@ This agent specializes in managing internationalization (i18n) using [Lingui.dev
 - **Framework**: Lingui.dev v5.4.1
 - **Locales**: English (en) - source, Russian (ru)
 - **Catalogs**: `src/shared/locales/{locale}/messages.po`
-- **Compilation**: Auto-compiled to JavaScript for runtime
+- **Compilation**: Compiled to JSON files (`.json`) for Next.js compatibility
 - **Integration**: Next.js 15 with SWC plugin
 
 ### File Structure
@@ -28,9 +28,11 @@ src/
 │   │   └── language-switcher.tsx      # UI for switching languages
 │   └── locales/
 │       ├── en/
-│       │   └── messages.po            # English translations
+│       │   ├── messages.po            # English translation catalog
+│       │   └── messages.json          # Compiled English translations
 │       └── ru/
-│           └── messages.po            # Russian translations
+│           ├── messages.po            # Russian translation catalog
+│           └── messages.json          # Compiled Russian translations
 ├── features/
 │   └── [feature]/
 │       └── components/                # Components with translations
@@ -287,9 +289,10 @@ export function MyComponent() {
 ### 4. Runtime Errors
 **Problem**: Translations not loading
 **Solution**: 
-- Check compiled message files exist
-- Verify locale loading in i18n provider
-- Ensure catalogs are compiled
+- Check compiled message files exist (`.json` files in locale directories)
+- Verify locale loading imports from `.json` files
+- Ensure catalogs are compiled with `pnpm compile`
+- Check that import accesses `catalog.messages` for JSON format
 
 ## Maintenance Tasks
 

@@ -1,5 +1,11 @@
+import { ShoppingCart } from 'lucide-react'
 import React, { lazy, Suspense, useEffect, useState } from 'react'
-import { useGalleryStore } from '@/shared/stores/gallery.store'
+import {
+  useCartItemCount,
+  useGalleryStore,
+} from '@/shared/stores/gallery.store'
+import { Cart } from './cart'
+import { Checkout } from './checkout'
 import { ImageWithFallback } from './image-with-fallback'
 
 // Lazy load the virtualized gallery for better performance
@@ -16,12 +22,15 @@ interface GuestGalleryProps {
 export function GuestGallery({ guestId }: GuestGalleryProps) {
   const {
     photos,
-    cart,
     photographer,
     isLoadingPhotos,
     setDemoImages,
     loadPhotos,
+    addToCart,
+    setShowCart,
   } = useGalleryStore()
+
+  const cartItemCount = useCartItemCount()
 
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set())
 
@@ -73,9 +82,16 @@ export function GuestGallery({ guestId }: GuestGalleryProps) {
             Photographer: {photographer.studioName}
           </p>
         )}
-        <div className="flex gap-4 mt-4 text-sm text-gray-500">
+        <div className="flex gap-4 mt-4 text-sm text-gray-500 items-center">
           <span>Photos: {displayPhotos.length}</span>
-          <span>Cart items: {cart.length}</span>
+          <button
+            type="button"
+            onClick={() => setShowCart(true)}
+            className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            Cart ({cartItemCount})
+          </button>
         </div>
       </div>
 
@@ -140,6 +156,7 @@ export function GuestGallery({ guestId }: GuestGalleryProps) {
                   </span>
                   <button
                     type="button"
+                    onClick={() => addToCart(photo, 'digital')}
                     className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
                   >
                     Add to Cart
@@ -150,6 +167,9 @@ export function GuestGallery({ guestId }: GuestGalleryProps) {
           ))}
         </div>
       )}
+
+      <Cart />
+      <Checkout />
     </div>
   )
 }
