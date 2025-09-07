@@ -26,10 +26,11 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { env } from '@/shared/config/env'
 import { createClient } from '@/shared/lib/supabase/client'
 import { useAuthStore } from '@/shared/stores/auth.store'
+import { useLingui } from '@lingui/react'
+import { toast } from 'sonner'
 
 const supabase = createClient()
 
-import { toast } from 'sonner'
 import { ImageWithFallback } from '@/features/gallery/components/image-with-fallback'
 import { PhotoUpload } from './photo-upload'
 
@@ -79,6 +80,7 @@ export function PhotographerDashboard({
   user,
   onGuestPreview,
 }: PhotographerDashboardProps) {
+  const { _ } = useLingui()
   const signOut = useAuthStore((state) => state.signOut)
   const [activeTab, setActiveTab] = useState('upload')
   const [profile, setProfile] = useState<PhotographerProfile | null>(null)
@@ -275,7 +277,10 @@ export function PhotographerDashboard({
                     if (response.ok) {
                       const result = await response.json()
                       toast.success(
-                        `Successfully uploaded and saved ${result.count} photos for guest ${guestId}!`
+                        _(
+                          'Successfully uploaded and saved {count} photos for guest {guestId}!',
+                          { count: result.count, guestId }
+                        )
                       )
                     } else {
                       const error = await response.json()

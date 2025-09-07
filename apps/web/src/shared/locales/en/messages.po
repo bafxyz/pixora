@@ -827,3 +827,23 @@ msgstr "Your Cart"
 #: src/features/gallery/components/cart.tsx:46
 msgid "Your cart is empty"
 msgstr "Your cart is empty"
+
+#: src/features/photographer/components/photographer-dashboard.tsx:281
+msgid "Successfully uploaded and saved {count} photos for guest {guestId}!"
+msgstr "Successfully uploaded and saved {count} photos for guest {guestId}!"
+
+#: src/features/photographer/components/photographer-dashboard.tsx:198
+msgid "Settings updated successfully"
+msgstr "Settings updated successfully"
+
+#: src/features/photographer/components/photographer-dashboard.tsx:197
+msgid "Error updating settings"
+msgstr "Error updating settings"
+
+#: src/features/photographer/components/photographer-dashboard.tsx:289
+msgid "Upload successful but failed to save: {error}"
+msgstr "Upload successful but failed to save: {error}"
+
+#: src/features/photographer/components/photographer-dashboard.tsx:293
+msgid "Upload failed: {error}"
+msgstr "Upload failed: {error}"
