@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/lib/prisma/client'
-import type { Guest } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,16 +30,14 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    const guestsWithPhotoCount = guests.map(
-      (guest: Guest & { _count: { photos: number } }) => ({
-        id: guest.id,
-        name: guest.name,
-        email: guest.email,
-        createdAt: guest.createdAt,
-        clientId: guest.clientId,
-        photosCount: guest._count.photos,
-      })
-    )
+    const guestsWithPhotoCount = guests.map((guest) => ({
+      id: guest.id,
+      name: guest.name,
+      email: guest.email,
+      createdAt: guest.createdAt,
+      clientId: guest.clientId,
+      photosCount: guest._count.photos,
+    }))
 
     return NextResponse.json({
       guests: guestsWithPhotoCount,
