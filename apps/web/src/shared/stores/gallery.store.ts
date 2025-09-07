@@ -278,6 +278,48 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
       )
 
       if (response.ok) {
+        const orderData = await response.json()
+
+        // Send order confirmation email
+        try {
+          const { photographer } = get()
+          const total = get().cart.reduce((sum, item) => {
+            const price = item.type === 'digital' ? item.price : item.price * 2
+            return sum + price * item.quantity
+          }, 0)
+
+          const emailData = {
+            orderId: orderData.orderId || `ORDER-${Date.now()}`,
+            guestName: orderForm.name,
+            guestEmail: orderForm.email,
+            photographerName: photographer
+              ? `${photographer.firstName} ${photographer.lastName}`
+              : 'Photographer',
+            studioName: photographer?.studioName || 'Photo Studio',
+            items: get().cart.map((item) => ({
+              name: `${item.fileName} (${item.type})`,
+              quantity: item.quantity,
+              price: item.type === 'digital' ? item.price : item.price * 2,
+            })),
+            totalAmount: total,
+            orderDate: new Date().toISOString(),
+          }
+
+          // Send email asynchronously (don't block order completion)
+          fetch('/api/emails/order-confirmation', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(emailData),
+          }).catch((error) => {
+            console.error('Failed to send order confirmation email:', error)
+          })
+        } catch (emailError) {
+          console.error('Error preparing order confirmation email:', emailError)
+          // Don't fail the order if email fails
+        }
+
         set({ orderComplete: true, cart: [], showCheckout: false })
       } else {
         throw new Error('Order submission failed')

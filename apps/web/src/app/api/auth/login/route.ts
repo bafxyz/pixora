@@ -26,9 +26,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 401 })
     }
 
+    // Получаем информацию о клиенте пользователя
+    const user = data.user
+    let clientId = user?.user_metadata?.client_id
+
+    // Если client_id не указан в метаданных, ищем его в таблице clients
+    if (!clientId && user?.email) {
+      const { data: clientData } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('email', user.email)
+        .single()
+
+      if (clientData) {
+        clientId = clientData.id
+      }
+    }
+
     return NextResponse.json({
       user: data.user,
       session: data.session,
+      clientId,
     })
   } catch (_error) {
     return NextResponse.json(

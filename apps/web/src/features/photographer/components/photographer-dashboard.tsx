@@ -18,7 +18,6 @@ import {
   Image as ImageIcon,
   LogOut,
   Palette,
-  Plus,
   Settings,
   ShoppingCart,
   Upload,
@@ -31,6 +30,7 @@ import { useAuthStore } from '@/shared/stores/auth.store'
 const supabase = createClient()
 
 import { ImageWithFallback } from '@/features/gallery/components/image-with-fallback'
+import { PhotoUpload } from './photo-upload'
 
 interface User {
   id: string
@@ -83,12 +83,6 @@ export function PhotographerDashboard({
   const [profile, setProfile] = useState<PhotographerProfile | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [orders, setOrders] = useState<Order[]>([])
-
-  // Форма загрузки фото
-  const [uploadForm, setUploadForm] = useState({
-    guestId: '',
-    photoCount: 1,
-  })
 
   // Форма настроек
   const [settingsForm, setSettingsForm] = useState({
@@ -163,52 +157,6 @@ export function PhotographerDashboard({
       loadOrders()
     }
   }, [activeTab, loadOrders])
-
-  // Симуляция загрузки фотографий
-  const handlePhotoUpload = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
-    try {
-      const accessToken = await getAccessToken()
-
-      // Симулируем загрузку нескольких фото
-      const photos = Array.from({ length: uploadForm.photoCount }, (_, i) => ({
-        name: `photo_${i + 1}.jpg`,
-        size: Math.floor(Math.random() * 5000000) + 1000000, // 1-5MB
-      }))
-
-      const response = await fetch(
-        `${env.supabase.url}/functions/v1/make-server-2e5a4e91/upload-photos`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-            guestId: uploadForm.guestId,
-            photos,
-          }),
-        }
-      )
-
-      if (response.ok) {
-        alert(
-          `Успешно загружено ${uploadForm.photoCount} фотографий для гостя ${uploadForm.guestId}`
-        )
-        setUploadForm({ guestId: '', photoCount: 1 })
-      } else {
-        const error = await response.json()
-        throw new Error(error.error)
-      }
-    } catch (error) {
-      console.error('Upload error:', error)
-      alert('Ошибка при загрузке фотографий')
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   // Обновление настроек брендинга
   const handleSettingsUpdate = async (e: React.FormEvent) => {
@@ -299,85 +247,74 @@ export function PhotographerDashboard({
 
           <TabsContent value="upload" className="space-y-6">
             <div className="grid lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Загрузка фотографий</CardTitle>
-                  <CardDescription>
-                    Загрузите фотографии для конкретного гостя
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handlePhotoUpload} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="guestId">ID гостя</Label>
-                      <Input
-                        id="guestId"
-                        placeholder="GUEST123"
-                        value={uploadForm.guestId}
-                        onChange={(e) =>
-                          setUploadForm((prev) => ({
-                            ...prev,
-                            guestId: e.target.value,
-                          }))
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="photoCount">Количество фотографий</Label>
-                      <Input
-                        id="photoCount"
-                        type="number"
-                        min="1"
-                        max="50"
-                        value={uploadForm.photoCount}
-                        onChange={(e) =>
-                          setUploadForm((prev) => ({
-                            ...prev,
-                            photoCount: parseInt(e.target.value, 10),
-                          }))
-                        }
-                        required
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={isLoading}
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      {isLoading ? 'Загрузка...' : 'Симулировать загрузку'}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
+              <PhotoUpload
+                onUploadComplete={async (urls, guestId) => {
+                  try {
+                    // Save uploaded photo URLs to database
+                    const response = await fetch('/api/photos/save', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        guestId,
+                        photoUrls: urls,
+                      }),
+                    })
+
+                    if (response.ok) {
+                      const result = await response.json()
+                      alert(
+                        `Successfully uploaded and saved ${result.count} photos for guest ${guestId}!`
+                      )
+                    } else {
+                      const error = await response.json()
+                      throw new Error(error.error || 'Failed to save photos')
+                    }
+                  } catch (error) {
+                    console.error('Save photos error:', error)
+                    alert(
+                      `Upload successful but failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`
+                    )
+                  }
+                }}
+                onUploadError={(error) => {
+                  alert(`Upload failed: ${error}`)
+                }}
+              />
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Предварительный просмотр</CardTitle>
+                  <CardTitle>Guest Gallery Preview</CardTitle>
                   <CardDescription>
-                    Посмотрите как видят галерею ваши гости
+                    Preview how guests see their photo galleries
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <Input
-                      placeholder="Введите ID гостя для просмотра"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          const target = e.target as HTMLInputElement
-                          if (target.value.trim()) {
-                            onGuestPreview(target.value.trim())
+                    <div className="space-y-2">
+                      <Label htmlFor="preview-guest-id">
+                        Guest ID for Preview
+                      </Label>
+                      <Input
+                        id="preview-guest-id"
+                        placeholder="Enter guest ID (e.g., GUEST123)"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const target = e.target as HTMLInputElement
+                            if (target.value.trim()) {
+                              onGuestPreview(target.value.trim())
+                            }
                           }
-                        }
-                      }}
-                    />
+                        }}
+                      />
+                    </div>
                     <Button
                       variant="outline"
                       className="w-full"
                       onClick={() => {
-                        const input = document.querySelector(
-                          'input[placeholder*="ID гостя для просмотра"]'
+                        const input = document.getElementById(
+                          'preview-guest-id'
                         ) as HTMLInputElement
                         if (input?.value.trim()) {
                           onGuestPreview(input.value.trim())
@@ -385,7 +322,7 @@ export function PhotographerDashboard({
                       }}
                     >
                       <Eye className="w-4 h-4 mr-2" />
-                      Предварительный просмотр
+                      Preview Gallery
                     </Button>
                   </div>
                 </CardContent>

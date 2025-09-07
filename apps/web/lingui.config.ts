@@ -9,7 +9,7 @@ const config = {
     },
   ],
   format: 'po',
-  compileNamespace: 'cjs',
+  compileNamespace: 'json',
 }
 
 export default config

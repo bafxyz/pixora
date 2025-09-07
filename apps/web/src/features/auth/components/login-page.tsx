@@ -1,3 +1,4 @@
+import { Trans, t } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
 import { Button } from '@repo/ui/button'
 import {
@@ -12,6 +13,7 @@ import { Label } from '@repo/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/tabs'
 import { Camera, Star, Users } from 'lucide-react'
 import React, { useState } from 'react'
+import { LanguageSwitcher } from '@/shared/components/language-switcher'
 import { env } from '@/shared/config/env'
 
 interface User {
@@ -36,7 +38,7 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value)
-    setError('') // Очищаем ошибки при переключении вкладок
+    setError('') // <Trans>Clear errors when switching tabs</Trans>
   }
 
   // Форма входа
@@ -172,50 +174,59 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
+      {/* Language Switcher - Mobile optimized */}
+      <div className="absolute top-4 right-4 z-10">
+        <LanguageSwitcher />
+      </div>
+
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-6 lg:gap-8 items-center">
         {/* Левая сторона - Информация о продукте */}
-        <div className="text-center lg:text-left space-y-8">
+        <div className="text-center lg:text-left space-y-6 lg:space-y-8 px-4 lg:px-0">
           <div className="space-y-4">
             <div className="flex items-center justify-center lg:justify-start gap-3">
-              <Camera className="w-10 h-10 text-blue-600" />
-              <h1 className="text-4xl font-bold text-gray-900">Pixora</h1>
+              <Camera className="w-8 h-8 lg:w-10 lg:h-10 text-blue-600" />
+              <h1 className="text-2xl lg:text-4xl font-bold text-gray-900">
+                Pixora
+              </h1>
             </div>
-            <p className="text-xl text-gray-600">
-              Платформа для цифровизации фото-услуг
+            <p className="text-lg lg:text-xl text-gray-600">
+              <Trans>Platform for digitizing photo services</Trans>
             </p>
           </div>
 
-          <div className="grid gap-6">
-            <div className="flex items-start gap-4">
-              <Camera className="w-6 h-6 text-blue-600 mt-1" />
+          <div className="grid gap-4 lg:gap-6">
+            <div className="flex items-start gap-3 lg:gap-4">
+              <Camera className="w-5 h-5 lg:w-6 lg:h-6 text-blue-600 mt-1 flex-shrink-0" />
               <div>
-                <h3 className="font-semibold text-gray-900">
-                  Быстрая загрузка
+                <h3 className="font-semibold text-gray-900 text-sm lg:text-base">
+                  <Trans>Fast upload</Trans>
                 </h3>
-                <p className="text-gray-600">
-                  Мгновенная синхронизация фото с мобильного устройства
+                <p className="text-gray-600 text-sm lg:text-base">
+                  <Trans>Instant photo sync from mobile device</Trans>
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4">
-              <Users className="w-6 h-6 text-blue-600 mt-1" />
+            <div className="flex items-start gap-3 lg:gap-4">
+              <Users className="w-5 h-5 lg:w-6 lg:h-6 text-blue-600 mt-1 flex-shrink-0" />
               <div>
-                <h3 className="font-semibold text-gray-900">
-                  Удобство для гостей
+                <h3 className="font-semibold text-gray-900 text-sm lg:text-base">
+                  <Trans>Guest convenience</Trans>
                 </h3>
-                <p className="text-gray-600">
-                  Беспарольный доступ к персональным галереям
+                <p className="text-gray-600 text-sm lg:text-base">
+                  <Trans>Passwordless access to personal galleries</Trans>
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4">
-              <Star className="w-6 h-6 text-blue-600 mt-1" />
+            <div className="flex items-start gap-3 lg:gap-4">
+              <Star className="w-5 h-5 lg:w-6 lg:h-6 text-blue-600 mt-1 flex-shrink-0" />
               <div>
-                <h3 className="font-semibold text-gray-900">Брендинг</h3>
-                <p className="text-gray-600">
-                  Полная кастомизация под ваш стиль
+                <h3 className="font-semibold text-gray-900 text-sm lg:text-base">
+                  <Trans>Branding</Trans>
+                </h3>
+                <p className="text-gray-600 text-sm lg:text-base">
+                  <Trans>Complete customization for your style</Trans>
                 </p>
               </div>
             </div>
@@ -223,33 +234,41 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
         </div>
 
         {/* Правая сторона - Формы */}
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6 w-full max-w-md lg:max-w-none">
           <Tabs
             value={activeTab}
             onValueChange={handleTabChange}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Вход</TabsTrigger>
-              <TabsTrigger value="register">Регистрация</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 h-10 lg:h-11">
+              <TabsTrigger value="login" className="text-xs lg:text-sm">
+                <Trans>Login</Trans>
+              </TabsTrigger>
+              <TabsTrigger value="register" className="text-xs lg:text-sm">
+                <Trans>Registration</Trans>
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="login">
               <Card>
                 <CardHeader>
-                  <CardTitle>Вход в систему</CardTitle>
+                  <CardTitle>
+                    <Trans>Sign in</Trans>
+                  </CardTitle>
                   <CardDescription>
-                    Войдите в свой аккаунт фотографа
+                    <Trans>Sign in to your photographer account</Trans>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
+                      <Label htmlFor="email">
+                        <Trans>Email</Trans>
+                      </Label>
                       <Input
                         id="email"
                         type="email"
-                        placeholder="photographer@studio.com"
+                        placeholder={_(t`photographer@studio.com`)}
                         value={loginForm.email}
                         onChange={(e) =>
                           setLoginForm((prev) => ({
@@ -261,7 +280,9 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="password">Пароль</Label>
+                      <Label htmlFor="password">
+                        <Trans>Password</Trans>
+                      </Label>
                       <Input
                         id="password"
                         type="password"
@@ -285,7 +306,7 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
                       className="w-full"
                       disabled={isLoading}
                     >
-                      {isLoading ? 'Вход...' : 'Войти'}
+                      {isLoading ? _(t`Signing in...`) : _(t`Sign in`)}
                     </Button>
                   </form>
                 </CardContent>
@@ -295,19 +316,23 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
             <TabsContent value="register">
               <Card>
                 <CardHeader>
-                  <CardTitle>Регистрация фотографа</CardTitle>
+                  <CardTitle>
+                    <Trans>Photographer registration</Trans>
+                  </CardTitle>
                   <CardDescription>
-                    Создайте аккаунт для вашей фотостудии
+                    <Trans>Create an account for your photo studio</Trans>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleRegister} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="firstName">Имя</Label>
+                        <Label htmlFor="firstName">
+                          <Trans>First name</Trans>
+                        </Label>
                         <Input
                           id="firstName"
-                          placeholder="Иван"
+                          placeholder={_(t`John`)}
                           value={registerForm.firstName}
                           onChange={(e) =>
                             setRegisterForm((prev) => ({
@@ -319,10 +344,12 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="lastName">Фамилия</Label>
+                        <Label htmlFor="lastName">
+                          <Trans>Last name</Trans>
+                        </Label>
                         <Input
                           id="lastName"
-                          placeholder="Петров"
+                          placeholder={_(t`Doe`)}
                           value={registerForm.lastName}
                           onChange={(e) =>
                             setRegisterForm((prev) => ({
@@ -335,10 +362,12 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="studioName">Название студии</Label>
+                      <Label htmlFor="studioName">
+                        <Trans>Studio name</Trans>
+                      </Label>
                       <Input
                         id="studioName"
-                        placeholder="Студия Петрова"
+                        placeholder={_(t`Doe Studio`)}
                         value={registerForm.studioName}
                         onChange={(e) =>
                           setRegisterForm((prev) => ({
@@ -350,11 +379,13 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="regEmail">Email</Label>
+                      <Label htmlFor="regEmail">
+                        <Trans>Email</Trans>
+                      </Label>
                       <Input
                         id="regEmail"
                         type="email"
-                        placeholder="photographer@studio.com"
+                        placeholder={_(t`photographer@studio.com`)}
                         value={registerForm.email}
                         onChange={(e) =>
                           setRegisterForm((prev) => ({
@@ -366,7 +397,9 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="regPassword">Пароль</Label>
+                      <Label htmlFor="regPassword">
+                        <Trans>Password</Trans>
+                      </Label>
                       <Input
                         id="regPassword"
                         type="password"
@@ -390,7 +423,7 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
                       className="w-full"
                       disabled={isLoading}
                     >
-                      {isLoading ? 'Создание...' : 'Создать аккаунт'}
+                      {isLoading ? _(t`Creating...`) : _(t`Create account`)}
                     </Button>
                   </form>
                 </CardContent>
@@ -401,21 +434,23 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
           {/* Доступ для гостей */}
           <Card className="border-dashed border-gray-300">
             <CardHeader>
-              <CardTitle className="text-center">Гостевой доступ</CardTitle>
+              <CardTitle className="text-center">
+                <Trans>Guest access</Trans>
+              </CardTitle>
               <CardDescription className="text-center">
-                Введите ваш ID для просмотра фотографий
+                <Trans>Enter your guest ID to view photos</Trans>
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleGuestAccess} className="space-y-4">
                 <Input
-                  placeholder="Введите ID гостя (например: GUEST123)"
+                  placeholder={_(t`Enter guest ID (e.g., GUEST123)`)}
                   value={guestId}
                   onChange={(e) => setGuestId(e.target.value)}
                   required
                 />
                 <Button type="submit" variant="outline" className="w-full">
-                  Посмотреть фотографии
+                  <Trans>View photos</Trans>
                 </Button>
               </form>
             </CardContent>

@@ -25,6 +25,6 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Insert sample orders
 INSERT INTO orders (id, guest_id, photographer_id, photo_ids, total_amount, status) VALUES
-('order-1', 'guest-1', 'photographer-1', ARRAY['photo-1', 'photo-2'], 150.00, 'pending'),
-('order-2', 'guest-3', 'photographer-2', ARRAY['photo-4'], 75.00, 'completed')
+('order-1', 'guest-1', 'photographer-1', ARRAY['photo-1', 'photo-2'], 150.00, 'new'),
+('order-2', 'guest-3', 'photographer-2', ARRAY['photo-4'], 75.00, 'ready')
 ON CONFLICT (id) DO NOTHING;

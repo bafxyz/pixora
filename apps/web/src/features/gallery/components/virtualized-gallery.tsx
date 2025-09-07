@@ -31,23 +31,39 @@ export function VirtualizedGallery({
   overscan = 5,
   onPhotoClick,
 }: VirtualizedGalleryProps) {
+  // Responsive item height based on screen size
+  const responsiveItemHeight =
+    typeof window !== 'undefined' && window.innerWidth < 768 ? 200 : itemHeight
+  const responsiveContainerHeight =
+    typeof window !== 'undefined' && window.innerWidth < 768
+      ? 400
+      : containerHeight
+
   const [scrollTop, setScrollTop] = useState(0)
-  const [containerHeightState, setContainerHeightState] =
-    useState(containerHeight)
+  const [containerHeightState, setContainerHeightState] = useState(
+    responsiveContainerHeight
+  )
   const containerRef = useRef<HTMLDivElement>(null)
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set())
 
   // Calculate visible range with overscan
   const visibleRange = useMemo((): VisibleRange => {
-    const start = Math.floor(scrollTop / itemHeight)
-    const visibleCount = Math.ceil(containerHeightState / itemHeight)
+    const currentItemHeight = responsiveItemHeight
+    const start = Math.floor(scrollTop / currentItemHeight)
+    const visibleCount = Math.ceil(containerHeightState / currentItemHeight)
     const end = Math.min(start + visibleCount + overscan, photos.length)
 
     return {
       start: Math.max(0, start - overscan),
       end,
     }
-  }, [scrollTop, itemHeight, containerHeightState, overscan, photos.length])
+  }, [
+    scrollTop,
+    responsiveItemHeight,
+    containerHeightState,
+    overscan,
+    photos.length,
+  ])
 
   // Get visible photos
   const visiblePhotos = useMemo(() => {
@@ -55,7 +71,7 @@ export function VirtualizedGallery({
   }, [photos, visibleRange])
 
   // Calculate total height for scrollbar
-  const totalHeight = photos.length * itemHeight
+  const totalHeight = photos.length * responsiveItemHeight
 
   // Handle scroll
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -71,17 +87,18 @@ export function VirtualizedGallery({
   useEffect(() => {
     const updateHeight = () => {
       if (containerRef.current) {
-        setContainerHeightState(containerRef.current.clientHeight)
+        const newHeight = window.innerWidth < 768 ? 400 : containerHeight
+        setContainerHeightState(newHeight)
       }
     }
 
     updateHeight()
     window.addEventListener('resize', updateHeight)
     return () => window.removeEventListener('resize', updateHeight)
-  }, [])
+  }, [containerHeight])
 
   // Calculate offset for visible items
-  const offsetY = visibleRange.start * itemHeight
+  const offsetY = visibleRange.start * responsiveItemHeight
 
   return (
     <div
@@ -106,8 +123,11 @@ export function VirtualizedGallery({
               <button
                 type="button"
                 key={photo.id}
-                className="inline-block p-2 cursor-pointer group border-0 bg-transparent"
-                style={{ width: '25%', height: itemHeight }}
+                className="inline-block p-1 lg:p-2 cursor-pointer group border-0 bg-transparent"
+                style={{
+                  width: window?.innerWidth < 768 ? '33.333%' : '25%',
+                  height: responsiveItemHeight,
+                }}
                 onClick={() => onPhotoClick?.(photo)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {

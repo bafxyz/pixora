@@ -9,11 +9,48 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      clients: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          phone: string | null
+          address: string | null
+          branding: Json | null
+          settings: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          phone?: string | null
+          address?: string | null
+          branding?: Json | null
+          settings?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          phone?: string | null
+          address?: string | null
+          branding?: Json | null
+          settings?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       photographers: {
         Row: {
           id: string
           email: string
           name: string | null
+          client_id: string
           created_at: string
           updated_at: string
           branding: Json | null
@@ -22,6 +59,7 @@ export interface Database {
           id?: string
           email: string
           name?: string | null
+          client_id: string
           created_at?: string
           updated_at?: string
           branding?: Json | null
@@ -30,11 +68,20 @@ export interface Database {
           id?: string
           email?: string
           name?: string | null
+          client_id?: string
           created_at?: string
           updated_at?: string
           branding?: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: 'photographers_client_id_fkey'
+            columns: ['client_id']
+            isOneToOne: false
+            referencedRelation: 'clients'
+            referencedColumns: ['id']
+          },
+        ]
       }
       guests: {
         Row: {
@@ -42,6 +89,7 @@ export interface Database {
           name: string
           email: string | null
           photographer_id: string
+          client_id: string
           created_at: string
           updated_at: string
         }
@@ -50,6 +98,7 @@ export interface Database {
           name: string
           email?: string | null
           photographer_id: string
+          client_id: string
           created_at?: string
           updated_at?: string
         }
@@ -58,6 +107,7 @@ export interface Database {
           name?: string
           email?: string | null
           photographer_id?: string
+          client_id?: string
           created_at?: string
           updated_at?: string
         }
@@ -69,6 +119,13 @@ export interface Database {
             referencedRelation: 'photographers'
             referencedColumns: ['id']
           },
+          {
+            foreignKeyName: 'guests_client_id_fkey'
+            columns: ['client_id']
+            isOneToOne: false
+            referencedRelation: 'clients'
+            referencedColumns: ['id']
+          },
         ]
       }
       photos: {
@@ -76,6 +133,7 @@ export interface Database {
           id: string
           photographer_id: string
           guest_id: string | null
+          client_id: string
           file_path: string
           file_name: string
           file_size: number | null
@@ -87,6 +145,7 @@ export interface Database {
           id?: string
           photographer_id: string
           guest_id?: string | null
+          client_id: string
           file_path: string
           file_name: string
           file_size?: number | null
@@ -98,6 +157,7 @@ export interface Database {
           id?: string
           photographer_id?: string
           guest_id?: string | null
+          client_id?: string
           file_path?: string
           file_name?: string
           file_size?: number | null
@@ -120,6 +180,13 @@ export interface Database {
             referencedRelation: 'guests'
             referencedColumns: ['id']
           },
+          {
+            foreignKeyName: 'photos_client_id_fkey'
+            columns: ['client_id']
+            isOneToOne: false
+            referencedRelation: 'clients'
+            referencedColumns: ['id']
+          },
         ]
       }
       orders: {
@@ -127,6 +194,7 @@ export interface Database {
           id: string
           guest_id: string
           photographer_id: string
+          client_id: string
           photo_ids: string[]
           total_amount: number | null
           status: string
@@ -137,6 +205,7 @@ export interface Database {
           id?: string
           guest_id: string
           photographer_id: string
+          client_id: string
           photo_ids: string[]
           total_amount?: number | null
           status?: string
@@ -147,6 +216,7 @@ export interface Database {
           id?: string
           guest_id?: string
           photographer_id?: string
+          client_id?: string
           photo_ids?: string[]
           total_amount?: number | null
           status?: string
@@ -166,6 +236,13 @@ export interface Database {
             columns: ['photographer_id']
             isOneToOne: false
             referencedRelation: 'photographers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'orders_client_id_fkey'
+            columns: ['client_id']
+            isOneToOne: false
+            referencedRelation: 'clients'
             referencedColumns: ['id']
           },
         ]
