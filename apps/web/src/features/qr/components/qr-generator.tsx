@@ -1,6 +1,7 @@
 'use client'
 
-import { Trans, t } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
+import { Trans } from '@lingui/react/macro'
 import { Button } from '@repo/ui/button'
 import {
   Card,
@@ -25,6 +26,7 @@ interface QRGeneratorProps {
 }
 
 export function QRGenerator({ guestId, onGenerate }: QRGeneratorProps) {
+  const { _ } = useLingui()
   const [guestName, setGuestName] = useState('')
   const [qrData, setQrData] = useState<QRData | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -125,7 +127,7 @@ export function QRGenerator({ guestId, onGenerate }: QRGeneratorProps) {
             id="guestName"
             value={guestName}
             onChange={(e) => setGuestName(e.target.value)}
-            placeholder={t`Enter guest name`}
+            placeholder={_('Enter guest name')}
           />
         </div>
 

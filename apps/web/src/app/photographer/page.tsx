@@ -1,6 +1,7 @@
 'use client'
 
-import { Trans, t } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
+import { Trans } from '@lingui/react/macro'
 import { Button } from '@repo/ui/button'
 import {
   Card,
@@ -24,6 +25,7 @@ interface Guest {
 }
 
 export default function PhotographerPage() {
+  const { _ } = useLingui()
   const [scannedGuests, setScannedGuests] = useState<Guest[]>([])
   const [activeTab, setActiveTab] = useState('scan')
 
@@ -56,13 +58,13 @@ export default function PhotographerPage() {
           return [...prev, newGuest]
         })
 
-        alert(t`Guest ${result.guest.name} successfully added!`)
+        alert(_(`Guest ${result.guest.name} successfully added!`))
       } else {
-        alert(t`Error: ${result.error}`)
+        alert(_(`Error: ${result.error}`))
       }
     } catch (error) {
       console.error('Error scanning QR:', error)
-      alert(t`Error scanning QR code`)
+      alert(_('Error scanning QR code'))
     }
   }
 
