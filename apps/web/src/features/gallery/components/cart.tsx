@@ -23,12 +23,12 @@ export function Cart() {
   if (!showCart) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="w-full max-w-4xl max-h-[90vh] bg-background rounded-lg shadow-2xl border overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="w-full max-w-4xl max-h-[85vh] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-6 border-b">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-foreground">
+            <h2 className="text-2xl font-bold text-gray-900">
               <Trans>Your Cart</Trans>
             </h2>
             <Button
@@ -49,10 +49,10 @@ export function Cart() {
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
                 <ShoppingCart className="w-8 h-8 text-muted-foreground" />
               </div>
-              <p className="text-lg font-medium text-foreground mb-2">
+              <p className="text-lg font-medium text-gray-900 mb-2">
                 <Trans>Your cart is empty</Trans>
               </p>
-              <p className="text-sm text-muted-foreground mb-6">
+              <p className="text-sm text-gray-600 mb-6">
                 <Trans>Add some photos to get started</Trans>
               </p>
               <Button
