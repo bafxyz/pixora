@@ -1,6 +1,7 @@
 'use client'
 
-import { Trans, t } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
+import { Trans } from '@lingui/react/macro'
 import { Button } from '@repo/ui/button'
 import {
   Card,
@@ -19,6 +20,7 @@ interface QRScannerProps {
 }
 
 export function QRScanner({ onScan, onError }: QRScannerProps) {
+  const { _ } = useLingui()
   const [isScanning, setIsScanning] = useState(false)
   const [hasPermission, setHasPermission] = useState<boolean | null>(null)
   const [lastScanned, setLastScanned] = useState<string | null>(null)
@@ -83,11 +85,11 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
                 // Automatically stop scanning after successful scan
                 stopScanning()
               } else {
-                setScanError(t`Invalid QR code format. Guest code expected.`)
+                setScanError(_('Invalid QR code format. Guest code expected.'))
               }
             } catch (_parseError) {
               setScanError(
-                t`QR code contains invalid data. Please try a different code.`
+                _('QR code contains invalid data. Please try a different code.')
               )
             }
           }
@@ -95,15 +97,15 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
           if (error instanceof NotFoundException) {
             // QR code not found, continue scanning
             setScanError(
-              t`QR code not found. Please bring it closer to the camera.`
+              _('QR code not found. Please bring it closer to the camera.')
             )
           } else {
             console.error('Error scanning QR:', error)
-            const errorMessage =
+            const _errorMessage =
               error instanceof Error ? error.message : 'Unknown error'
-            setScanError(t`Scanning error: ${errorMessage}`)
+            setScanError(_(`Scanning error: ${_errorMessage}`))
             if (onError) {
-              onError(t`QR code scanning error: ${errorMessage}`)
+              onError(_(`QR code scanning error: ${_errorMessage}`))
             }
           }
         }
@@ -112,7 +114,7 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
       console.error('Error accessing camera:', error)
       setHasPermission(false)
       if (onError) {
-        onError(t`Failed to access camera`)
+        onError(_('Failed to access camera'))
       }
     }
   }
@@ -147,7 +149,7 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
   }
 
   const handleManualInput = () => {
-    const manualData = prompt(t`Enter QR data manually:`)
+    const manualData = prompt(_('Enter QR data manually:'))
     if (manualData) {
       setLastScanned(manualData)
       if (onScan) {

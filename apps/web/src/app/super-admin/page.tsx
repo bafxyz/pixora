@@ -1,6 +1,7 @@
 'use client'
 
-import { Trans, t } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
+import { Trans } from '@lingui/react/macro'
 import { Button } from '@repo/ui/button'
 import {
   Card,
@@ -34,6 +35,7 @@ interface GlobalStats {
 }
 
 export default function SuperAdminPage() {
+  const { _ } = useLingui()
   const [clients, setClients] = useState<Client[]>([])
   const [globalStats, setGlobalStats] = useState<GlobalStats>({
     totalClients: 0,
@@ -106,7 +108,7 @@ export default function SuperAdminPage() {
 
   const handleCreateClient = async () => {
     if (!newClientName.trim() || !newClientEmail.trim()) {
-      alert(t`Fill in all fields`)
+      alert(_('Fill in all fields'))
       return
     }
 
@@ -128,13 +130,13 @@ export default function SuperAdminPage() {
         setNewClientName('')
         setNewClientEmail('')
         setShowCreateForm(false)
-        alert(t`Client created successfully!`)
+        alert(_('Client created successfully!'))
       } else {
-        alert(t`Error creating client`)
+        alert(_('Error creating client'))
       }
     } catch (error) {
       console.error('Error creating client:', error)
-      alert(t`Error creating client`)
+      alert(_('Error creating client'))
     }
   }
 
@@ -293,7 +295,7 @@ export default function SuperAdminPage() {
                     id="clientName"
                     value={newClientName}
                     onChange={(e) => setNewClientName(e.target.value)}
-                    placeholder={t`My Photo Studio`}
+                    placeholder={_('My Photo Studio')}
                     className="mt-1"
                   />
                 </div>

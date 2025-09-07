@@ -1,5 +1,5 @@
-import { Trans, t } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
+import { Trans } from '@lingui/react/macro'
 import { Button } from '@repo/ui/button'
 import { Trash2, X } from 'lucide-react'
 import React from 'react'
@@ -72,7 +72,7 @@ export function Cart() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-medium text-foreground">
-                        {_(t`Photo ${item.id.slice(-8)}`)}
+                        {_(`Photo ${item.id.slice(-8)}`)}
                       </h3>
                       <p className="text-sm text-muted-foreground capitalize">
                         {item.type}

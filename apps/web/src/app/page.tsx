@@ -1,6 +1,6 @@
 'use client'
 
-import { Trans } from '@lingui/macro'
+import { Trans } from '@lingui/react/macro'
 import { Camera, CheckCircle, Users } from 'lucide-react'
 import Link from 'next/link'
 
