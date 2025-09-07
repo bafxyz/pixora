@@ -15,7 +15,6 @@ import { Camera, QrCode, Upload, Users } from 'lucide-react'
 import { useState } from 'react'
 import { QRGenerator } from '@/features/qr/components/qr-generator'
 import { QRScanner } from '@/features/qr/components/qr-scanner'
-import { LanguageSwitcher } from '@/shared/components/language-switcher'
 
 interface Guest {
   id: string
@@ -84,17 +83,13 @@ export default function PhotographerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        {/* Language Switcher */}
-        <div className="flex justify-end mb-4">
-          <LanguageSwitcher />
-        </div>
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            <Trans>Photographer Panel</Trans>
-          </h1>
-          <p className="text-gray-600">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
+      <div className="container mx-auto px-4 py-6 lg:py-8">
+        <div className="mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">
+            <Trans>Event Management</Trans>
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
             <Trans>Manage guests and upload photos</Trans>
           </p>
         </div>
@@ -104,16 +99,25 @@ export default function PhotographerPage() {
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="scan" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-3 h-12 p-1 bg-white/80 backdrop-blur-md border border-white/30 shadow-lg">
+            <TabsTrigger
+              value="scan"
+              className="flex items-center gap-2 font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+            >
               <Camera className="w-4 h-4" />
               <Trans>Scan</Trans>
             </TabsTrigger>
-            <TabsTrigger value="generate" className="flex items-center gap-2">
+            <TabsTrigger
+              value="generate"
+              className="flex items-center gap-2 font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+            >
               <QrCode className="w-4 h-4" />
               <Trans>Create QR</Trans>
             </TabsTrigger>
-            <TabsTrigger value="guests" className="flex items-center gap-2">
+            <TabsTrigger
+              value="guests"
+              className="flex items-center gap-2 font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent data-[state=active]:to-amber-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+            >
               <Users className="w-4 h-4" />
               <Trans>Guests</Trans> ({scannedGuests.length})
             </TabsTrigger>

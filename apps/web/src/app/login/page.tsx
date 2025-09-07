@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { LoginPage } from '@/features/auth/components/login-page'
 import { createClient } from '@/shared/lib/supabase/client'
+import { useAuthStore } from '@/shared/stores/auth.store'
 
 interface User {
   id: string
@@ -16,6 +17,7 @@ interface User {
 
 export default function Login() {
   const router = useRouter()
+  const { initialize } = useAuthStore()
 
   // Check if user is already logged in and redirect
   useEffect(() => {
@@ -52,10 +54,16 @@ export default function Login() {
   }, [router])
 
   const handleLogin = async (user: User) => {
+    // Force re-initialize auth store to get fresh data
+    await initialize()
+
+    // Small delay to ensure state is updated
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
     // Get the actual user role from the response
     const userRole = user.role || 'photographer'
 
-    // Redirect based on role immediately
+    // Redirect based on role
     switch (userRole) {
       case 'admin':
         router.push('/admin')

@@ -169,60 +169,68 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
       {/* Header with Language Switcher */}
       <div className="flex justify-end p-4">
         <LanguageSwitcher />
       </div>
 
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-6 lg:gap-8 items-center pt-16 lg:pt-0">
+      <div className="flex items-center justify-center px-4 py-8 md:py-16">
+        <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left side - Product information */}
-          <div className="text-center lg:text-left space-y-6 lg:space-y-8 px-4 lg:px-0">
+          <div className="text-center lg:text-left space-y-6 lg:space-y-8 order-2 lg:order-1">
             <div className="space-y-4">
               <div className="flex items-center justify-center lg:justify-start gap-3">
-                <Camera className="w-8 h-8 lg:w-10 lg:h-10 text-primary" />
-                <h1 className="text-2xl lg:text-4xl font-bold text-foreground">
+                <div className="w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-br from-primary to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Camera className="w-6 h-6 lg:w-8 lg:h-8 text-white" />
+                </div>
+                <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                   Pixora
                 </h1>
               </div>
-              <p className="text-lg lg:text-xl text-muted-foreground">
+              <p className="text-lg lg:text-xl text-slate-600 dark:text-slate-300">
                 <Trans>Platform for digitizing photo services</Trans>
               </p>
             </div>
 
-            <div className="grid gap-4 lg:gap-6">
-              <div className="flex items-start gap-3 lg:gap-4">
-                <Camera className="w-5 h-5 lg:w-6 lg:h-6 text-primary mt-1 flex-shrink-0" />
+            <div className="grid gap-6 max-w-md mx-auto lg:max-w-none">
+              <div className="flex items-start gap-4 p-4 rounded-xl bg-white/50 backdrop-blur-sm border border-white/20 shadow-md hover:shadow-lg transition-all duration-300">
+                <div className="w-8 h-8 bg-gradient-to-br from-primary to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Camera className="w-4 h-4 text-white" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-sm lg:text-base">
+                  <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-base">
                     <Trans>Fast upload</Trans>
                   </h3>
-                  <p className="text-muted-foreground text-sm lg:text-base">
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">
                     <Trans>Instant photo sync from mobile device</Trans>
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 lg:gap-4">
-                <Users className="w-5 h-5 lg:w-6 lg:h-6 text-primary mt-1 flex-shrink-0" />
+              <div className="flex items-start gap-4 p-4 rounded-xl bg-white/50 backdrop-blur-sm border border-white/20 shadow-md hover:shadow-lg transition-all duration-300">
+                <div className="w-8 h-8 bg-gradient-to-br from-secondary to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Users className="w-4 h-4 text-white" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-sm lg:text-base">
+                  <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-base">
                     <Trans>Guest convenience</Trans>
                   </h3>
-                  <p className="text-muted-foreground text-sm lg:text-base">
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">
                     <Trans>Passwordless access to personal galleries</Trans>
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 lg:gap-4">
-                <Star className="w-5 h-5 lg:w-6 lg:h-6 text-primary mt-1 flex-shrink-0" />
+              <div className="flex items-start gap-4 p-4 rounded-xl bg-white/50 backdrop-blur-sm border border-white/20 shadow-md hover:shadow-lg transition-all duration-300">
+                <div className="w-8 h-8 bg-gradient-to-br from-accent to-amber-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Star className="w-4 h-4 text-white" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-sm lg:text-base">
+                  <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-base">
                     <Trans>Branding</Trans>
                   </h3>
-                  <p className="text-muted-foreground text-sm lg:text-base">
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">
                     <Trans>Complete customization for your style</Trans>
                   </p>
                 </div>
@@ -231,28 +239,34 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
           </div>
 
           {/* Right side - Forms */}
-          <div className="space-y-4 lg:space-y-6 w-full max-w-md mx-auto lg:max-w-none">
+          <div className="space-y-6 w-full max-w-md mx-auto lg:max-w-none order-1 lg:order-2">
             <Tabs
               value={activeTab}
               onValueChange={handleTabChange}
-              className="w-full relative z-10"
+              className="w-full"
             >
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">
+              <TabsList className="grid w-full grid-cols-2 h-11 p-1 bg-white/80 backdrop-blur-md border border-white/30 shadow-lg">
+                <TabsTrigger
+                  value="login"
+                  className="text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+                >
                   <Trans>Login</Trans>
                 </TabsTrigger>
-                <TabsTrigger value="register">
+                <TabsTrigger
+                  value="register"
+                  className="text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+                >
                   <Trans>Registration</Trans>
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="login">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>
+                <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-xl font-bold text-slate-800 dark:text-slate-200">
                       <Trans>Sign in</Trans>
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-slate-600 dark:text-slate-400">
                       <Trans>Sign in to your photographer account</Trans>
                     </CardDescription>
                   </CardHeader>
@@ -300,7 +314,7 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
                       )}
                       <Button
                         type="submit"
-                        className="w-full"
+                        className="w-full h-11 bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/90 hover:to-indigo-600/90 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
                         disabled={isLoading}
                       >
                         {isLoading ? _(t`Signing in...`) : _(t`Sign in`)}
@@ -311,18 +325,18 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
               </TabsContent>
 
               <TabsContent value="register">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>
+                <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-xl font-bold text-slate-800 dark:text-slate-200">
                       <Trans>Photographer registration</Trans>
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-slate-600 dark:text-slate-400">
                       <Trans>Create an account for your photo studio</Trans>
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <form onSubmit={handleRegister} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="firstName">
                             <Trans>First name</Trans>
@@ -417,7 +431,7 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
                       )}
                       <Button
                         type="submit"
-                        className="w-full"
+                        className="w-full h-11 bg-gradient-to-r from-secondary to-pink-600 hover:from-secondary/90 hover:to-pink-600/90 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
                         disabled={isLoading}
                       >
                         {isLoading ? _(t`Creating...`) : _(t`Create account`)}
@@ -429,12 +443,12 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
             </Tabs>
 
             {/* Guest access */}
-            <Card className="border-dashed border-2 bg-muted/50 mt-6 mb-8">
+            <Card className="border-2 border-dashed border-accent/30 bg-gradient-to-r from-accent/5 to-amber-50/50 backdrop-blur-sm shadow-md">
               <CardHeader className="pb-4">
-                <CardTitle className="text-center text-lg">
+                <CardTitle className="text-center text-lg font-bold text-slate-800 dark:text-slate-200">
                   <Trans>Guest access</Trans>
                 </CardTitle>
-                <CardDescription className="text-center">
+                <CardDescription className="text-center text-slate-600 dark:text-slate-400">
                   <Trans>Enter your guest ID to view photos</Trans>
                 </CardDescription>
               </CardHeader>
@@ -444,9 +458,14 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
                     placeholder={_(t`Enter guest ID (e.g., GUEST123)`)}
                     value={guestId}
                     onChange={(e) => setGuestId(e.target.value)}
+                    className="h-11 bg-white/70 border-white/20 shadow-sm"
                     required
                   />
-                  <Button type="submit" variant="outline" className="w-full">
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    className="w-full h-11 border-2 border-accent/30 bg-white/70 hover:bg-gradient-to-r hover:from-accent/10 hover:to-amber-50/50 text-slate-700 font-medium shadow-sm hover:shadow-md transition-all duration-200"
+                  >
                     <Trans>View photos</Trans>
                   </Button>
                 </form>

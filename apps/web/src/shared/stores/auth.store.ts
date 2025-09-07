@@ -35,7 +35,7 @@ interface AuthActions {
 
 type AuthStore = AuthState & AuthActions
 
-export const useAuthStore = create<AuthStore>((set, get) => {
+export const useAuthStore = create<AuthStore>((set, _get) => {
   const supabase = createClient()
 
   return {
@@ -88,8 +88,6 @@ export const useAuthStore = create<AuthStore>((set, get) => {
     },
 
     initialize: async () => {
-      if (get().initialized) return
-
       try {
         const {
           data: { session },
@@ -108,6 +106,8 @@ export const useAuthStore = create<AuthStore>((set, get) => {
               role: session.user.user_metadata?.role || 'photographer',
             }
           : null
+
+        console.log('Auth store re-initialized:', { user, session: !!session })
 
         set({
           session,
