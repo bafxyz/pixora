@@ -429,7 +429,7 @@ export function LoginPage({ onLogin, onGuestAccess }: LoginPageProps) {
             </Tabs>
 
             {/* Guest access */}
-            <Card className="border-dashed border-2 bg-muted/50 mt-6">
+            <Card className="border-dashed border-2 bg-muted/50 mt-6 mb-8">
               <CardHeader className="pb-4">
                 <CardTitle className="text-center text-lg">
                   <Trans>Guest access</Trans>
