@@ -4,7 +4,7 @@ export interface User {
   id: string
   email: string
   name?: string
-  role?: 'photographer' | 'admin' | 'guest' | 'super-admin'
+  role?: 'photographer' | 'admin' | 'guest'
 }
 
 class AuthError extends Error {

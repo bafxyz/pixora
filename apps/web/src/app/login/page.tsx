@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { LoginPage } from '@/features/auth/components/login-page'
+import type { UserRole } from '@/shared/lib/auth/role-guard'
+import { getRoleRedirectPath } from '@/shared/lib/auth/role-redirect'
 import { createClient } from '@/shared/lib/supabase/client'
 import { useAuthStore } from '@/shared/stores/auth.store'
 
@@ -28,25 +30,10 @@ export default function Login() {
       } = await supabase.auth.getUser()
 
       if (user) {
-        const userRole = user.user_metadata?.role || 'photographer'
-
-        // Redirect based on role
-        switch (userRole) {
-          case 'admin':
-            router.push('/admin')
-            break
-          case 'photographer':
-            router.push('/photographer')
-            break
-          case 'guest':
-            router.push('/gallery')
-            break
-          case 'super-admin':
-            router.push('/super-admin')
-            break
-          default:
-            router.push('/dashboard')
-        }
+        const userRole = (user.user_metadata?.role ||
+          'photographer') as UserRole
+        const redirectPath = getRoleRedirectPath(userRole)
+        router.push(redirectPath)
       }
     }
 
@@ -61,25 +48,9 @@ export default function Login() {
     await new Promise((resolve) => setTimeout(resolve, 100))
 
     // Get the actual user role from the response
-    const userRole = user.role || 'photographer'
-
-    // Redirect based on role
-    switch (userRole) {
-      case 'admin':
-        router.push('/admin')
-        break
-      case 'photographer':
-        router.push('/photographer')
-        break
-      case 'guest':
-        router.push('/gallery')
-        break
-      case 'super-admin':
-        router.push('/super-admin')
-        break
-      default:
-        router.push('/dashboard')
-    }
+    const userRole = (user.role || 'photographer') as UserRole
+    const redirectPath = getRoleRedirectPath(userRole)
+    router.push(redirectPath)
   }
 
   const handleGuestAccess = (_guestId: string) => {

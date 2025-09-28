@@ -1,14 +1,10 @@
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
+import { logAuthWarning, logUserAuthStatus } from '../shared/lib/auth/logging'
+import { getAuthUser } from './auth-helpers'
 
 export async function multiTenantMiddleware(request: NextRequest) {
-  // Создаем Supabase клиент для middleware
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  })
-
+  // Get Supabase URL and anon key
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -16,10 +12,42 @@ export async function multiTenantMiddleware(request: NextRequest) {
     console.error(
       'Missing Supabase environment variables in multi-tenant middleware'
     )
-    return response
+    return NextResponse.json(
+      { error: 'Internal server error: Missing Supabase configuration' },
+      { status: 500 }
+    )
   }
 
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+  // Get authenticated user with session refresh capability
+  const { user } = await getAuthUser(request, supabaseUrl, supabaseAnonKey)
+
+  if (!user) {
+    logAuthWarning(
+      'Multi-tenant middleware: No user found after session refresh, redirecting to login',
+      {
+        path: request.nextUrl.pathname,
+        timestamp: new Date().toISOString(),
+        details: {
+          method: 'multiTenantMiddleware',
+          step: 'user_authentication',
+        },
+      }
+    )
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  logUserAuthStatus(user?.id || null, request.nextUrl.pathname, !!user)
+
+  // Create a new Supabase client with proper cookie handling
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
+
+  const _supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll()
@@ -37,35 +65,6 @@ export async function multiTenantMiddleware(request: NextRequest) {
       },
     },
   })
-
-  // Получаем текущего пользователя
-  let user = null
-  try {
-    const {
-      data: { user: authUser },
-      error,
-    } = await supabase.auth.getUser()
-    if (error) {
-      console.error('Multi-tenant middleware: Error getting user', {
-        error: error.message,
-        path: request.nextUrl.pathname,
-        timestamp: new Date().toISOString(),
-      })
-      const loginUrl = new URL('/login', request.url)
-      loginUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
-      return NextResponse.redirect(loginUrl)
-    }
-    user = authUser
-  } catch (error) {
-    console.error('Multi-tenant middleware: Unexpected error getting user', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      path: request.nextUrl.pathname,
-      timestamp: new Date().toISOString(),
-    })
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
-    return NextResponse.redirect(loginUrl)
-  }
 
   if (!user) {
     // Если пользователь не авторизован, перенаправляем на логин

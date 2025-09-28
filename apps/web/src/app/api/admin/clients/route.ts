@@ -1,9 +1,16 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { withRoleCheck } from '@/shared/lib/auth/role-guard'
 import { prisma } from '@/shared/lib/prisma/client'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Check super-admin role
+  const auth = await withRoleCheck(['admin'], request)
+  if (auth instanceof NextResponse) {
+    return auth // Return 403/401 error
+  }
+
   try {
-    // Получаем всех клиентов со статистикой
+    // Get all clients with statistics
     const clients = await prisma.client.findMany({
       include: {
         _count: {
@@ -43,6 +50,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // Check super-admin role
+  const auth = await withRoleCheck(['admin'], request)
+  if (auth instanceof NextResponse) {
+    return auth // Return 403/401 error
+  }
+
   try {
     const { name, email } = await request.json()
 
@@ -53,7 +66,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Проверяем, существует ли клиент с таким email
+    // Check if client with this email already exists
     const existingClient = await prisma.client.findUnique({
       where: { email: email.trim() },
     })
@@ -65,7 +78,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Создаем нового клиента
+    // Create new client
     const client = await prisma.client.create({
       data: {
         name: name.trim(),

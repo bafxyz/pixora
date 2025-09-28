@@ -92,6 +92,41 @@ This project is designed to maximize AI utilization in your development process:
 - **Code Quality**: Biome (formatting + linting)
 - **Package Manager**: pnpm with workspaces
 
+## Authentication System
+
+This project includes a comprehensive authentication system with:
+
+- **Role-based access control**: Admin, studio-admin, photographer, and guest roles
+- **Session management**: Automatic session refresh and error handling
+- **Multi-tenant support**: Isolated data access per studio/photographer
+- **API protection**: Role-gated API endpoints
+- **UI protection**: Route-based access control
+
+See the [Authentication Documentation](/apps/web/src/shared/lib/auth/README.md) for detailed information about the auth system.
+
+## Development Best Practices
+
+### Code Organization
+
+- `apps/web/src/features/` - Feature-specific components and logic
+- `apps/web/src/shared/` - Shared utilities, libraries, and configurations
+- `apps/web/src/middleware/` - Next.js middleware for authentication and routing
+- `packages/ui/` - Shared UI components across the application
+
+### Error Handling
+
+- Comprehensive error logging with structured data
+- Graceful session refresh on expiration
+- User-friendly error messages
+- Proper HTTP status codes for API responses
+
+### Security
+
+- Role-based access control for all routes and API endpoints
+- Multi-tenant data isolation
+- Secure session management
+- Proper environment variable handling
+
 ## GitHub CLI Integration
 
 This project leverages GitHub CLI for seamless AI agent workflows:
@@ -116,6 +151,13 @@ The AI-powered development cycle includes:
 - **Testing**: Automated test creation and execution
 - **Review**: AI-powered code review and optimization
 - **Deployment**: Automated build and deployment processes
+
+## Environment Setup
+
+1. Clone the repository
+2. Run `pnpm install`
+3. Copy `.env.example` to `.env.local` and fill in your environment variables
+4. Run `pnpm dev` to start the development server
 
 ---
 

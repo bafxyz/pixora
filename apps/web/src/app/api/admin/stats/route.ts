@@ -1,60 +1,76 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/shared/lib/prisma/client'
+import { withRoleCheck } from '@/shared/lib/auth/role-guard'
+import { createClient } from '@/shared/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
+  // Check admin role
+  const auth = await withRoleCheck(['admin'], request)
+  if (auth instanceof NextResponse) {
+    return auth // Return 403/401 error
+  }
+
   try {
-    // Получаем client_id из заголовков
-    const clientId = request.headers.get('x-client-id')
+    const supabase = await createClient()
 
-    if (!clientId) {
-      return NextResponse.json(
-        { error: 'Client ID is required' },
-        { status: 401 }
-      )
-    }
-
-    // Получаем статистику для клиента
+    // Get global platform statistics
     const stats = {
+      totalClients: 0,
       totalGuests: 0,
       totalPhotos: 0,
       totalOrders: 0,
-      revenue: 0,
+      totalRevenue: 0,
     }
 
-    // Считаем гостей
-    stats.totalGuests = await prisma.guest.count({
-      where: { clientId },
-    })
+    // Count clients
+    const { count: clientsCount, error: clientsError } = await supabase
+      .from('clients')
+      .select('*', { count: 'exact', head: true })
 
-    // Считаем фото
-    stats.totalPhotos = await prisma.photo.count({
-      where: { clientId },
-    })
+    if (!clientsError && clientsCount !== null) {
+      stats.totalClients = clientsCount
+    }
 
-    // Считаем заказы
-    stats.totalOrders = await prisma.order.count({
-      where: { clientId },
-    })
+    // Count guests
+    const { count: guestsCount, error: guestsError } = await supabase
+      .from('guests')
+      .select('*', { count: 'exact', head: true })
 
-    // Считаем выручку
-    const orders = await prisma.order.findMany({
-      where: {
-        clientId,
-        totalAmount: { not: null },
-      },
-      select: { totalAmount: true },
-    })
+    if (!guestsError && guestsCount !== null) {
+      stats.totalGuests = guestsCount
+    }
 
-    stats.revenue = orders.reduce(
-      (sum: number, order: { totalAmount: number | null }) => {
-        return sum + (order.totalAmount || 0)
-      },
-      0
-    )
+    // Count photos
+    const { count: photosCount, error: photosError } = await supabase
+      .from('photos')
+      .select('*', { count: 'exact', head: true })
+
+    if (!photosError && photosCount !== null) {
+      stats.totalPhotos = photosCount
+    }
+
+    // Count orders
+    const { count: ordersCount, error: ordersError } = await supabase
+      .from('orders')
+      .select('*', { count: 'exact', head: true })
+
+    if (!ordersError && ordersCount !== null) {
+      stats.totalOrders = ordersCount
+    }
+
+    // Calculate total revenue
+    const { data: orders, error: revenueError } = await supabase
+      .from('orders')
+      .select('total_amount')
+      .not('total_amount', 'is', null)
+
+    if (!revenueError && orders) {
+      stats.totalRevenue = orders.reduce((sum, order) => {
+        return sum + (order.total_amount || 0)
+      }, 0)
+    }
 
     return NextResponse.json({
       stats,
-      clientId,
     })
   } catch (error) {
     console.error('Admin stats API error:', error)

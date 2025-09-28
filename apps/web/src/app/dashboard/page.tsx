@@ -20,7 +20,9 @@ import {
   Users,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import type { UserRole } from '@/shared/lib/auth/role-guard'
+import { useAuthStore } from '@/shared/stores/auth.store'
 
 interface DashboardStats {
   totalPhotos: number
@@ -32,6 +34,8 @@ interface DashboardStats {
 export default function DashboardPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('overview')
+  const { user } = useAuthStore()
+  const [userRole, setUserRole] = useState<UserRole>('guest')
 
   // Mock data - в реальном приложении это будет загружаться из API
   const [stats] = useState<DashboardStats>({
@@ -41,12 +45,18 @@ export default function DashboardPage() {
     recentActivity: [],
   })
 
+  useEffect(() => {
+    if (user?.role) {
+      setUserRole(user.role as UserRole)
+    }
+  }, [user])
+
   const navigateToPhotographer = () => {
     router.push('/photographer')
   }
 
   const navigateToAdmin = () => {
-    router.push('/admin')
+    router.push('/studio-admin')
   }
 
   return (
@@ -149,41 +159,47 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle>Добро пожаловать!</CardTitle>
                 <CardDescription>
-                  Выберите роль для продолжения работы
+                  Быстрый доступ к основным функциям
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
-                  <Card
-                    className="border-2 border-dashed border-gray-300 hover:border-blue-500 transition-colors cursor-pointer"
-                    onClick={navigateToPhotographer}
-                  >
-                    <CardContent className="flex flex-col items-center justify-center p-6">
-                      <Camera className="w-12 h-12 text-blue-600 mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        Режим фотографа
-                      </h3>
-                      <p className="text-gray-600 text-center text-sm">
-                        Сканирование QR-кодов, создание галерей, загрузка
-                        фотографий
-                      </p>
-                    </CardContent>
-                  </Card>
+                  {/* Режим фотографа - показываем всем ролям кроме guest */}
+                  {userRole !== 'guest' && (
+                    <Card
+                      className="border-2 border-dashed border-gray-300 hover:border-blue-500 transition-colors cursor-pointer"
+                      onClick={navigateToPhotographer}
+                    >
+                      <CardContent className="flex flex-col items-center justify-center p-6">
+                        <Camera className="w-12 h-12 text-blue-600 mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">
+                          Режим фотографа
+                        </h3>
+                        <p className="text-gray-600 text-center text-sm">
+                          Сканирование QR-кодов, создание галерей, загрузка
+                          фотографий
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
 
-                  <Card
-                    className="border-2 border-dashed border-gray-300 hover:border-green-500 transition-colors cursor-pointer"
-                    onClick={navigateToAdmin}
-                  >
-                    <CardContent className="flex flex-col items-center justify-center p-6">
-                      <Settings className="w-12 h-12 text-green-600 mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        Режим администратора
-                      </h3>
-                      <p className="text-gray-600 text-center text-sm">
-                        Управление гостями, заказами, статистика и настройки
-                      </p>
-                    </CardContent>
-                  </Card>
+                  {/* Режим администратора - только для studio-admin и admin */}
+                  {(userRole === 'studio-admin' || userRole === 'admin') && (
+                    <Card
+                      className="border-2 border-dashed border-gray-300 hover:border-green-500 transition-colors cursor-pointer"
+                      onClick={navigateToAdmin}
+                    >
+                      <CardContent className="flex flex-col items-center justify-center p-6">
+                        <Settings className="w-12 h-12 text-green-600 mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">
+                          Режим администратора
+                        </h3>
+                        <p className="text-gray-600 text-center text-sm">
+                          Управление гостями, заказами, статистика и настройки
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -191,89 +207,121 @@ export default function DashboardPage() {
 
           <TabsContent value="quick-actions" className="space-y-6">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => router.push('/photographer?tab=scan')}
-              >
-                <CardContent className="flex flex-col items-center justify-center p-6">
-                  <QrCode className="w-8 h-8 text-blue-600 mb-3" />
-                  <h3 className="font-medium text-gray-900 mb-2">
-                    Сканировать QR
-                  </h3>
-                  <p className="text-sm text-gray-600 text-center">
-                    Быстро добавить гостя по QR-коду
-                  </p>
-                </CardContent>
-              </Card>
+              {/* Действия для фотографов и выше */}
+              {userRole !== 'guest' && (
+                <>
+                  <Card
+                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => router.push('/photographer?tab=scan')}
+                  >
+                    <CardContent className="flex flex-col items-center justify-center p-6">
+                      <QrCode className="w-8 h-8 text-blue-600 mb-3" />
+                      <h3 className="font-medium text-gray-900 mb-2">
+                        Сканировать QR
+                      </h3>
+                      <p className="text-sm text-gray-600 text-center">
+                        Быстро добавить гостя по QR-коду
+                      </p>
+                    </CardContent>
+                  </Card>
 
-              <Card
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => router.push('/photographer?tab=generate')}
-              >
-                <CardContent className="flex flex-col items-center justify-center p-6">
-                  <QrCode className="w-8 h-8 text-green-600 mb-3" />
-                  <h3 className="font-medium text-gray-900 mb-2">Создать QR</h3>
-                  <p className="text-sm text-gray-600 text-center">
-                    Сгенерировать QR-код для нового гостя
-                  </p>
-                </CardContent>
-              </Card>
+                  <Card
+                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => router.push('/photographer?tab=generate')}
+                  >
+                    <CardContent className="flex flex-col items-center justify-center p-6">
+                      <QrCode className="w-8 h-8 text-green-600 mb-3" />
+                      <h3 className="font-medium text-gray-900 mb-2">
+                        Создать QR
+                      </h3>
+                      <p className="text-sm text-gray-600 text-center">
+                        Сгенерировать QR-код для нового гостя
+                      </p>
+                    </CardContent>
+                  </Card>
 
-              <Card
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => router.push('/photographer?tab=guests')}
-              >
-                <CardContent className="flex flex-col items-center justify-center p-6">
-                  <Upload className="w-8 h-8 text-purple-600 mb-3" />
-                  <h3 className="font-medium text-gray-900 mb-2">
-                    Загрузить фото
-                  </h3>
-                  <p className="text-sm text-gray-600 text-center">
-                    Добавить фотографии для гостей
-                  </p>
-                </CardContent>
-              </Card>
+                  <Card
+                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => router.push('/photographer?tab=guests')}
+                  >
+                    <CardContent className="flex flex-col items-center justify-center p-6">
+                      <Upload className="w-8 h-8 text-purple-600 mb-3" />
+                      <h3 className="font-medium text-gray-900 mb-2">
+                        Загрузить фото
+                      </h3>
+                      <p className="text-sm text-gray-600 text-center">
+                        Добавить фотографии для гостей
+                      </p>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
 
-              <Card
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => router.push('/admin')}
-              >
-                <CardContent className="flex flex-col items-center justify-center p-6">
-                  <Users className="w-8 h-8 text-orange-600 mb-3" />
-                  <h3 className="font-medium text-gray-900 mb-2">
-                    Управление гостями
-                  </h3>
-                  <p className="text-sm text-gray-600 text-center">
-                    Просмотр и редактирование списка гостей
-                  </p>
-                </CardContent>
-              </Card>
+              {/* Действия только для админов */}
+              {(userRole === 'studio-admin' || userRole === 'admin') && (
+                <>
+                  <Card
+                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => router.push('/studio-admin')}
+                  >
+                    <CardContent className="flex flex-col items-center justify-center p-6">
+                      <Users className="w-8 h-8 text-orange-600 mb-3" />
+                      <h3 className="font-medium text-gray-900 mb-2">
+                        Управление гостями
+                      </h3>
+                      <p className="text-sm text-gray-600 text-center">
+                        Просмотр и редактирование списка гостей
+                      </p>
+                    </CardContent>
+                  </Card>
 
-              <Card
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => router.push('/admin?tab=orders')}
-              >
-                <CardContent className="flex flex-col items-center justify-center p-6">
-                  <BarChart3 className="w-8 h-8 text-red-600 mb-3" />
-                  <h3 className="font-medium text-gray-900 mb-2">Заказы</h3>
-                  <p className="text-sm text-gray-600 text-center">
-                    Просмотр и обработка заказов
-                  </p>
-                </CardContent>
-              </Card>
+                  <Card
+                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => router.push('/studio-admin?tab=orders')}
+                  >
+                    <CardContent className="flex flex-col items-center justify-center p-6">
+                      <BarChart3 className="w-8 h-8 text-red-600 mb-3" />
+                      <h3 className="font-medium text-gray-900 mb-2">Заказы</h3>
+                      <p className="text-sm text-gray-600 text-center">
+                        Просмотр и обработка заказов
+                      </p>
+                    </CardContent>
+                  </Card>
 
-              <Card
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => router.push('/admin?tab=stats')}
-              >
-                <CardContent className="flex flex-col items-center justify-center p-6">
-                  <BarChart3 className="w-8 h-8 text-indigo-600 mb-3" />
-                  <h3 className="font-medium text-gray-900 mb-2">Статистика</h3>
-                  <p className="text-sm text-gray-600 text-center">
-                    Аналитика и отчеты
-                  </p>
-                </CardContent>
-              </Card>
+                  <Card
+                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => router.push('/studio-admin?tab=stats')}
+                  >
+                    <CardContent className="flex flex-col items-center justify-center p-6">
+                      <BarChart3 className="w-8 h-8 text-indigo-600 mb-3" />
+                      <h3 className="font-medium text-gray-900 mb-2">
+                        Статистика
+                      </h3>
+                      <p className="text-sm text-gray-600 text-center">
+                        Аналитика и отчеты
+                      </p>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {/* Для гостей - показываем галерею */}
+              {userRole === 'guest' && (
+                <Card
+                  className="hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => router.push('/gallery')}
+                >
+                  <CardContent className="flex flex-col items-center justify-center p-6">
+                    <ImageIcon className="w-8 h-8 text-blue-600 mb-3" />
+                    <h3 className="font-medium text-gray-900 mb-2">
+                      Просмотр галереи
+                    </h3>
+                    <p className="text-sm text-gray-600 text-center">
+                      Просмотр доступных фотографий
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
 

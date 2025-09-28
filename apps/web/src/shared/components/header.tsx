@@ -33,17 +33,17 @@ export function Header() {
     const baseItems = [{ href: '/dashboard', label: 'Dashboard', icon: Home }]
 
     switch (user.role) {
-      case 'super-admin':
+      case 'studio-admin':
         return [
           ...baseItems,
-          { href: '/super-admin', label: 'Super Admin', icon: Shield },
-          { href: '/admin', label: 'Admin', icon: Settings },
+          { href: '/studio-admin', label: 'Admin Panel', icon: Settings },
           { href: '/photographer', label: 'Photographer', icon: Camera },
         ]
       case 'admin':
         return [
           ...baseItems,
-          { href: '/admin', label: 'Admin Panel', icon: Settings },
+          { href: '/studio-admin', label: 'Super Admin', icon: Shield },
+          { href: '/studio-admin', label: 'Admin', icon: Settings },
           { href: '/photographer', label: 'Photographer', icon: Camera },
         ]
       case 'photographer':

@@ -214,8 +214,8 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
             </Button>
           )}
 
-          <Button 
-            onClick={simulateScan} 
+          <Button
+            onClick={simulateScan}
             size="sm"
             className="bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300"
           >

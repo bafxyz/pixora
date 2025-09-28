@@ -1,5 +1,6 @@
 'use client'
 
+import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import {
@@ -23,11 +24,11 @@ import {
   Upload,
 } from 'lucide-react'
 import React, { useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { env } from '@/shared/config/env'
+import { logAuthError } from '@/shared/lib/auth/logging'
 import { createClient } from '@/shared/lib/supabase/client'
 import { useAuthStore } from '@/shared/stores/auth.store'
-import { useLingui } from '@lingui/react'
-import { toast } from 'sonner'
 
 const supabase = createClient()
 
@@ -97,7 +98,23 @@ export function PhotographerDashboard({
   const getAccessToken = useCallback(async () => {
     const {
       data: { session },
+      error,
     } = await supabase.auth.getSession()
+
+    if (error) {
+      logAuthError('Dashboard: Error getting session:', {
+        error: error.message,
+        code: error.code,
+        status: error.status,
+        timestamp: new Date().toISOString(),
+        details: {
+          method: 'getSession',
+          component: 'PhotographerDashboard',
+        },
+      })
+      return null
+    }
+
     return session?.access_token
   }, [])
 

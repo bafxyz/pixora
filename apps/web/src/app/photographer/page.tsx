@@ -1,6 +1,5 @@
 'use client'
 
-import { toast } from 'sonner'
 import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/react/macro'
 import { Button } from '@repo/ui/button'
@@ -14,6 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/tabs'
 import { Camera, QrCode, Upload, Users } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { QRGenerator } from '@/features/qr/components/qr-generator'
 import { QRScanner } from '@/features/qr/components/qr-scanner'
 
@@ -239,7 +239,7 @@ export default function PhotographerPage() {
                     <p className="text-gray-600 text-center mb-4">
                       <Trans>Scan guest QR codes to add them to the list</Trans>
                     </p>
-                    <Button 
+                    <Button
                       onClick={() => setActiveTab('scan')}
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                     >

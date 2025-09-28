@@ -1,9 +1,18 @@
-import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
+import { withRoleCheck } from '@/shared/lib/auth/role-guard'
 import { prisma } from '@/shared/lib/prisma/client'
 import { qrDataSchema } from '@/shared/lib/validations/auth.schemas'
 
 export async function POST(request: NextRequest) {
+  // Check role - only photographers and admins can scan QR codes
+  const auth = await withRoleCheck(
+    ['photographer', 'studio-admin', 'admin'],
+    request
+  )
+  if (auth instanceof NextResponse) {
+    return auth // Return 403/401 error
+  }
+
   try {
     const { qrData } = await request.json()
 
@@ -14,66 +23,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get client_id from headers
-    const clientId = request.headers.get('x-client-id')
+    // Use client_id from auth
+    const clientId = auth.clientId
 
-    if (!clientId) {
+    if (!clientId && auth.user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Client ID is required' },
-        { status: 401 }
-      )
-    }
-
-    // Get current user via Supabase
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json(
-        { error: 'Supabase configuration missing' },
-        { status: 500 }
-      )
-    }
-
-    const supabase = createServerClient(supabaseUrl, supabaseKey, {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll() {
-          // No-op for API routes
-        },
-      },
-    })
-
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
-
-    if (sessionError || !session?.user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    // Find photographer by user email
-    if (!session.user.email) {
-      return NextResponse.json(
-        { error: 'User email is required' },
         { status: 400 }
       )
     }
 
-    const photographer = await prisma.photographer.findUnique({
+    // Find photographer by email from auth
+
+    const photographer = await prisma.photographer.findFirst({
       where: {
-        email: session.user.email,
-        clientId,
+        email: auth.user.email,
+        ...(clientId ? { clientId } : {}),
       },
       select: {
         id: true,
         name: true,
+        clientId: true,
       },
     })
 
@@ -121,7 +91,7 @@ export async function POST(request: NextRequest) {
     const existingGuest = await prisma.guest.findFirst({
       where: {
         id: guestId as string,
-        clientId,
+        ...(clientId ? { clientId } : {}),
       },
       select: {
         id: true,
@@ -143,7 +113,7 @@ export async function POST(request: NextRequest) {
       data: {
         id: guestId as string,
         name: guestName as string,
-        clientId,
+        clientId: clientId || photographer.clientId,
         email: null, // Can be added later
         photographerId: photographer.id,
       },

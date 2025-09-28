@@ -1,5 +1,5 @@
 /**
- * Simple in-memory rate limiter
+ * Configurable in-memory rate limiter
  * In production, consider using Redis or a dedicated rate limiting service
  */
 
@@ -63,10 +63,23 @@ class RateLimiter {
   }
 }
 
-// Global rate limiters for different endpoints
+// Get rate limit configuration from environment variables
+const getRateLimitConfig = (type: 'auth' | 'login') => {
+  const baseKey = `RATE_LIMIT_${type.toUpperCase()}`
+  return {
+    windowMs:
+      parseInt(process.env[`${baseKey}_WINDOW_MS`] || '', 10) ||
+      (type === 'auth' ? 15 * 60 * 1000 : 5 * 60 * 1000),
+    maxRequests:
+      parseInt(process.env[`${baseKey}_MAX_REQUESTS`] || '', 10) ||
+      (type === 'auth' ? 5 : 10),
+  }
+}
+
+// Global rate limiters for different endpoints with configurable values
 const authRateLimiter = new RateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 5, // 5 attempts per 15 minutes
+  windowMs: getRateLimitConfig('auth').windowMs,
+  maxRequests: getRateLimitConfig('auth').maxRequests,
   keyGenerator: (request: Request) => {
     // Use IP address as key, fallback to a default for server-side
     const forwarded = request.headers.get('x-forwarded-for')
@@ -76,8 +89,8 @@ const authRateLimiter = new RateLimiter({
 })
 
 const loginRateLimiter = new RateLimiter({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  maxRequests: 10, // 10 login attempts per 5 minutes
+  windowMs: getRateLimitConfig('login').windowMs,
+  maxRequests: getRateLimitConfig('login').maxRequests,
   keyGenerator: (request: Request) => {
     const forwarded = request.headers.get('x-forwarded-for')
     const ip = forwarded ? forwarded.split(',')[0] : 'unknown'
@@ -85,14 +98,14 @@ const loginRateLimiter = new RateLimiter({
   },
 })
 
-// Cleanup expired entries every 5 minutes
-setInterval(
-  () => {
-    authRateLimiter.cleanup()
-    loginRateLimiter.cleanup()
-  },
+// Cleanup expired entries every 5 minutes (configurable)
+const cleanupIntervalMs =
+  parseInt(process.env.RATE_LIMIT_CLEANUP_INTERVAL_MS || '', 10) ||
   5 * 60 * 1000
-)
+setInterval(() => {
+  authRateLimiter.cleanup()
+  loginRateLimiter.cleanup()
+}, cleanupIntervalMs)
 
 export { authRateLimiter, loginRateLimiter }
 export type { RateLimitOptions }

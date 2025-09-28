@@ -6,6 +6,7 @@ import type {
 } from '@supabase/supabase-js'
 import { create } from 'zustand'
 import type { User } from '@/features/auth/types'
+import { logAuthError } from '@/shared/lib/auth/logging'
 import { createClient } from '@/shared/lib/supabase/client'
 
 interface AuthState {
@@ -95,7 +96,15 @@ export const useAuthStore = create<AuthStore>((set, _get) => {
         } = await supabase.auth.getSession()
 
         if (error) {
-          console.error('Error getting session:', error)
+          logAuthError('Auth store: Error getting session', {
+            error: error.message,
+            code: error.code,
+            status: error.status,
+            timestamp: new Date().toISOString(),
+            details: {
+              method: 'getSession',
+            },
+          })
         }
 
         const user = session?.user
@@ -107,7 +116,14 @@ export const useAuthStore = create<AuthStore>((set, _get) => {
             }
           : null
 
-        console.log('Auth store re-initialized:', { user, session: !!session })
+        if (user) {
+          console.log('Auth store re-initialized:', {
+            user,
+            session: !!session,
+          })
+        } else {
+          console.log('Auth store initialization - no user session found')
+        }
 
         set({
           session,
@@ -144,7 +160,13 @@ export const useAuthStore = create<AuthStore>((set, _get) => {
         // Note: In a real app, you'd want to handle cleanup properly
         // For now, we'll just set up the listener
       } catch (error) {
-        console.error('Auth initialization error:', error)
+        logAuthError('Auth store: Unexpected initialization error', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString(),
+          details: {
+            method: 'initialize',
+          },
+        })
         set({ loading: false, initialized: true })
       }
     },

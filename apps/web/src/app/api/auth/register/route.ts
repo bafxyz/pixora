@@ -7,16 +7,6 @@ import { registerSchema } from '@/shared/lib/validations/auth.schemas'
 
 export async function POST(request: NextRequest) {
   try {
-    // Debug: Log environment variables
-    console.log('🔍 Environment check:')
-    console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL)
-    console.log('DIRECT_URL exists:', !!process.env.DIRECT_URL)
-    console.log('SUPABASE_URL exists:', !!process.env.NEXT_PUBLIC_SUPABASE_URL)
-    console.log(
-      'SUPABASE_ANON_KEY exists:',
-      !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    )
-
     // Rate limiting check
     const rateLimitKey = request.headers.get('x-forwarded-for') || 'unknown'
     const rateLimit = authRateLimiter.isRateLimited(rateLimitKey)

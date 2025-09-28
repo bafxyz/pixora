@@ -1,25 +1,42 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { withRoleCheck } from '@/shared/lib/auth/role-guard'
 import { prisma } from '@/shared/lib/prisma/client'
 
 type OrderStatus = 'pending' | 'processing' | 'completed' | 'cancelled'
 
 export async function GET(request: NextRequest) {
-  try {
-    // Get client_id from request headers (set by middleware)
-    const clientId = request.headers.get('x-client-id')
+  // Check studio-admin or admin role
+  const auth = await withRoleCheck(['studio-admin', 'admin'], request)
+  if (auth instanceof NextResponse) {
+    return auth // Return 403/401 error
+  }
 
-    if (!clientId) {
+  try {
+    // For studio-admin use their client_id, for admin - from header or all
+    let clientId = auth.clientId
+
+    // If admin and x-client-id is provided, use it
+    if (auth.user.role === 'admin') {
+      const headerClientId = request.headers.get('x-client-id')
+      if (headerClientId) {
+        clientId = headerClientId
+      }
+    }
+
+    if (!clientId && auth.user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Client ID is required' },
-        { status: 401 }
+        { status: 400 }
       )
     }
 
-    // Get orders for this client
+    // Get orders for this client (or all for super-admin)
     const orders = await prisma.order.findMany({
-      where: {
-        clientId: clientId,
-      },
+      where: clientId
+        ? {
+            clientId: clientId,
+          }
+        : {},
       include: {
         guest: {
           select: {
@@ -51,16 +68,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  try {
-    // Get client_id from request headers
-    const clientId = request.headers.get('x-client-id')
+  // Check studio-admin or admin role
+  const auth = await withRoleCheck(['studio-admin', 'admin'], request)
+  if (auth instanceof NextResponse) {
+    return auth // Return 403/401 error
+  }
 
-    if (!clientId) {
-      return NextResponse.json(
-        { error: 'Client ID is required' },
-        { status: 401 }
-      )
-    }
+  try {
+    // For studio-admin use their client_id
+    const clientId = auth.clientId
 
     const body = await request.json()
     const { orderId, status } = body
@@ -78,12 +94,14 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
-    // Update order status
+    // Update order status (check client_id only for admin)
+    const whereClause =
+      auth.user.role === 'admin'
+        ? { id: orderId }
+        : { id: orderId, clientId: clientId }
+
     const updatedOrder = await prisma.order.updateMany({
-      where: {
-        id: orderId,
-        clientId: clientId,
-      },
+      where: whereClause,
       data: {
         status: status as OrderStatus,
       },

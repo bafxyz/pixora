@@ -1,5 +1,6 @@
 'use client'
 
+import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/react/macro'
 import { Button } from '@repo/ui/button'
 import {
@@ -11,108 +12,137 @@ import {
 } from '@repo/ui/card'
 import { Input } from '@repo/ui/input'
 import { Label } from '@repo/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/tabs'
-import {
-  BarChart3,
-  Download,
-  Eye,
-  Plus,
-  QrCode,
-  Send,
-  Settings,
-  ShoppingCart,
-  Users,
-} from 'lucide-react'
+import { BarChart3, Building, Eye, Plus, Settings, Users } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
-import { DeliveryNotification } from '@/features/admin/components/delivery-notification'
-import { QRGenerator } from '@/features/qr/components/qr-generator'
+import { toast } from 'sonner'
 
-interface Guest {
+interface Client {
   id: string
   name: string
-  email?: string
+  email: string
   created_at: string
+  guestsCount: number
   photosCount: number
+  ordersCount: number
 }
 
-interface Stats {
+interface GlobalStats {
+  totalClients: number
   totalGuests: number
   totalPhotos: number
   totalOrders: number
-  revenue: number
+  totalRevenue: number
 }
 
-interface Order {
-  id: string
-  guest_id: string
-  photographer_id: string
-  photo_ids: string[]
-  total_amount: number
-  status: string
-  created_at: string
-  updated_at: string
-  guests: {
-    id: string
-    name: string
-    email: string
-  }
-  photographers: {
-    id: string
-    name: string
-  }
-}
-
-export default function AdminPage() {
-  const [guests, setGuests] = useState<Guest[]>([])
-  const [orders, setOrders] = useState<Order[]>([])
-  const [selectedOrderForDelivery, setSelectedOrderForDelivery] =
-    useState<Order | null>(null)
-  const [stats, setStats] = useState<Stats>({
+export default function SuperAdminPage() {
+  const { _ } = useLingui()
+  const [clients, setClients] = useState<Client[]>([])
+  const [globalStats, setGlobalStats] = useState<GlobalStats>({
+    totalClients: 0,
     totalGuests: 0,
     totalPhotos: 0,
     totalOrders: 0,
-    revenue: 0,
+    totalRevenue: 0,
   })
-  const [activeTab, setActiveTab] = useState('overview')
   const [isLoading, setIsLoading] = useState(true)
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [newClientName, setNewClientName] = useState('')
+  const [newClientEmail, setNewClientEmail] = useState('')
 
   const loadData = useCallback(async () => {
     try {
       setIsLoading(true)
 
-      // Загружаем гостей
-      const guestsResponse = await fetch('/api/admin/guests')
-      if (guestsResponse.ok) {
-        const guestsData = await guestsResponse.json()
-        setGuests(guestsData.guests || [])
+      // Загружаем клиентов
+      const clientsResponse = await fetch('/api/admin/clients')
+      if (clientsResponse.ok) {
+        const clientsData = await clientsResponse.json()
+        setClients(clientsData.clients || [])
+      } else {
+        console.error('Failed to load clients:', clientsResponse.status)
+        setClients([])
       }
 
-      // Загружаем статистику
+      // Загружаем глобальную статистику
       const statsResponse = await fetch('/api/admin/stats')
       if (statsResponse.ok) {
         const statsData = await statsResponse.json()
-        setStats(statsData.stats || stats)
-      }
-
-      // Загружаем заказы
-      const ordersResponse = await fetch('/api/admin/orders')
-      if (ordersResponse.ok) {
-        const ordersData = await ordersResponse.json()
-        setOrders(ordersData.orders || [])
+        setGlobalStats(
+          statsData.stats || {
+            totalClients: 0,
+            totalGuests: 0,
+            totalPhotos: 0,
+            totalOrders: 0,
+            totalRevenue: 0,
+          }
+        )
+      } else {
+        console.error('Failed to load stats:', statsResponse.status)
+        setGlobalStats({
+          totalClients: 0,
+          totalGuests: 0,
+          totalPhotos: 0,
+          totalOrders: 0,
+          totalRevenue: 0,
+        })
       }
     } catch (error) {
       console.error('Error loading data:', error)
+      // Set default values on error
+      setClients([])
+      setGlobalStats({
+        totalClients: 0,
+        totalGuests: 0,
+        totalPhotos: 0,
+        totalOrders: 0,
+        totalRevenue: 0,
+      })
     } finally {
       setIsLoading(false)
     }
-  }, [stats])
+  }, [])
 
   useEffect(() => {
     loadData()
   }, [loadData])
 
-  const handleViewGallery = (guestId: string) => {
-    window.open(`/gallery/${guestId}`, '_blank')
+  const handleCreateClient = async () => {
+    if (!newClientName.trim() || !newClientEmail.trim()) {
+      toast.error(_('Fill in all fields'))
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/clients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newClientName.trim(),
+          email: newClientEmail.trim(),
+        }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        setClients((prev) => [...prev, result.client])
+        setNewClientName('')
+        setNewClientEmail('')
+        setShowCreateForm(false)
+        toast.success(_('Client created successfully!'))
+      } else {
+        toast.error(_('Error creating client'))
+      }
+    } catch (error) {
+      console.error('Error creating client:', error)
+      toast.error(_('Error creating client'))
+    }
+  }
+
+  const handleViewClient = (clientId: string) => {
+    // В будущем можно добавить страницу просмотра клиента
+    console.log('View client:', clientId)
   }
 
   if (isLoading) {
@@ -133,523 +163,289 @@ export default function AdminPage() {
       <div className="container mx-auto px-4 py-6 lg:py-8">
         <div className="mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">
-            <Trans>Dashboard</Trans>
+            <Trans>System Overview</Trans>
           </h2>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
-            <Trans>Manage guests and track statistics</Trans>
+            <Trans>Manage all platform clients</Trans>
           </p>
         </div>
 
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-4 lg:space-y-6"
-        >
-          <div className="overflow-x-auto">
-            <TabsList className="flex h-14 bg-white/80 backdrop-blur-md border border-white/30 shadow-lg rounded-lg p-2 gap-2 min-w-max">
-              <TabsTrigger
-                value="overview"
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md whitespace-nowrap"
-              >
-                <BarChart3 className="w-4 h-4 flex-shrink-0" />
-                <span>Обзор</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="guests"
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md whitespace-nowrap"
-              >
-                <Users className="w-4 h-4 flex-shrink-0" />
-                <span>Гости ({guests.length})</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="orders"
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md whitespace-nowrap"
-              >
-                <ShoppingCart className="w-4 h-4 flex-shrink-0" />
-                <span>Заказы</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="qr"
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md whitespace-nowrap"
-              >
-                <QrCode className="w-4 h-4 flex-shrink-0" />
-                <span>QR коды</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="settings"
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent data-[state=active]:to-amber-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 rounded-md whitespace-nowrap"
-              >
-                <Settings className="w-4 h-4 flex-shrink-0" />
-                <span>Настройки</span>
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="overview" className="space-y-4 lg:space-y-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
-              <Card>
-                <CardContent className="p-4 lg:p-6">
-                  <div className="flex items-center">
-                    <Users className="w-6 h-6 lg:w-8 lg:h-8 text-blue-600 flex-shrink-0" />
-                    <div className="ml-3 lg:ml-4">
-                      <p className="text-xs lg:text-sm font-medium text-gray-600">
-                        <Trans>Total Guests</Trans>
-                      </p>
-                      <p className="text-xl lg:text-2xl font-bold text-gray-900">
-                        {stats.totalGuests}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4 lg:p-6">
-                  <div className="flex items-center">
-                    <QrCode className="w-6 h-6 lg:w-8 lg:h-8 text-green-600 flex-shrink-0" />
-                    <div className="ml-3 lg:ml-4">
-                      <p className="text-xs lg:text-sm font-medium text-gray-600">
-                        <Trans>Photos</Trans>
-                      </p>
-                      <p className="text-xl lg:text-2xl font-bold text-gray-900">
-                        {stats.totalPhotos}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4 lg:p-6">
-                  <div className="flex items-center">
-                    <BarChart3 className="w-6 h-6 lg:w-8 lg:h-8 text-purple-600 flex-shrink-0" />
-                    <div className="ml-3 lg:ml-4">
-                      <p className="text-xs lg:text-sm font-medium text-gray-600">
-                        <Trans>Orders</Trans>
-                      </p>
-                      <p className="text-xl lg:text-2xl font-bold text-gray-900">
-                        {stats.totalOrders}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4 lg:p-6">
-                  <div className="flex items-center">
-                    <Download className="w-6 h-6 lg:w-8 lg:h-8 text-orange-600 flex-shrink-0" />
-                    <div className="ml-3 lg:ml-4">
-                      <p className="text-xs lg:text-sm font-medium text-gray-600">
-                        <Trans>Revenue</Trans>
-                      </p>
-                      <p className="text-xl lg:text-2xl font-bold text-gray-900">
-                        ${stats.revenue}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="guests" className="space-y-4 lg:space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h2 className="text-lg lg:text-xl font-semibold">
-                <Trans>Guest Management</Trans>
-              </h2>
-              <Button
-                onClick={() => setActiveTab('qr')}
-                size="sm"
-                className="w-full sm:w-auto"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                <Trans>Create Guest</Trans>
-              </Button>
-            </div>
-
-            <div className="grid gap-3 lg:gap-4">
-              {guests.length === 0 ? (
-                <Card>
-                  <CardContent className="flex flex-col items-center justify-center py-8 lg:py-12">
-                    <Users className="w-10 h-10 lg:w-12 lg:h-12 text-gray-400 mb-4" />
-                    <h3 className="text-base lg:text-lg font-medium text-gray-900 mb-2">
-                      <Trans>No guests yet</Trans>
-                    </h3>
-                    <p className="text-gray-600 text-center mb-4 text-sm lg:text-base">
-                      <Trans>Create your first guest using a QR code</Trans>
-                    </p>
-                    <Button onClick={() => setActiveTab('qr')} size="sm">
-                      <Trans>Create QR Code</Trans>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                guests.map((guest) => (
-                  <Card key={guest.id}>
-                    <CardContent className="p-4 lg:p-6">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex items-center space-x-3 lg:space-x-4">
-                          <div className="w-8 h-8 lg:w-10 lg:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <Users className="w-4 h-4 lg:w-5 lg:h-5 text-blue-600" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-medium text-gray-900 text-sm lg:text-base truncate">
-                              {guest.name}
-                            </h3>
-                            <p className="text-xs lg:text-sm text-gray-600 truncate">
-                              {guest.email || (
-                                <Trans>Email not specified</Trans>
-                              )}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              <Trans>Created</Trans>:{' '}
-                              {guest.created_at
-                                ? new Date(
-                                    guest.created_at
-                                  ).toLocaleDateString()
-                                : 'N/A'}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
-                          <Button
-                            onClick={() => handleViewGallery(guest.id)}
-                            variant="outline"
-                            size="sm"
-                            className="w-full sm:w-auto text-xs lg:text-sm"
-                          >
-                            <Eye className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-                            <Trans>Gallery</Trans>
-                          </Button>
-                          <Button
-                            onClick={() =>
-                              window.open(`/gallery/${guest.id}`, '_blank')
-                            }
-                            size="sm"
-                            className="w-full sm:w-auto text-xs lg:text-sm"
-                          >
-                            <QrCode className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-                            <Trans>QR Code</Trans>
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="orders" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">
-                <Trans>Order Management</Trans>
-              </h2>
-            </div>
-
-            <div className="grid gap-4">
-              {orders.length === 0 ? (
-                <Card>
-                  <CardContent className="flex flex-col items-center justify-center py-12">
-                    <ShoppingCart className="w-12 h-12 text-gray-400 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      <Trans>No orders</Trans>
-                    </h3>
-                    <p className="text-gray-600 text-center">
-                      <Trans>
-                        Orders will appear here after guests place them
-                      </Trans>
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                orders.map((order) => (
-                  <Card key={order.id}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="font-medium text-gray-900">
-                            <Trans>Order</Trans> #{order.id.slice(-8)}
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            <Trans>Guest</Trans>:{' '}
-                            {order.guests?.name || <Trans>Unknown</Trans>}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            <Trans>Photographer</Trans>:{' '}
-                            {order.photographers?.name || (
-                              <Trans>Unknown</Trans>
-                            )}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-gray-900">
-                            ${order.total_amount}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {order.created_at
-                              ? new Date(order.created_at).toLocaleDateString()
-                              : 'N/A'}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">
-                            <Trans>Status</Trans>:
-                          </span>
-                          <select
-                            value={order.status}
-                            onChange={async (e) => {
-                              const response = await fetch(
-                                '/api/admin/orders',
-                                {
-                                  method: 'PATCH',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                  },
-                                  body: JSON.stringify({
-                                    orderId: order.id,
-                                    status: e.target.value,
-                                  }),
-                                }
-                              )
-                              if (response.ok) {
-                                // Reload orders
-                                const ordersResponse =
-                                  await fetch('/api/admin/orders')
-                                if (ordersResponse.ok) {
-                                  const ordersData = await ordersResponse.json()
-                                  setOrders(ordersData.orders || [])
-                                }
-                              }
-                            }}
-                            className={`px-2 py-1 text-xs rounded-full border ${
-                              order.status === 'new'
-                                ? 'bg-blue-100 text-blue-800 border-blue-200'
-                                : order.status === 'ready'
-                                  ? 'bg-green-100 text-green-800 border-green-200'
-                                  : order.status === 'completed'
-                                    ? 'bg-purple-100 text-purple-800 border-purple-200'
-                                    : 'bg-gray-100 text-gray-800 border-gray-200'
-                            }`}
-                          >
-                            <option value="new">
-                              <Trans>New</Trans>
-                            </option>
-                            <option value="ready">
-                              <Trans>Ready</Trans>
-                            </option>
-                            <option value="completed">
-                              <Trans>Completed</Trans>
-                            </option>
-                            <option value="cancelled">
-                              <Trans>Cancelled</Trans>
-                            </option>
-                          </select>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">
-                            <Trans>Photos</Trans>:{' '}
-                            {order.photo_ids?.length || 0}
-                          </span>
-                          {order.status === 'ready' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setSelectedOrderForDelivery(order)}
-                            >
-                              <Send className="w-3 h-3 mr-1" />
-                              <Trans>Notify Guest</Trans>
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Delivery Notification Modal */}
-          {selectedOrderForDelivery && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className="bg-background rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border">
-                <div className="p-6">
-                  <DeliveryNotification
-                    order={{
-                      id: selectedOrderForDelivery.id,
-                      guestId: selectedOrderForDelivery.guest_id,
-                      guestName:
-                        selectedOrderForDelivery.guests?.name || 'Guest',
-                      guestEmail: selectedOrderForDelivery.guests?.email || '',
-                      status: selectedOrderForDelivery.status,
-                      totalAmount: selectedOrderForDelivery.total_amount,
-                      items:
-                        selectedOrderForDelivery.photo_ids?.map((id) => ({
-                          id,
-                          name: `Photo ${id.slice(-8)}`,
-                          quantity: 1,
-                          price:
-                            selectedOrderForDelivery.total_amount /
-                            (selectedOrderForDelivery.photo_ids?.length || 1),
-                        })) || [],
-                    }}
-                    photographerName="Photographer" // TODO: Get from photographer data
-                    studioName="Photo Studio" // TODO: Get from studio data
-                    onNotificationSent={() => {
-                      setSelectedOrderForDelivery(null)
-                      // Optionally reload orders to update status
-                    }}
-                  />
-                  <div className="mt-6 flex justify-end">
-                    <Button
-                      variant="outline"
-                      onClick={() => setSelectedOrderForDelivery(null)}
-                    >
-                      <Trans>Close</Trans>
-                    </Button>
-                  </div>
+        {/* Глобальная статистика */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 mb-8">
+          <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
+              <div className="flex items-center">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-primary to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Building className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+                </div>
+                <div className="ml-3 lg:ml-4 min-w-0">
+                  <p className="text-xs lg:text-sm font-medium text-slate-600 truncate">
+                    <Trans>Clients</Trans>
+                  </p>
+                  <p className="text-lg lg:text-2xl font-bold text-slate-800">
+                    {globalStats.totalClients}
+                  </p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
+              <div className="flex items-center">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-secondary to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Users className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+                </div>
+                <div className="ml-3 lg:ml-4 min-w-0">
+                  <p className="text-xs lg:text-sm font-medium text-slate-600 truncate">
+                    <Trans>Guests</Trans>
+                  </p>
+                  <p className="text-lg lg:text-2xl font-bold text-slate-800">
+                    {globalStats.totalGuests}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
+              <div className="flex items-center">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-600 to-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <BarChart3 className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+                </div>
+                <div className="ml-3 lg:ml-4 min-w-0">
+                  <p className="text-xs lg:text-sm font-medium text-slate-600 truncate">
+                    <Trans>Photos</Trans>
+                  </p>
+                  <p className="text-lg lg:text-2xl font-bold text-slate-800">
+                    {globalStats.totalPhotos}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
+              <div className="flex items-center">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-accent to-amber-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Settings className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+                </div>
+                <div className="ml-3 lg:ml-4 min-w-0">
+                  <p className="text-xs lg:text-sm font-medium text-slate-600 truncate">
+                    <Trans>Orders</Trans>
+                  </p>
+                  <p className="text-lg lg:text-2xl font-bold text-slate-800">
+                    {globalStats.totalOrders}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 col-span-2 lg:col-span-1">
+            <CardContent className="p-3 sm:p-4 lg:p-6">
+              <div className="flex items-center">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-emerald-600 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Eye className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+                </div>
+                <div className="ml-3 lg:ml-4 min-w-0">
+                  <p className="text-xs lg:text-sm font-medium text-slate-600 truncate">
+                    <Trans>Revenue</Trans>
+                  </p>
+                  <p className="text-lg lg:text-2xl font-bold text-slate-800">
+                    ${globalStats.totalRevenue}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Управление клиентами */}
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+              <h3 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-200">
+                <Trans>Clients</Trans>{' '}
+                <span className="text-primary">({clients.length})</span>
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                <Trans>Manage photo studio accounts</Trans>
+              </p>
             </div>
-          )}
+            <Button
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {showCreateForm ? (
+                <Trans>Cancel</Trans>
+              ) : (
+                <Trans>Add Client</Trans>
+              )}
+            </Button>
+          </div>
+        </div>
 
-          <TabsContent value="qr" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <QRGenerator
-                onGenerate={(qrData) => {
-                  console.log('Generated QR:', qrData)
-                  // Можно добавить логику сохранения QR
-                }}
-              />
+        {/* Форма создания клиента */}
+        {showCreateForm && (
+          <Card className="mb-6 bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-bold text-slate-800 dark:text-slate-200">
+                <Trans>Create New Client</Trans>
+              </CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
+                <Trans>Add a new photo studio to the system</Trans>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="clientName">
+                    <Trans>Studio Name</Trans>
+                  </Label>
+                  <Input
+                    id="clientName"
+                    value={newClientName}
+                    onChange={(e) => setNewClientName(e.target.value)}
+                    placeholder={_('My Photo Studio')}
+                    className="mt-1"
+                  />
+                </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    <Trans>QR Code Management</Trans>
-                  </CardTitle>
-                  <CardDescription>
-                    <Trans>Create QR codes for new guests</Trans>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <h4 className="font-medium">
-                      <Trans>How to use QR codes</Trans>:
-                    </h4>
-                    <ol className="text-sm text-gray-600 space-y-1">
-                      <li>
-                        1. <Trans>Create QR code for guest</Trans>
-                      </li>
-                      <li>
-                        2. <Trans>Print or send it to the guest</Trans>
-                      </li>
-                      <li>
-                        3. <Trans>Photographer scans QR at event</Trans>
-                      </li>
-                      <li>
-                        4.{' '}
-                        <Trans>Photos automatically go to guest gallery</Trans>
-                      </li>
-                    </ol>
-                  </div>
+                <div>
+                  <Label htmlFor="clientEmail">
+                    <Trans>Administrator Email</Trans>
+                  </Label>
+                  <Input
+                    id="clientEmail"
+                    type="email"
+                    value={newClientEmail}
+                    onChange={(e) => setNewClientEmail(e.target.value)}
+                    placeholder="admin@studio.com"
+                    className="mt-1"
+                  />
+                </div>
+              </div>
 
-                  <div className="space-y-2">
-                    <h4 className="font-medium">
-                      <Trans>Benefits</Trans>:
-                    </h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
-                      <li>
-                        • <Trans>Fast guest identification</Trans>
-                      </li>
-                      <li>
-                        • <Trans>Automatic gallery creation</Trans>
-                      </li>
-                      <li>
-                        • <Trans>Convenient photo access</Trans>
-                      </li>
-                      <li>
-                        • <Trans>Order tracking</Trans>
-                      </li>
-                    </ul>
+              <div className="flex flex-col sm:flex-row justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCreateForm(false)}
+                  className="order-2 sm:order-1 bg-white/70 border-white/30 hover:bg-white/90"
+                >
+                  <Trans>Cancel</Trans>
+                </Button>
+                <Button
+                  onClick={handleCreateClient}
+                  className="order-1 sm:order-2 bg-gradient-to-r from-secondary to-pink-600 hover:from-secondary/90 hover:to-pink-600/90 shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  <Trans>Create Client</Trans>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Список клиентов */}
+        <div className="grid gap-4">
+          {clients.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Building className="w-12 h-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  <Trans>No clients</Trans>
+                </h3>
+                <p className="text-gray-600 text-center mb-4">
+                  <Trans>Create the first client to get started</Trans>
+                </p>
+                <Button
+                  onClick={() => setShowCreateForm(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  <Trans>Add Client</Trans>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            clients.map((client) => (
+              <Card
+                key={client.id}
+                className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              >
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    {/* Left side - Main info */}
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-primary to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                        <Building className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">
+                          {client.name}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-gray-600 truncate">
+                          {client.email}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          <Trans>Created</Trans>:{' '}
+                          {client.created_at
+                            ? new Date(client.created_at).toLocaleDateString()
+                            : 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Stats - Mobile: horizontal, Desktop: vertical */}
+                    <div className="flex justify-between sm:justify-center sm:space-x-6 text-xs sm:text-sm text-gray-600">
+                      <div className="text-center">
+                        <p className="font-bold text-base sm:text-lg text-primary">
+                          {client.guestsCount}
+                        </p>
+                        <p className="text-xs">
+                          <Trans>Guests</Trans>
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold text-base sm:text-lg text-secondary">
+                          {client.photosCount}
+                        </p>
+                        <p className="text-xs">
+                          <Trans>Photos</Trans>
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold text-base sm:text-lg text-accent">
+                          {client.ordersCount}
+                        </p>
+                        <p className="text-xs">
+                          <Trans>Orders</Trans>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Action button */}
+                    <div className="flex justify-end sm:justify-start">
+                      <Button
+                        onClick={() => handleViewClient(client.id)}
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-3 text-xs"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        <Trans>View</Trans>
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="settings" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  <Trans>Studio Settings</Trans>
-                </CardTitle>
-                <CardDescription>
-                  <Trans>Configure your photo studio settings</Trans>
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="studioName">
-                      <Trans>Studio Name</Trans>
-                    </Label>
-                    <Input
-                      id="studioName"
-                      placeholder="My Photo Studio"
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="contactEmail">
-                      <Trans>Contact Email</Trans>
-                    </Label>
-                    <Input
-                      id="contactEmail"
-                      type="email"
-                      placeholder="info@studio.com"
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="phone">
-                      <Trans>Phone</Trans>
-                    </Label>
-                    <Input
-                      id="phone"
-                      placeholder="+1 (555) 123-4567"
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="website">
-                      <Trans>Website</Trans>
-                    </Label>
-                    <Input
-                      id="website"
-                      placeholder="https://studio.com"
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <Button>
-                    <Trans>Save Settings</Trans>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            ))
+          )}
+        </div>
       </div>
     </div>
   )

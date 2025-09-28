@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { withRoleCheck } from '@/shared/lib/auth/role-guard'
 import { prisma } from '@/shared/lib/prisma/client'
 
 type Guest = {
@@ -18,18 +19,32 @@ type GuestWithPhotoCount = Guest & {
 }
 
 export async function GET(request: NextRequest) {
+  // Check studio-admin or admin role
+  const auth = await withRoleCheck(['studio-admin', 'admin'], request)
+  if (auth instanceof NextResponse) {
+    return auth // Return 403/401 error
+  }
+
   try {
-    // Получаем client_id из заголовков
-    const clientId = request.headers.get('x-client-id')
+    // For studio-admin use their client_id, for admin - from header or all
+    let clientId = auth.clientId
+
+    // If admin and x-client-id is provided, use it
+    if (auth.user.role === 'admin') {
+      const headerClientId = request.headers.get('x-client-id')
+      if (headerClientId) {
+        clientId = headerClientId
+      }
+    }
 
     if (!clientId) {
       return NextResponse.json(
         { error: 'Client ID is required' },
-        { status: 401 }
+        { status: 400 }
       )
     }
 
-    // Получаем всех гостей клиента с количеством фото
+    // Get all guests of the client with photo count
     const guests = await prisma.guest.findMany({
       where: {
         clientId: clientId,
@@ -69,8 +84,17 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Check admin, super-admin or photographer role
+  const auth = await withRoleCheck(
+    ['studio-admin', 'admin', 'photographer'],
+    request
+  )
+  if (auth instanceof NextResponse) {
+    return auth // Return 403/401 error
+  }
+
   try {
-    const { name } = await request.json()
+    const { name, photographerId } = await request.json()
 
     if (!name || !name.trim()) {
       return NextResponse.json(
@@ -79,25 +103,32 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Получаем client_id из заголовков
-    const clientId = request.headers.get('x-client-id')
+    // Use client_id from auth
+    const clientId = auth.clientId
 
     if (!clientId) {
       return NextResponse.json(
         { error: 'Client ID is required' },
-        { status: 401 }
+        { status: 400 }
       )
     }
 
-    // Создаем гостя
+    // Create guest
     const guest = await prisma.guest.create({
       data: {
         name: name.trim(),
         clientId: clientId,
         email: null,
-        // Note: You'll need to provide photographerId as well
-        // This might need to be passed from the frontend or determined by business logic
-        photographerId: 'default-photographer-id', // Replace with actual logic
+        // Use photographerId from request or find first photographer of the client
+        photographerId:
+          photographerId ||
+          (
+            await prisma.photographer.findFirst({
+              where: { clientId },
+              select: { id: true },
+            })
+          )?.id ||
+          '',
       },
     })
 
