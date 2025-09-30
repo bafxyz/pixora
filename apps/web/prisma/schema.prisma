@@ -19,6 +19,31 @@ enum PhotoSessionStatus {
   archived
 }
 
+enum OrderStatus {
+  pending
+  processing
+  completed
+  cancelled
+}
+
+enum PaymentMethod {
+  cash
+  robokassa
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
+enum NotificationType {
+  new_order
+  order_status_changed
+  payment_received
+}
+
 model Client {
   id        String   @id @default(uuid()) @db.Uuid
   name      String
@@ -33,6 +58,7 @@ model Client {
   photographers Photographer[]
   photos        Photo[]
   photoSessions PhotoSession[]
+  orders        Order[]
 
   @@map("clients")
 }
@@ -50,6 +76,7 @@ model Photographer {
   client        Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
   photos        Photo[]
   photoSessions PhotoSession[]
+  orders        Order[]
 
   @@map("photographers")
 }
@@ -68,9 +95,10 @@ model Photo {
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
-  photographer Photographer @relation(fields: [photographerId], references: [id])
-  client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  photoSession PhotoSession @relation(fields: [photoSessionId], references: [id], onDelete: Cascade)
+  photographer Photographer  @relation(fields: [photographerId], references: [id])
+  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  photoSession PhotoSession  @relation(fields: [photoSessionId], references: [id], onDelete: Cascade)
+  orderItems   OrderItem[]
 
   @@map("photos")
 }
@@ -92,6 +120,69 @@ model PhotoSession {
   photographer Photographer @relation(fields: [photographerId], references: [id])
   client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
   photos       Photo[]
+  orders       Order[]
 
   @@map("photo_sessions")
+}
+
+model Order {
+  id             String        @id @default(uuid()) @db.Uuid
+  clientId       String        @map("client_id") @db.Uuid
+  photographerId String        @map("photographer_id") @db.Uuid
+  sessionId      String        @map("session_id") @db.Uuid
+  guestEmail     String        @map("guest_email")
+  guestName      String?       @map("guest_name")
+  guestPhone     String?       @map("guest_phone")
+
+  status         OrderStatus   @default(pending)
+  paymentMethod  PaymentMethod @map("payment_method")
+  paymentStatus  PaymentStatus @default(pending) @map("payment_status")
+
+  totalAmount    Decimal       @map("total_amount") @db.Decimal(10, 2)
+  discount       Decimal       @default(0) @map("discount") @db.Decimal(10, 2)
+  finalAmount    Decimal       @map("final_amount") @db.Decimal(10, 2)
+
+  // Robokassa payment data
+  robokassaInvoiceId   String?   @map("robokassa_invoice_id")
+  robokassaPaymentLink String?   @map("robokassa_payment_link")
+
+  notes          String?
+  processedAt    DateTime?     @map("processed_at") @db.Timestamptz
+  completedAt    DateTime?     @map("completed_at") @db.Timestamptz
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  photographer Photographer  @relation(fields: [photographerId], references: [id])
+  session      PhotoSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  items        OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(uuid()) @db.Uuid
+  orderId   String   @map("order_id") @db.Uuid
+  photoId   String   @map("photo_id") @db.Uuid
+  price     Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model Notification {
+  id             String           @id @default(uuid()) @db.Uuid
+  type           NotificationType
+  recipientEmail String           @map("recipient_email")
+  orderId        String           @map("order_id") @db.Uuid
+  title          String
+  message        String
+  isRead         Boolean          @default(false) @map("is_read")
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  readAt         DateTime?        @map("read_at") @db.Timestamptz
+
+  @@map("notifications")
 }

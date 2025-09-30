@@ -1,13 +1,24 @@
 'use client'
 
-import { Trans } from '@lingui/react/macro'
+import { Trans, msg } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent } from '@repo/ui/card'
-import { ArrowLeft, ShoppingCart, Trash2 } from 'lucide-react'
+import { Input } from '@repo/ui/input'
+import { Label } from '@repo/ui/label'
+import {
+  ArrowLeft,
+  Banknote,
+  CheckCircle,
+  CreditCard,
+  ShoppingCart,
+  Trash2,
+} from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { LanguageSwitcher } from '@/shared/components/language-switcher'
 
 interface CartItem {
@@ -23,6 +34,7 @@ interface PhotoSession {
 }
 
 export default function CartPage() {
+  const { _ } = useLingui()
   const params = useParams()
   const router = useRouter()
   const sessionId = params?.id as string
@@ -30,6 +42,31 @@ export default function CartPage() {
   const [session, setSession] = useState<PhotoSession | null>(null)
   const [cart, setCart] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [showCheckout, setShowCheckout] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
+    'cash' | 'robokassa' | null
+  >(null)
+
+  // Guest information
+  const [guestInfo, setGuestInfo] = useState({
+    email: '',
+    name: '',
+    phone: '',
+  })
+
+  // Pricing configuration (should match backend)
+  const pricePerPhoto = 5.0
+  const bulkDiscountThreshold = 20
+  const bulkDiscountPercent = 15
+
+  const photoCount = cart.length
+  const totalAmount = photoCount * pricePerPhoto
+  const discount =
+    photoCount >= bulkDiscountThreshold
+      ? (totalAmount * bulkDiscountPercent) / 100
+      : 0
+  const finalAmount = totalAmount - discount
 
   useEffect(() => {
     if (!sessionId) return
@@ -38,18 +75,14 @@ export default function CartPage() {
       try {
         setLoading(true)
 
-        // Fetch session data
         const response = await fetch(`/api/session/${sessionId}`)
         if (response.ok) {
           const data = await response.json()
           setSession(data.session)
 
-          // Load cart from localStorage
           const savedCart = localStorage.getItem(`cart_${sessionId}`)
           if (savedCart) {
             const cartPhotoIds = JSON.parse(savedCart) as string[]
-
-            // Get full photo details from session photos
             const cartItems = data.session.photos.filter((photo: CartItem) =>
               cartPhotoIds.includes(photo.id)
             )
@@ -69,30 +102,88 @@ export default function CartPage() {
   const removeFromCart = (photoId: string) => {
     setCart((prev) => {
       const newCart = prev.filter((item) => item.id !== photoId)
-
-      // Update localStorage
       const cartIds = newCart.map((item) => item.id)
       localStorage.setItem(`cart_${sessionId}`, JSON.stringify(cartIds))
-
       return newCart
     })
   }
 
-  const handleCheckout = () => {
-    // TODO: Implement checkout functionality
-    alert('Checkout functionality coming soon!')
+  const handleProceedToCheckout = () => {
+    if (cart.length === 0) {
+      toast.error(_(msg`Your cart is empty`))
+      return
+    }
+    setShowCheckout(true)
+  }
+
+  const handlePlaceOrder = async () => {
+    if (!guestInfo.email.trim()) {
+      toast.error(_(msg`Email is required`))
+      return
+    }
+
+    if (!selectedPaymentMethod) {
+      toast.error(_(msg`Please select a payment method`))
+      return
+    }
+
+    setIsProcessing(true)
+
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          guestEmail: guestInfo.email,
+          guestName: guestInfo.name || null,
+          guestPhone: guestInfo.phone || null,
+          photoIds: cart.map((item) => item.id),
+          paymentMethod: selectedPaymentMethod,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+
+        // Clear cart
+        localStorage.removeItem(`cart_${sessionId}`)
+
+        if (selectedPaymentMethod === 'robokassa' && data.order.paymentLink) {
+          // Redirect to Robokassa payment page
+          window.location.href = data.order.paymentLink
+        } else {
+          // Cash payment - show success message
+          toast.success(_(msg`Order placed successfully!`))
+          toast.success(
+            _(
+              msg`Your order has been sent to the photographer. They will contact you soon.`
+            )
+          )
+          router.push(`/session/${sessionId}`)
+        }
+      } else {
+        const error = await response.json()
+        toast.error(error.error || _(msg`Failed to place order`))
+      }
+    } catch (error) {
+      console.error('Error placing order:', error)
+      toast.error(_(msg`Error placing order`))
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Header */}
       <header className="bg-white/70 backdrop-blur-sm border-b border-white/20 sticky top-0 z-30 shadow-sm">
         <div className="container mx-auto px-4">
@@ -105,10 +196,7 @@ export default function CartPage() {
             </Link>
 
             <div className="flex items-center gap-3">
-              {/* Language Switcher */}
               <LanguageSwitcher />
-
-              {/* Back Button */}
               <Button
                 onClick={() => router.push(`/session/${sessionId}`)}
                 variant="outline"
@@ -122,19 +210,17 @@ export default function CartPage() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Page Title */}
         <div className="mb-8 text-center">
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-2">
-            <Trans>Your Cart</Trans>
+            {showCheckout ? <Trans>Checkout</Trans> : <Trans>Your Cart</Trans>}
           </h1>
           {session && (
-            <p className="text-slate-600 dark:text-slate-300">
+            <p className="text-slate-600">
               {session.name} - {session.photographerName}
             </p>
           )}
         </div>
 
-        {/* Cart Content */}
         {cart.length === 0 ? (
           <div className="max-w-md mx-auto">
             <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg">
@@ -150,16 +236,182 @@ export default function CartPage() {
                 </p>
                 <Button
                   onClick={() => router.push(`/session/${sessionId}`)}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600"
                 >
                   <Trans>Browse Photos</Trans>
                 </Button>
               </CardContent>
             </Card>
           </div>
+        ) : showCheckout ? (
+          <div className="max-w-2xl mx-auto">
+            <div className="grid gap-6">
+              {/* Guest Information */}
+              <Card className="bg-white/70 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold mb-4">
+                    <Trans>Your Information</Trans>
+                  </h2>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="email">
+                        <Trans>Email</Trans> *
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={guestInfo.email}
+                        onChange={(e) =>
+                          setGuestInfo({ ...guestInfo, email: e.target.value })
+                        }
+                        placeholder={_(msg`your@email.com`)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="name">
+                        <Trans>Name</Trans>
+                      </Label>
+                      <Input
+                        id="name"
+                        value={guestInfo.name}
+                        onChange={(e) =>
+                          setGuestInfo({ ...guestInfo, name: e.target.value })
+                        }
+                        placeholder={_(msg`Your name`)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">
+                        <Trans>Phone</Trans>
+                      </Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={guestInfo.phone}
+                        onChange={(e) =>
+                          setGuestInfo({ ...guestInfo, phone: e.target.value })
+                        }
+                        placeholder={_(msg`+1234567890`)}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Payment Method */}
+              <Card className="bg-white/70 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold mb-4">
+                    <Trans>Payment Method</Trans>
+                  </h2>
+                  <div className="grid gap-4">
+                    <button
+                      onClick={() => setSelectedPaymentMethod('robokassa')}
+                      className={`p-4 border-2 rounded-lg transition-all ${
+                        selectedPaymentMethod === 'robokassa'
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <CreditCard className="w-6 h-6 text-blue-600" />
+                        <div className="flex-1 text-left">
+                          <p className="font-semibold">
+                            <Trans>Online Payment (Robokassa)</Trans>
+                          </p>
+                          <p className="text-sm text-slate-600">
+                            <Trans>Pay securely with card or other methods</Trans>
+                          </p>
+                        </div>
+                        {selectedPaymentMethod === 'robokassa' && (
+                          <CheckCircle className="w-6 h-6 text-blue-600" />
+                        )}
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => setSelectedPaymentMethod('cash')}
+                      className={`p-4 border-2 rounded-lg transition-all ${
+                        selectedPaymentMethod === 'cash'
+                          ? 'border-green-500 bg-green-50'
+                          : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Banknote className="w-6 h-6 text-green-600" />
+                        <div className="flex-1 text-left">
+                          <p className="font-semibold">
+                            <Trans>Cash Payment</Trans>
+                          </p>
+                          <p className="text-sm text-slate-600">
+                            <Trans>Pay in person at the studio</Trans>
+                          </p>
+                        </div>
+                        {selectedPaymentMethod === 'cash' && (
+                          <CheckCircle className="w-6 h-6 text-green-600" />
+                        )}
+                      </div>
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Order Summary */}
+              <Card className="bg-white/70 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold mb-4">
+                    <Trans>Order Summary</Trans>
+                  </h2>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span>
+                        <Trans>Photos</Trans> ({photoCount})
+                      </span>
+                      <span>${totalAmount.toFixed(2)}</span>
+                    </div>
+                    {discount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>
+                          <Trans>Discount</Trans> ({bulkDiscountPercent}%)
+                        </span>
+                        <span>-${discount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="border-t pt-3 flex justify-between text-lg font-bold">
+                      <span>
+                        <Trans>Total</Trans>
+                      </span>
+                      <span>${finalAmount.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 mt-6">
+                    <Button
+                      onClick={() => setShowCheckout(false)}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      <Trans>Back</Trans>
+                    </Button>
+                    <Button
+                      onClick={handlePlaceOrder}
+                      disabled={isProcessing || !selectedPaymentMethod}
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600"
+                    >
+                      {isProcessing ? (
+                        <Trans>Processing...</Trans>
+                      ) : (
+                        <Trans>Place Order</Trans>
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         ) : (
           <div className="max-w-4xl mx-auto">
-            {/* Cart Items */}
             <div className="grid gap-4 mb-6">
               {cart.map((item) => (
                 <Card
@@ -180,6 +432,9 @@ export default function CartPage() {
                         <h3 className="font-medium text-slate-800">
                           {item.fileName}
                         </h3>
+                        <p className="text-sm text-slate-600">
+                          ${pricePerPhoto.toFixed(2)}
+                        </p>
                       </div>
                       <Button
                         onClick={() => removeFromCart(item.id)}
@@ -195,20 +450,40 @@ export default function CartPage() {
               ))}
             </div>
 
-            {/* Cart Summary */}
-            <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg">
+            <Card className="bg-white/70 backdrop-blur-sm">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-lg font-semibold text-slate-800">
-                    <Trans>Total</Trans>
-                  </span>
-                  <span className="text-2xl font-bold text-slate-900">
-                    {cart.length} <Trans>photos</Trans>
-                  </span>
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg">
+                      <Trans>Subtotal</Trans> ({photoCount}{' '}
+                      <Trans>photos</Trans>)
+                    </span>
+                    <span className="text-lg font-semibold">
+                      ${totalAmount.toFixed(2)}
+                    </span>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex items-center justify-between text-green-600">
+                      <span>
+                        <Trans>Bulk Discount</Trans> ({bulkDiscountPercent}%)
+                      </span>
+                      <span className="font-semibold">
+                        -${discount.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="border-t pt-3 flex items-center justify-between">
+                    <span className="text-xl font-bold">
+                      <Trans>Total</Trans>
+                    </span>
+                    <span className="text-2xl font-bold text-blue-600">
+                      ${finalAmount.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
                 <Button
-                  onClick={handleCheckout}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  onClick={handleProceedToCheckout}
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600"
                   size="lg"
                 >
                   <Trans>Proceed to Checkout</Trans>

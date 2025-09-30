@@ -12,6 +12,7 @@ interface PageLayoutProps {
     label: string
     onClick: () => void
     icon?: ReactNode
+    disabled?: boolean
   }
   children: ReactNode
 }
@@ -39,7 +40,11 @@ export function PageLayout({
         </div>
 
         {action && (
-          <Button onClick={action.onClick} className="flex items-center gap-2">
+          <Button
+            onClick={action.onClick}
+            disabled={action.disabled}
+            className="flex items-center gap-2"
+          >
             {action.icon || <Plus className="w-4 h-4" />}
             {action.label}
           </Button>

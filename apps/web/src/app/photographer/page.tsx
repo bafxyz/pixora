@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/card'
-import { Camera, Clock, Image as ImageIcon, QrCode, Upload } from 'lucide-react'
+import { Camera, Clock, Image as ImageIcon, QrCode, ShoppingCart, Upload } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -227,7 +227,7 @@ export default function PhotographerPage() {
         )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
@@ -274,6 +274,31 @@ export default function PhotographerPage() {
                 variant="outline"
               >
                 <Trans>Upload Photos</Trans>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-orange-600 to-amber-600 rounded-lg flex items-center justify-center">
+                  <ShoppingCart className="w-5 h-5 text-white" />
+                </div>
+                <CardTitle className="text-base">
+                  <Trans>Orders</Trans>
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription className="mb-4 text-sm">
+                <Trans>View and manage your orders</Trans>
+              </CardDescription>
+              <Button
+                onClick={() => router.push('/admin/orders')}
+                className="w-full"
+                variant="outline"
+              >
+                <Trans>Manage Orders</Trans>
               </Button>
             </CardContent>
           </Card>
