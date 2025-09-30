@@ -30,7 +30,6 @@
       "Bash(pnpm prisma generate:*)",
       "Bash(pnpm prisma:*)",
       "Bash(NEXT_PUBLIC_SUPABASE_URL=https://isidnagykjibnuggbkdm.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzaWRuYWd5a2ppYm51Z2dia2RtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxOTc3MjYsImV4cCI6MjA3Mjc3MzcyNn0.yEWjR5VhJdB0_tqpUMp2dsWfT6DvnRVjCgQva9Mt0cY pnpm prisma db push)",
-      "Bash(DATABASE_URL=\"postgresql://postgres.isidnagykjibnuggbkdm:C25urqEPSmg3kce@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?pgbouncer=true\" DIRECT_URL=\"postgresql://postgres.isidnagykjibnuggbkdm:C25urqEPSmg3kce@aws-1-eu-central-1.pooler.supabase.com:5432/postgres\" pnpm prisma db push)",
       "Bash(npx prisma db execute:*)",
       "Bash(curl:*)",
       "Bash(python3:*)",
