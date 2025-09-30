@@ -1,10 +1,9 @@
 import { create } from 'zustand'
-import { env } from '@/shared/config/env'
 
 export interface Photo {
   id: string
   photographer_id: string
-  guest_id: string | null
+  session_id: string
   client_id: string
   file_path: string
   file_name: string
@@ -17,7 +16,7 @@ export interface Photo {
 export interface CartItem {
   id: string
   photographer_id: string
-  guest_id: string | null
+  session_id: string
   client_id: string
   file_path: string
   file_name: string
@@ -105,7 +104,7 @@ interface GalleryActions {
   setDemoImages: (images: string[]) => void
 
   // Async actions
-  loadPhotos: (guestId: string) => Promise<void>
+  loadPhotos: (sessionId: string) => Promise<void>
   loadPhotographer: (photographerId: string) => Promise<void>
   submitOrder: () => Promise<void>
 }
@@ -221,28 +220,48 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
   setDemoImages: (demoImages) => set({ demoImages }),
 
   // Async actions
-  loadPhotos: async (guestId) => {
+  loadPhotos: async (sessionId) => {
     set({ isLoadingPhotos: true })
     try {
-      const response = await fetch(`/api/gallery/${guestId}`)
+      const response = await fetch(`/api/session/${sessionId}`)
 
       if (response.ok) {
         const result = await response.json()
+
+        // Transform photos from camelCase to snake_case
+        const transformedPhotos = (result.session?.photos || []).map(
+          (photo: {
+            id: string
+            filePath: string
+            fileName: string
+            createdAt: string
+          }) => ({
+            id: photo.id,
+            photographer_id: '',
+            session_id: result.session.id,
+            client_id: '',
+            file_path: photo.filePath,
+            file_name: photo.fileName,
+            file_size: 0,
+            is_selected: true,
+            created_at: photo.createdAt,
+            updated_at: photo.createdAt,
+          })
+        )
+
         set({
-          photos: result.photos || [],
-          photographer: result.photographer
-            ? {
-                id: result.photographer.id,
-                studioName: result.photographer.name || '',
-                firstName: '',
-                lastName: '',
-                settings: result.photographer.branding || {
-                  brandColor: '#000000',
-                  logoUrl: '',
-                  welcomeMessage: '',
-                },
-              }
-            : null,
+          photos: transformedPhotos,
+          photographer: {
+            id: 'default',
+            studioName: result.session?.photographerName || 'Studio',
+            firstName: '',
+            lastName: '',
+            settings: {
+              brandColor: '#000000',
+              logoUrl: '',
+              welcomeMessage: '',
+            },
+          },
         })
       } else {
         // Handle error by setting empty state
@@ -268,22 +287,12 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
     }
   },
 
-  loadPhotographer: async (photographerId) => {
+  loadPhotographer: async (_photographerId) => {
     set({ isLoadingPhotographer: true })
     try {
-      const response = await fetch(
-        `${env.supabase.url}/functions/v1/make-server-2e5a4e91/photographer/${photographerId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${env.supabase.anonKey}`,
-          },
-        }
-      )
-
-      if (response.ok) {
-        const photographerData = await response.json()
-        set({ photographer: photographerData })
-      }
+      // For now, photographer info is loaded with photos in loadPhotos
+      // This function can be used if we need to load photographer info separately
+      console.log('Photographer info loaded via loadPhotos')
     } catch (error) {
       console.error('Photographer loading error:', error)
     } finally {
@@ -304,20 +313,16 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
         photographerId: item.photographer_id,
       }))
 
-      const response = await fetch(
-        `${env.supabase.url}/functions/v1/make-server-2e5a4e91/orders`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${env.supabase.anonKey}`,
-          },
-          body: JSON.stringify({
-            contactInfo: orderForm,
-            items: orderItems,
-          }),
-        }
-      )
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contactInfo: orderForm,
+          items: orderItems,
+        }),
+      })
 
       if (response.ok) {
         const orderData = await response.json()

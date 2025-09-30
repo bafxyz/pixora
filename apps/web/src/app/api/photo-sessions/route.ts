@@ -38,7 +38,6 @@ export async function GET(request: NextRequest) {
         },
         _count: {
           select: {
-            guests: true,
             photos: true,
           },
         },
@@ -59,7 +58,7 @@ export async function GET(request: NextRequest) {
         createdAt: session.createdAt,
         updatedAt: session.updatedAt,
         photographer: session.photographer,
-        guestCount: session._count.guests,
+        guestCount: 0, // Guests removed from system
         photoCount: session._count.photos,
       })),
     })
@@ -85,11 +84,66 @@ export async function POST(request: NextRequest) {
   try {
     const { name, description, scheduledAt } = await request.json()
 
-    if (!name || !name.trim()) {
+    // Validate and sanitize inputs
+    if (!name || typeof name !== 'string' || !name.trim()) {
       return NextResponse.json(
         { error: 'Photo session name is required' },
         { status: 400 }
       )
+    }
+
+    if (description && typeof description !== 'string') {
+      return NextResponse.json(
+        { error: 'Description must be a string' },
+        { status: 400 }
+      )
+    }
+
+    // Validate name length
+    if (name.trim().length > 255) {
+      return NextResponse.json(
+        { error: 'Photo session name is too long (max 255 characters)' },
+        { status: 400 }
+      )
+    }
+
+    // Validate description length
+    if (description && description.length > 1000) {
+      return NextResponse.json(
+        { error: 'Description is too long (max 1000 characters)' },
+        { status: 400 }
+      )
+    }
+
+    // Validate scheduledAt if provided
+    let validatedScheduledAt: Date | null = null
+    if (scheduledAt) {
+      if (typeof scheduledAt !== 'string') {
+        return NextResponse.json(
+          { error: 'Scheduled date must be a string in ISO format' },
+          { status: 400 }
+        )
+      }
+
+      const date = new Date(scheduledAt)
+      if (Number.isNaN(date.getTime())) {
+        return NextResponse.json(
+          { error: 'Invalid scheduled date format' },
+          { status: 400 }
+        )
+      }
+
+      // Ensure date is not too far in the future (e.g., not more than 2 years)
+      const maxAllowedDate = new Date()
+      maxAllowedDate.setFullYear(maxAllowedDate.getFullYear() + 2)
+      if (date > maxAllowedDate) {
+        return NextResponse.json(
+          { error: 'Scheduled date cannot be more than 2 years in the future' },
+          { status: 400 }
+        )
+      }
+
+      validatedScheduledAt = date
     }
 
     // Use client_id from auth
@@ -139,7 +193,7 @@ export async function POST(request: NextRequest) {
         description: description?.trim() || null,
         photographerId,
         clientId: clientId || '',
-        scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
+        scheduledAt: validatedScheduledAt,
       },
       include: {
         photographer: {

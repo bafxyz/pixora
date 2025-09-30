@@ -21,8 +21,12 @@ export function Header() {
     }
   }
 
-  // Don't show header on login page
-  if (pathname === '/login' || pathname === '/register') {
+  // Don't show header on login page and guest pages
+  if (
+    pathname === '/login' ||
+    pathname === '/register' ||
+    pathname.startsWith('/session/')
+  ) {
     return null
   }
 
@@ -30,31 +34,30 @@ export function Header() {
   const getNavigationItems = () => {
     if (!user) return []
 
-    const baseItems = [{ href: '/dashboard', label: 'Dashboard', icon: Home }]
-
     switch (user.role) {
+      case 'admin':
+        return [{ href: '/admin', label: 'Dashboard', icon: Shield }]
       case 'studio-admin':
         return [
-          ...baseItems,
-          { href: '/studio-admin', label: 'Admin Panel', icon: Settings },
-          { href: '/photographer', label: 'Photographer', icon: Camera },
-        ]
-      case 'admin':
-        return [
-          ...baseItems,
-          { href: '/studio-admin', label: 'Super Admin', icon: Shield },
-          { href: '/studio-admin', label: 'Admin', icon: Settings },
+          { href: '/studio-admin', label: 'Dashboard', icon: Home },
+          {
+            href: '/studio-admin/photographers',
+            label: 'Photographers',
+            icon: Camera,
+          },
+          { href: '/studio-admin/settings', label: 'Settings', icon: Settings },
           { href: '/photographer', label: 'Photographer', icon: Camera },
         ]
       case 'photographer':
         return [
-          ...baseItems,
-          { href: '/photographer', label: 'Photographer Panel', icon: Camera },
+          { href: '/photographer', label: 'Dashboard', icon: Home },
+          { href: '/photographer/sessions', label: 'Sessions', icon: Camera },
+          { href: '/photographer/upload', label: 'Upload', icon: Camera },
         ]
       case 'guest':
-        return [{ href: '/gallery', label: 'Gallery', icon: Camera }]
+        return []
       default:
-        return baseItems
+        return []
     }
   }
 

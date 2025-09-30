@@ -15,9 +15,9 @@ export async function GET(request: NextRequest) {
       include: {
         _count: {
           select: {
-            guests: true,
+            photographers: true,
             photos: true,
-            orders: true,
+            photoSessions: true,
           },
         },
       },
@@ -31,9 +31,9 @@ export async function GET(request: NextRequest) {
       name: client.name,
       email: client.email,
       createdAt: client.createdAt,
-      guestsCount: client._count.guests,
+      photographersCount: client._count.photographers,
       photosCount: client._count.photos,
-      ordersCount: client._count.orders,
+      sessionsCount: client._count.photoSessions,
     }))
 
     return NextResponse.json({

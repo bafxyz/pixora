@@ -31,7 +31,7 @@ export default function Home() {
               <Trans>Get Started</Trans>
             </Link>
             <Link
-              href="/gallery"
+              href="/session"
               className="inline-flex items-center justify-center rounded-lg border-2 border-primary/20 bg-white/80 backdrop-blur-sm hover:bg-gradient-to-r hover:from-accent/10 hover:to-secondary/10 hover:border-primary/40 h-12 px-8 font-medium transition-all duration-300 shadow-md hover:shadow-lg"
             >
               <Trans>Browse Gallery</Trans>

@@ -15,26 +15,26 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'default', size = 'default', ...props }, ref) => {
     const baseClasses =
-      'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
+      'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&>svg]:pointer-events-none [&>svg]:shrink-0'
 
     const variantClasses = {
       default:
-        'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90',
+        'bg-blue-600 text-white shadow hover:bg-blue-700 hover:shadow-md active:bg-blue-800',
       destructive:
-        'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
+        'bg-red-600 text-white shadow hover:bg-red-700 hover:shadow-md active:bg-red-800',
       outline:
-        'border border-border bg-background hover:bg-accent hover:text-accent-foreground',
+        'border-2 border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400 active:bg-slate-100',
       secondary:
-        'bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80',
-      ghost: 'hover:bg-accent hover:text-accent-foreground',
-      link: 'text-primary underline-offset-4 hover:underline',
+        'bg-slate-100 text-slate-900 border border-slate-200 hover:bg-slate-200 active:bg-slate-300',
+      ghost: 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 active:bg-slate-200',
+      link: 'text-blue-600 underline-offset-4 hover:underline hover:text-blue-700',
     }
 
     const sizeClasses = {
-      default: 'h-10 px-4 py-2',
-      sm: 'h-9 rounded-md px-3',
-      lg: 'h-11 rounded-md px-8',
-      icon: 'h-10 w-10',
+      default: 'h-10 px-4 py-2 gap-2',
+      sm: 'h-8 px-3 py-1.5 text-xs gap-1.5',
+      lg: 'h-12 px-6 py-3 text-base gap-2.5',
+      icon: 'h-10 w-10 p-0',
     }
 
     return (

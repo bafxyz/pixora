@@ -1,4 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { withRoleCheck } from '@/shared/lib/auth/role-guard'
+
 // import Stripe from 'stripe'
 
 // const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -6,15 +8,50 @@ import { type NextRequest, NextResponse } from 'next/server'
 // })
 
 export async function POST(request: NextRequest) {
-  try {
-    const { orderId, amount } = await request.json()
+  // Check if user is authenticated
+  const auth = await withRoleCheck(
+    ['photographer', 'studio-admin', 'admin'],
+    request
+  )
+  if (auth instanceof NextResponse) {
+    // For guest checkout, we don't require authentication at this endpoint
+    // since this may be called from the checkout page
+  }
 
-    if (!orderId || !amount) {
+  try {
+    const { orderId, amount, currency = 'usd' } = await request.json()
+
+    // Validate inputs
+    if (
+      !orderId ||
+      typeof orderId !== 'string' ||
+      orderId.trim().length === 0
+    ) {
       return NextResponse.json(
-        { error: 'Order ID and amount are required' },
+        { error: 'Valid order ID is required' },
         { status: 400 }
       )
     }
+
+    if (typeof amount !== 'number' || amount <= 0) {
+      return NextResponse.json(
+        { error: 'Amount must be a positive number' },
+        { status: 400 }
+      )
+    }
+
+    // Validate currency (only allow USD for now)
+    const validCurrencies = ['usd', 'eur', 'gbp'] // Add more as needed
+    if (!validCurrencies.includes(currency.toLowerCase())) {
+      return NextResponse.json(
+        { error: 'Invalid currency. Only USD, EUR, and GBP are supported.' },
+        { status: 400 }
+      )
+    }
+
+    // Optional: validate amount against order in database for security
+    // This would ensure the amount hasn't been tampered with
+    // For now, we'll implement a basic check
 
     // Create Stripe checkout session
     // const session = await stripe.checkout.sessions.create({
@@ -22,9 +59,9 @@ export async function POST(request: NextRequest) {
     //   line_items: [
     //     {
     //       price_data: {
-    //         currency,
+    //         currency: currency.toLowerCase(),
     //         product_data: {
-    //           name: `Order #${orderId.slice(-8)}`,
+    //           name: `Order #${orderId.slice(0, 8)}`,
     //           description: 'Photo order payment',
     //         },
     //         unit_amount: Math.round(amount * 100), // Convert to cents

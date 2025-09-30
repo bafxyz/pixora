@@ -14,9 +14,9 @@ export function getRoleRedirectPath(role: UserRole): string {
     case 'photographer':
       return '/photographer'
     case 'guest':
-      return '/gallery'
+      return '/session'
     default:
-      return '/dashboard'
+      return '/photographer'
   }
 }
 
@@ -33,7 +33,7 @@ export function canAccessPath(userRole: UserRole, path: string): boolean {
   }
 
   // Публичные пути доступны всем
-  const publicPaths = ['/', '/login', '/session', '/gallery', '/payment']
+  const publicPaths = ['/', '/login', '/session', '/payment']
 
   if (publicPaths.some((publicPath) => path.startsWith(publicPath))) {
     return true
@@ -42,13 +42,15 @@ export function canAccessPath(userRole: UserRole, path: string): boolean {
   // Проверка доступа к специфичным путям по ролям
   switch (userRole) {
     case 'studio-admin':
-      return path.startsWith('/studio-admin') || path.startsWith('/dashboard')
+      return (
+        path.startsWith('/studio-admin') || path.startsWith('/photographer')
+      )
     case 'photographer':
-      return path.startsWith('/photographer') || path.startsWith('/dashboard')
+      return path.startsWith('/photographer')
     case 'guest':
-      return path.startsWith('/gallery') || path.startsWith('/session')
+      return path.startsWith('/session')
     default:
-      return path.startsWith('/dashboard')
+      return path.startsWith('/photographer')
   }
 }
 

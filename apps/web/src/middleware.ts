@@ -35,6 +35,16 @@ export async function middleware(request: NextRequest) {
     )
   }
 
+  const path = request.nextUrl.pathname
+
+  // Check if this is a public route that doesn't require authentication
+  const isPublicRoute = path.startsWith('/session')
+
+  // Skip authentication for public routes
+  if (isPublicRoute) {
+    return response
+  }
+
   // Get authenticated user with session refresh capability
   const { user } = await getAuthUser(request, supabaseUrl, supabaseAnonKey)
 
@@ -66,7 +76,6 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  const path = request.nextUrl.pathname
   const userRole = user?.user_metadata?.role || 'guest'
 
   // API Routes Protection - CRITICAL!
@@ -142,8 +151,8 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // Gallery endpoints - public for guests
-    if (path.startsWith('/api/gallery/')) {
+    // Session endpoints - public for guests
+    if (path.startsWith('/api/session/')) {
       // Allow access
       return response
     }
@@ -160,28 +169,15 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protected routes that require authentication
-  const protectedRoutes = [
-    '/photographer',
-    '/admin',
-    '/studio-admin',
-    '/dashboard',
-  ]
-  const authRoutes = ['/login']
-
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
-  )
-  const isAuthRoute = authRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
-  )
+  const isProtectedRoute =
+    path.startsWith('/photographer') ||
+    path.startsWith('/admin') ||
+    path.startsWith('/studio-admin')
+  const isAuthRoute = path.startsWith('/login')
 
   // Redirect unauthenticated users from protected routes to login
   if (isProtectedRoute && !user) {
-    console.log('Middleware: Redirecting unauthenticated user to login', {
-      path: request.nextUrl.pathname,
-      redirectTo: request.nextUrl.pathname,
-      timestamp: new Date().toISOString(),
-    })
+    // Log redirect for unauthenticated users in development
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
     return NextResponse.redirect(loginUrl)
@@ -191,63 +187,42 @@ export async function middleware(request: NextRequest) {
   if (isAuthRoute && user) {
     // Determine user role and redirect accordingly
     const userRole = (user.user_metadata?.role || 'photographer') as UserRole
-    const userId = user.id
+    const _userId = user.id
     const redirectPath = getRoleRedirectPath(userRole)
 
-    console.log('Middleware: Redirecting authenticated user from auth route', {
-      userId,
-      userRole,
-      redirectPath,
-      from: request.nextUrl.pathname,
-      timestamp: new Date().toISOString(),
-    })
+    // Log redirect for authenticated users from auth route
 
     // Redirect authenticated users based on their role
     return NextResponse.redirect(new URL(redirectPath, request.url))
   }
 
-  // Redirect authenticated users from home page to dashboard
-  if (request.nextUrl.pathname === '/' && user) {
-    console.log(
-      'Middleware: Redirecting authenticated user from home page to dashboard',
-      {
-        userId: user.id,
-        userRole: user.user_metadata?.role || 'guest',
-        redirectTo: '/dashboard',
-        timestamp: new Date().toISOString(),
-      }
-    )
+  // Redirect authenticated users from home page to role-specific dashboard
+  if (path === '/' && user) {
+    const userRole = (user.user_metadata?.role || 'photographer') as UserRole
+    const redirectPath = getRoleRedirectPath(userRole)
 
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    // Log redirect for authenticated users from home page
+
+    return NextResponse.redirect(new URL(redirectPath, request.url))
   }
 
   // If user is already on the correct page for their role, don't redirect
   if (user && isProtectedRoute) {
     const userRole = (user.user_metadata?.role || 'photographer') as UserRole
-    const currentPath = request.nextUrl.pathname
 
     // Check if user can access current path
-    const hasAccess = canAccessPath(userRole, currentPath)
+    const hasAccess = canAccessPath(userRole, path)
 
     if (hasAccess) {
       // User has access, continue without redirect
-      if (
-        userRole === 'photographer' &&
-        currentPath.startsWith('/photographer')
-      ) {
+      if (userRole === 'photographer' && path.startsWith('/photographer')) {
         return await multiTenantMiddleware(request)
       }
       return response
     } else {
       // User doesn't have access, redirect to their dashboard
       const redirectPath = getRoleRedirectPath(userRole)
-      console.log('Middleware: Redirecting user to correct role page', {
-        userId: user.id,
-        userRole,
-        from: currentPath,
-        to: redirectPath,
-        timestamp: new Date().toISOString(),
-      })
+      // Log redirect for user to correct role page
       return NextResponse.redirect(new URL(redirectPath, request.url))
     }
   }
@@ -259,13 +234,12 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
      * - file extensions
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

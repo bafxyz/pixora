@@ -12,23 +12,37 @@ import {
 } from '@repo/ui/card'
 import { Input } from '@repo/ui/input'
 import { Label } from '@repo/ui/label'
-import { Download, QrCode } from 'lucide-react'
+import { Copy, Download, QrCode } from 'lucide-react'
 import { useState } from 'react'
 import QRCode from 'react-qr-code'
+import { toast } from 'sonner'
 import {
   type QRData,
   qrDataSchema,
 } from '@/shared/lib/validations/auth.schemas'
 
+interface Guest {
+  id: string
+  name: string
+  email: string | null
+  photosCount: number
+}
+
 interface QRGeneratorProps {
   guestId?: string
   onGenerate?: (qrData: QRData) => void
+  onGuestCreated?: (guest: Guest) => void
 }
 
-export function QRGenerator({ guestId, onGenerate }: QRGeneratorProps) {
+export function QRGenerator({
+  guestId: _guestId,
+  onGenerate,
+  onGuestCreated,
+}: QRGeneratorProps) {
   const { _ } = useLingui()
   const [guestName, setGuestName] = useState('')
   const [qrData, setQrData] = useState<QRData | null>(null)
+  const [createdGuest, setCreatedGuest] = useState<Guest | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
 
   const generateQR = async () => {
@@ -37,15 +51,43 @@ export function QRGenerator({ guestId, onGenerate }: QRGeneratorProps) {
     setIsGenerating(true)
 
     try {
-      // Create unique ID for guest
-      const uniqueId =
-        guestId ||
-        `guest-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
+      // First, create guest in database
+      // Try photographer endpoint first, fallback to studio-admin
+      let response = await fetch('/api/photographer/guests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: guestName.trim(),
+        }),
+      })
 
-      // Data for QR code
+      // If photographer endpoint doesn't exist, try studio-admin
+      if (response.status === 404) {
+        response = await fetch('/api/studio-admin/guests', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: guestName.trim(),
+          }),
+        })
+      }
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to create guest')
+      }
+
+      const result = await response.json()
+      const guest = result.guest as Guest
+
+      // Data for QR code using the real guest ID
       const qrPayload: QRData = {
-        id: uniqueId,
-        name: guestName.trim(),
+        id: guest.id,
+        name: guest.name,
         type: 'guest',
         timestamp: new Date().toISOString(),
       }
@@ -57,20 +99,48 @@ export function QRGenerator({ guestId, onGenerate }: QRGeneratorProps) {
         const errorMessages = validationResult.error.issues
           .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
           .join('\n')
-        alert(`QR code validation errors:\n${errorMessages}`)
+        toast.error(`QR code validation errors: ${errorMessages}`)
         return
       }
 
       setQrData(qrPayload)
+      setCreatedGuest(guest)
+
+      toast.success(_(`Guest ${guest.name} created successfully!`))
 
       if (onGenerate) {
         onGenerate(qrPayload)
       }
+
+      if (onGuestCreated) {
+        onGuestCreated(guest)
+      }
     } catch (error) {
       console.error('Error generating QR:', error)
+      toast.error(
+        error instanceof Error ? error.message : 'Error creating guest'
+      )
     } finally {
       setIsGenerating(false)
     }
+  }
+
+  const copyGuestId = async () => {
+    if (!createdGuest) return
+
+    try {
+      await navigator.clipboard.writeText(createdGuest.id)
+      toast.success(_('Guest ID copied to clipboard!'))
+    } catch (error) {
+      console.error('Failed to copy Guest ID:', error)
+      toast.error(_('Failed to copy Guest ID'))
+    }
+  }
+
+  const resetForm = () => {
+    setGuestName('')
+    setQrData(null)
+    setCreatedGuest(null)
   }
 
   const downloadQR = () => {
@@ -143,8 +213,42 @@ export function QRGenerator({ guestId, onGenerate }: QRGeneratorProps) {
           )}
         </Button>
 
-        {qrData && (
+        {qrData && createdGuest && (
           <div className="space-y-4">
+            {/* Guest Info */}
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <h4 className="font-medium text-green-800 mb-2">
+                <Trans>Guest Created Successfully!</Trans>
+              </h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">
+                    <Trans>Name:</Trans>
+                  </span>
+                  <span className="font-medium">{createdGuest.name}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">
+                    <Trans>Guest ID:</Trans>
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+                      {createdGuest.id}
+                    </code>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={copyGuestId}
+                      className="h-6 w-6 p-0"
+                    >
+                      <Copy className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* QR Code */}
             <div className="flex justify-center p-4 bg-white rounded-lg border">
               <QRCode
                 value={JSON.stringify(qrData)}
@@ -153,21 +257,38 @@ export function QRGenerator({ guestId, onGenerate }: QRGeneratorProps) {
               />
             </div>
 
+            {/* Action Buttons */}
             <div className="space-y-2">
               <Button onClick={downloadQR} variant="outline" className="w-full">
                 <Download className="w-4 h-4 mr-2" />
                 <Trans>Download QR Code</Trans>
               </Button>
 
-              <details className="text-xs">
-                <summary className="cursor-pointer text-gray-600 hover:text-gray-800">
-                  <Trans>Show QR Code Data</Trans>
-                </summary>
-                <div className="mt-2 p-2 bg-gray-50 rounded text-xs break-all">
-                  {JSON.stringify(qrData, null, 2)}
-                </div>
-              </details>
+              <Button onClick={resetForm} variant="outline" className="w-full">
+                <Trans>Create Another Guest</Trans>
+              </Button>
+
+              <div className="text-center text-sm text-gray-600 space-y-1">
+                <p>
+                  <Trans>Now you can upload photos for this guest!</Trans>
+                </p>
+                <p className="text-xs">
+                  <Trans>Go to Upload tab and use Guest ID:</Trans>{' '}
+                  <code className="bg-gray-100 px-1 rounded">
+                    {createdGuest.id}
+                  </code>
+                </p>
+              </div>
             </div>
+
+            <details className="text-xs">
+              <summary className="cursor-pointer text-gray-600 hover:text-gray-800">
+                <Trans>Show QR Code Data</Trans>
+              </summary>
+              <div className="mt-2 p-2 bg-gray-50 rounded text-xs break-all">
+                {JSON.stringify(qrData, null, 2)}
+              </div>
+            </details>
           </div>
         )}
       </CardContent>

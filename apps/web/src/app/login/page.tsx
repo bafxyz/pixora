@@ -53,8 +53,8 @@ export default function Login() {
     router.push(redirectPath)
   }
 
-  const handleGuestAccess = (_guestId: string) => {
-    router.push('/gallery')
+  const handleGuestAccess = (sessionId: string) => {
+    router.push(`/session/${encodeURIComponent(sessionId)}`)
   }
 
   return <LoginPage onLogin={handleLogin} onGuestAccess={handleGuestAccess} />

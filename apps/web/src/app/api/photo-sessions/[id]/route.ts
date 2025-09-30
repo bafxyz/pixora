@@ -60,7 +60,6 @@ export async function GET(
         },
         _count: {
           select: {
-            guests: true,
             photos: true,
           },
         },
@@ -98,7 +97,7 @@ export async function GET(
             : undefined,
         },
         photos: photoSession.photos,
-        guestCount: photoSession._count.guests,
+        guestCount: 0, // Guests removed from system
         photoCount: photoSession._count.photos,
       },
     })
@@ -127,6 +126,17 @@ export async function PATCH(
   try {
     const { id: sessionId } = await params
     const body = await request.json()
+
+    console.log('[PATCH] Session ID:', sessionId)
+    console.log('[PATCH] Request body:', body)
+    console.log(
+      '[PATCH] Auth user:',
+      auth.user.email,
+      'Role:',
+      auth.user.role,
+      'ClientId:',
+      auth.clientId
+    )
 
     if (!sessionId) {
       return NextResponse.json(
@@ -181,14 +191,48 @@ export async function PATCH(
 
     // Prepare update data
     const updateData: Record<string, unknown> = {}
-    if (name !== undefined) updateData.name = name.trim()
+    if (name !== undefined) {
+      if (!name || typeof name !== 'string' || !name.trim()) {
+        return NextResponse.json(
+          { error: 'Name is required and must be a non-empty string' },
+          { status: 400 }
+        )
+      }
+      updateData.name = name.trim()
+    }
     if (description !== undefined)
       updateData.description = description?.trim() || null
     if (status !== undefined) updateData.status = status
-    if (scheduledAt !== undefined)
-      updateData.scheduledAt = scheduledAt ? new Date(scheduledAt) : null
-    if (completedAt !== undefined)
-      updateData.completedAt = completedAt ? new Date(completedAt) : null
+    if (scheduledAt !== undefined) {
+      if (scheduledAt) {
+        const date = new Date(scheduledAt)
+        if (Number.isNaN(date.getTime())) {
+          return NextResponse.json(
+            { error: 'Invalid scheduled date format' },
+            { status: 400 }
+          )
+        }
+        updateData.scheduledAt = date
+      } else {
+        updateData.scheduledAt = null
+      }
+    }
+    if (completedAt !== undefined) {
+      if (completedAt) {
+        const date = new Date(completedAt)
+        if (Number.isNaN(date.getTime())) {
+          return NextResponse.json(
+            { error: 'Invalid completed date format' },
+            { status: 400 }
+          )
+        }
+        updateData.completedAt = date
+      } else {
+        updateData.completedAt = null
+      }
+    }
+
+    console.log('[PATCH] Update data:', updateData)
 
     // Update photo session
     const updatedSession = await prisma.photoSession.update({
@@ -206,12 +250,13 @@ export async function PATCH(
         },
         _count: {
           select: {
-            guests: true,
             photos: true,
           },
         },
       },
     })
+
+    console.log('[PATCH] Update successful:', updatedSession.id)
 
     return NextResponse.json({
       photoSession: {
@@ -224,12 +269,104 @@ export async function PATCH(
         createdAt: updatedSession.createdAt,
         updatedAt: updatedSession.updatedAt,
         photographer: updatedSession.photographer,
-        guestCount: updatedSession._count.guests,
+        guestCount: 0, // Guests removed from system
         photoCount: updatedSession._count.photos,
       },
     })
   } catch (error) {
-    console.error('Update photo session API error:', error)
+    console.error('[PATCH] Update photo session API error:', error)
+    console.error(
+      '[PATCH] Error stack:',
+      error instanceof Error ? error.stack : 'No stack'
+    )
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  // Check photographer, studio-admin or admin role
+  const auth = await withRoleCheck(
+    ['photographer', 'studio-admin', 'admin'],
+    request
+  )
+  if (auth instanceof NextResponse) {
+    return auth // Return 403/401 error
+  }
+
+  try {
+    const { id: sessionId } = await params
+
+    if (!sessionId) {
+      return NextResponse.json(
+        { error: 'Photo session ID is required' },
+        { status: 400 }
+      )
+    }
+
+    // Validate UUID format
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(sessionId)) {
+      return NextResponse.json(
+        { error: 'Photo session not found' },
+        { status: 404 }
+      )
+    }
+
+    // Find session and check access rights
+    const existingSession = await prisma.photoSession.findFirst({
+      where: {
+        id: sessionId,
+      },
+      select: {
+        id: true,
+        clientId: true,
+      },
+    })
+
+    if (!existingSession) {
+      return NextResponse.json(
+        { error: 'Photo session not found' },
+        { status: 404 }
+      )
+    }
+
+    // Check access to client resources
+    if (
+      !canAccessClientResource(
+        auth.clientId,
+        existingSession.clientId,
+        auth.user.role
+      )
+    ) {
+      return NextResponse.json(
+        { error: 'Forbidden: You cannot delete this photo session' },
+        { status: 403 }
+      )
+    }
+
+    // Delete photo session (cascade will delete related photos)
+    await prisma.photoSession.delete({
+      where: {
+        id: sessionId,
+      },
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Photo session deleted successfully',
+    })
+  } catch (error) {
+    console.error('Delete photo session API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

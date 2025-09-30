@@ -1,62 +1,54 @@
 'use client'
 
 import { Trans } from '@lingui/react/macro'
-import dynamic from 'next/dynamic'
+import { Button } from '@repo/ui/button'
+import { Card, CardContent } from '@repo/ui/card'
+import { Check, ShoppingCart, X } from 'lucide-react'
 import Image from 'next/image'
-import { useParams } from 'next/navigation'
-import { Suspense, useEffect, useState } from 'react'
-
-// Dynamically import the gallery component for better performance
-const _GuestGallery = dynamic(
-  () =>
-    import('@/features/gallery/components/guest-gallery').then((mod) => ({
-      default: mod.GuestGallery,
-    })),
-  {
-    loading: () => (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading gallery...</p>
-        </div>
-      </div>
-    ),
-    ssr: false, // Disable SSR for this component to improve initial load
-  }
-)
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { LanguageSwitcher } from '@/shared/components/language-switcher'
 
 interface PhotoSession {
   id: string
   name: string
-  description?: string
-  status: string
-  photographer: {
-    id: string
-    name: string
-    branding?: Record<string, unknown>
-  }
-  client: {
-    id: string
-    name: string
-    branding?: Record<string, unknown>
-  }
+  description?: string | null
+  photographerName: string
+  photoCount: number
   photos: Array<{
     id: string
     filePath: string
     fileName: string
     createdAt: string
   }>
-  guestCount: number
-  photoCount: number
 }
 
 export default function SessionPage() {
   const params = useParams()
+  const router = useRouter()
   const sessionId = params?.id as string
 
   const [session, setSession] = useState<PhotoSession | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [cart, setCart] = useState<string[]>([])
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
+
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem(`cart_${sessionId}`)
+    if (savedCart) {
+      setCart(JSON.parse(savedCart))
+    }
+  }, [sessionId])
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    if (sessionId) {
+      localStorage.setItem(`cart_${sessionId}`, JSON.stringify(cart))
+    }
+  }, [cart, sessionId])
 
   useEffect(() => {
     if (!sessionId) return
@@ -64,11 +56,11 @@ export default function SessionPage() {
     const fetchSession = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`/api/photo-sessions/${sessionId}`)
+        const response = await fetch(`/api/session/${sessionId}`)
 
         if (response.ok) {
           const data = await response.json()
-          setSession(data.photoSession)
+          setSession(data.session)
         } else if (response.status === 404) {
           setError('Photo session not found')
         } else {
@@ -84,6 +76,14 @@ export default function SessionPage() {
 
     fetchSession()
   }, [sessionId])
+
+  const toggleCart = (photoId: string) => {
+    setCart((prev) =>
+      prev.includes(photoId)
+        ? prev.filter((id) => id !== photoId)
+        : [...prev, photoId]
+    )
+  }
 
   if (loading) {
     return (
@@ -129,6 +129,69 @@ export default function SessionPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
+      {/* Header */}
+      <header className="bg-white/70 backdrop-blur-sm border-b border-white/20 sticky top-0 z-30 shadow-sm">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link
+              href="/"
+              className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent"
+            >
+              Pixora
+            </Link>
+
+            {/* Right side actions */}
+            <div className="flex items-center gap-3">
+              {/* Language Switcher */}
+              <LanguageSwitcher />
+
+              {/* Cart Button */}
+              <Button
+                onClick={() => router.push(`/session/${sessionId}/cart`)}
+                variant="outline"
+                className="relative"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {cart.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {cart.length}
+                  </span>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Lightbox */}
+      {selectedPhoto && (
+        <button
+          type="button"
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setSelectedPhoto(null)}
+          onKeyDown={(e) => e.key === 'Escape' && setSelectedPhoto(null)}
+          aria-label="Close lightbox"
+        >
+          <button
+            type="button"
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
+            onClick={() => setSelectedPhoto(null)}
+          >
+            <X className="w-8 h-8" />
+          </button>
+          <div className="relative max-w-7xl max-h-[90vh] w-full h-full">
+            <Image
+              src={selectedPhoto}
+              alt="Preview"
+              fill
+              className="object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </button>
+      )}
+
       <div className="container mx-auto px-4 py-8">
         {/* Session Header */}
         <div className="mb-8 text-center">
@@ -145,10 +208,9 @@ export default function SessionPage() {
           {/* Studio/Photographer Info */}
           <div className="flex justify-center items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
             <span>
-              <Trans>by</Trans>{' '}
-              {session.photographer.name || session.client.name}
+              <Trans>by</Trans> {session.photographerName}
             </span>
-            {session.status !== 'created' && (
+            {session.photoCount > 0 && (
               <>
                 <span>•</span>
                 <span>
@@ -160,7 +222,7 @@ export default function SessionPage() {
         </div>
 
         {/* Session Status */}
-        {session.status === 'created' && session.photoCount === 0 && (
+        {session.photoCount === 0 && (
           <div className="mb-8 bg-white/70 backdrop-blur-sm rounded-2xl p-8 border border-white/20 shadow-lg text-center">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">⏳</span>
@@ -179,24 +241,31 @@ export default function SessionPage() {
 
         {/* Photos Gallery */}
         {session.photoCount > 0 && (
-          <Suspense
-            fallback={
-              <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                  <p className="text-gray-400 text-sm">
-                    <Trans>Loading your photos...</Trans>
-                  </p>
-                </div>
-              </div>
-            }
-          >
+          <>
             <SessionGallery
               sessionId={sessionId}
               photos={session.photos}
-              photographer={session.photographer}
+              cart={cart}
+              onToggleCart={toggleCart}
+              onSelectPhoto={setSelectedPhoto}
             />
-          </Suspense>
+
+            {/* Floating Cart Button */}
+            {cart.length > 0 && (
+              <div className="fixed bottom-6 right-6 z-40">
+                <Button
+                  size="lg"
+                  onClick={() => router.push(`/session/${sessionId}/cart`)}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-xl hover:shadow-2xl transition-all"
+                >
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  <span className="font-semibold">
+                    {cart.length} <Trans>photos</Trans>
+                  </span>
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -205,50 +274,83 @@ export default function SessionPage() {
 
 // Gallery component specifically for session photos
 function SessionGallery({
+  sessionId: _sessionId,
   photos,
+  cart,
+  onToggleCart,
+  onSelectPhoto,
 }: {
   sessionId: string
   photos: PhotoSession['photos']
-  photographer: PhotoSession['photographer']
+  cart: string[]
+  onToggleCart: (photoId: string) => void
+  onSelectPhoto: (photoPath: string) => void
 }) {
   return (
     <div className="max-w-7xl mx-auto">
       {/* Gallery Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {photos.map((photo, index) => (
-          <div
-            key={photo.id}
-            className="group relative bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-          >
-            <div className="aspect-square relative">
-              <Image
-                src={photo.filePath}
-                alt={`${index + 1}`}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                priority={index < 4}
-              />
-            </div>
-            <div className="p-4">
-              <div className="flex justify-center">
-                <button
-                  type="button"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {photos.map((photo, index) => {
+          const isInCart = cart.includes(photo.id)
+
+          return (
+            <Card
+              key={photo.id}
+              className="group relative bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+            >
+              <button
+                type="button"
+                className="aspect-square relative cursor-pointer w-full"
+                onClick={() => onSelectPhoto(photo.filePath)}
+              >
+                <Image
+                  src={photo.filePath}
+                  alt={`Photo ${index + 1}`}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  priority={index < 8}
+                />
+                {isInCart && (
+                  <div className="absolute top-2 right-2 bg-green-500 text-white p-1.5 rounded-full shadow-lg">
+                    <Check className="w-4 h-4" />
+                  </div>
+                )}
+              </button>
+              <CardContent className="p-3">
+                <Button
+                  onClick={() => onToggleCart(photo.id)}
+                  className={`w-full transition-all ${
+                    isInCart
+                      ? 'bg-green-600 hover:bg-green-700'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
+                  size="sm"
                 >
-                  <Trans>Add to Cart</Trans>
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+                  {isInCart ? (
+                    <>
+                      <Check className="w-4 h-4 mr-1" />
+                      <Trans>In Cart</Trans>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-4 h-4 mr-1" />
+                      <Trans>Add</Trans>
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
 
-      {/* Cart & Checkout would go here */}
-      <div className="mt-8 text-center">
-        <p className="text-sm text-slate-500">
-          <Trans>Cart and checkout functionality will be integrated soon</Trans>
-        </p>
-      </div>
+      {photos.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-slate-500">
+            <Trans>No photos available yet</Trans>
+          </p>
+        </div>
+      )}
     </div>
   )
 }

@@ -4,12 +4,13 @@ import { Input } from '@repo/ui/input'
 import { Label } from '@repo/ui/label'
 import { AlertCircle, Upload, X } from 'lucide-react'
 import Image from 'next/image'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/shared/lib/supabase/client'
 
 interface PhotoUploadProps {
-  onUploadComplete: (uploadedUrls: string[], guestId: string) => void
+  onUploadComplete: (uploadedUrls: string[], sessionId: string) => void
   onUploadError: (error: string) => void
+  presetSessionId?: string
 }
 
 interface UploadFile {
@@ -24,11 +25,19 @@ interface UploadFile {
 export function PhotoUpload({
   onUploadComplete,
   onUploadError,
+  presetSessionId,
 }: PhotoUploadProps) {
   const [files, setFiles] = useState<UploadFile[]>([])
   const [isUploading, setIsUploading] = useState(false)
-  const [guestId, setGuestId] = useState('')
+  const [sessionId, setSessionId] = useState(presetSessionId || '')
   const supabase = createClient()
+
+  // Update ID when preset changes
+  useEffect(() => {
+    if (presetSessionId) {
+      setSessionId(presetSessionId)
+    }
+  }, [presetSessionId])
 
   const handleFileSelect = useCallback((selectedFiles: FileList | null) => {
     if (!selectedFiles) return
@@ -62,7 +71,7 @@ export function PhotoUpload({
     async (uploadFile: UploadFile, index: number): Promise<string | null> => {
       try {
         const fileExt = uploadFile.file.name.split('.').pop()
-        const fileName = `${guestId}/${Date.now()}-${Math.random()
+        const fileName = `${sessionId}/${Date.now()}-${Math.random()
           .toString(36)
           .substring(2)}.${fileExt}`
 
@@ -104,11 +113,11 @@ export function PhotoUpload({
         return null
       }
     },
-    [guestId, supabase]
+    [sessionId, supabase]
   )
 
   const handleUpload = useCallback(async () => {
-    if (files.length === 0 || !guestId.trim()) return
+    if (files.length === 0 || !sessionId.trim()) return
 
     setIsUploading(true)
     const uploadedUrls: string[] = []
@@ -141,7 +150,24 @@ export function PhotoUpload({
       }
 
       if (uploadedUrls.length > 0) {
-        onUploadComplete(uploadedUrls, guestId)
+        // Call the API to save photo metadata
+        const saveResponse = await fetch('/api/photos/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            photoSessionId: sessionId,
+            photoUrls: uploadedUrls,
+          }),
+        })
+
+        if (!saveResponse.ok) {
+          const errorData = await saveResponse.json()
+          throw new Error(errorData.error || 'Failed to save photos')
+        }
+
+        onUploadComplete(uploadedUrls, sessionId)
         // Clear completed files
         setFiles((prev) => prev.filter((f) => f.status !== 'completed'))
       }
@@ -150,7 +176,7 @@ export function PhotoUpload({
     } finally {
       setIsUploading(false)
     }
-  }, [files, guestId, uploadFile, onUploadComplete, onUploadError])
+  }, [files, sessionId, uploadFile, onUploadComplete, onUploadError])
 
   const clearAllFiles = useCallback(() => {
     files.forEach((file) => {
@@ -193,14 +219,16 @@ export function PhotoUpload({
           />
         </button>
 
-        {/* Guest ID Input */}
+        {/* Session ID Input - only show if not preset */}
+
+        {/* Session ID Input */}
         <div className="space-y-2">
-          <Label htmlFor="guest-id">Guest ID</Label>
+          <Label htmlFor="session-id">Photo Session ID</Label>
           <Input
-            id="guest-id"
-            placeholder="Enter guest ID (e.g., GUEST123)"
-            value={guestId}
-            onChange={(e) => setGuestId(e.target.value)}
+            id="session-id"
+            placeholder="Enter photo session ID"
+            value={sessionId}
+            onChange={(e) => setSessionId(e.target.value)}
             required
           />
         </div>
@@ -291,7 +319,7 @@ export function PhotoUpload({
         {files.length > 0 && (
           <Button
             onClick={handleUpload}
-            disabled={isUploading || !guestId.trim()}
+            disabled={isUploading || !sessionId.trim()}
             className="w-full"
           >
             {isUploading ? (

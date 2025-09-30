@@ -39,15 +39,9 @@ export async function POST(request: NextRequest) {
     const { email, password } = validation.data
 
     // Create Supabase client
-    console.log('🔗 Creating Supabase client for login...')
     const supabase = await createClient()
-    console.log('✅ Supabase client created for login')
 
     // Authenticate with Supabase
-    console.log('🔐 Authenticating with Supabase:', {
-      email,
-      hasPassword: !!password,
-    })
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -58,10 +52,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 401 })
     }
 
-    console.log('✅ Supabase login successful:', {
-      userId: data.user?.id,
-      confirmed: !!data.user?.email_confirmed_at,
-    })
+    // Supabase login successful
 
     if (!data.user) {
       return NextResponse.json(

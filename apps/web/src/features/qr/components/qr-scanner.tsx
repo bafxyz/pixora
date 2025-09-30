@@ -75,7 +75,7 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
               if (
                 parsedData.id &&
                 parsedData.name &&
-                parsedData.type === 'guest'
+                (parsedData.type === 'guest' || parsedData.type === 'session')
               ) {
                 setLastScanned(scannedData)
                 setScanError(null)

@@ -11,12 +11,6 @@ datasource db {
   directUrl  = env("DIRECT_URL")
 }
 
-enum OrderStatus {
-  pending
-  processing
-  completed
-  cancelled
-}
 
 enum PhotoSessionStatus {
   created
@@ -37,9 +31,7 @@ model Client {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   photographers Photographer[]
-  guests        Guest[]
   photos        Photo[]
-  orders        Order[]
   photoSessions PhotoSession[]
 
   @@map("clients")
@@ -49,45 +41,25 @@ model Photographer {
   id        String   @id @default(uuid()) @db.Uuid
   email     String   @unique
   name      String?
+  phone     String?
   clientId  String   @map("client_id") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
   branding  Json?
 
   client        Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  guests        Guest[]
   photos        Photo[]
-  orders        Order[]
   photoSessions PhotoSession[]
 
   @@map("photographers")
 }
 
-model Guest {
-  id               String   @id @default(uuid()) @db.Uuid
-  name             String
-  email            String?
-  photographerId   String   @map("photographer_id") @db.Uuid
-  clientId         String   @map("client_id") @db.Uuid
-  photoSessionId   String?  @map("photo_session_id") @db.Uuid
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  photographer Photographer  @relation(fields: [photographerId], references: [id])
-  client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  photoSession PhotoSession? @relation(fields: [photoSessionId], references: [id])
-  photos       Photo[]
-  orders       Order[]
-
-  @@map("guests")
-}
 
 model Photo {
   id             String    @id @default(uuid()) @db.Uuid
   photographerId String    @map("photographer_id") @db.Uuid
-  guestId        String?   @map("guest_id") @db.Uuid
   clientId       String    @map("client_id") @db.Uuid
-  photoSessionId String?   @map("photo_session_id") @db.Uuid
+  photoSessionId String    @map("photo_session_id") @db.Uuid
   filePath       String    @map("file_path")
   fileName       String    @map("file_name")
   fileSize       Int?      @map("file_size")
@@ -96,33 +68,13 @@ model Photo {
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
-  photographer Photographer  @relation(fields: [photographerId], references: [id])
-  guest        Guest?        @relation(fields: [guestId], references: [id])
-  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  photoSession PhotoSession? @relation(fields: [photoSessionId], references: [id])
-  orders       Order[]
+  photographer Photographer @relation(fields: [photographerId], references: [id])
+  client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  photoSession PhotoSession @relation(fields: [photoSessionId], references: [id], onDelete: Cascade)
 
   @@map("photos")
 }
 
-model Order {
-  id             String      @id @default(uuid()) @db.Uuid
-  guestId        String      @map("guest_id") @db.Uuid
-  photographerId String      @map("photographer_id") @db.Uuid
-  clientId       String      @map("client_id") @db.Uuid
-  photoIds       String[]    @map("photo_ids")
-  totalAmount    Float?      @map("total_amount")
-  status         OrderStatus @default(pending)
-  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime    @updatedAt @map("updated_at") @db.Timestamptz
-
-  guest         Guest         @relation(fields: [guestId], references: [id])
-  photographer  Photographer @relation(fields: [photographerId], references: [id])
-  client        Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  photos        Photo[]
-
-  @@map("orders")
-}
 
 model PhotoSession {
   id             String             @id @default(uuid()) @db.Uuid
@@ -139,7 +91,6 @@ model PhotoSession {
 
   photographer Photographer @relation(fields: [photographerId], references: [id])
   client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  guests       Guest[]
   photos       Photo[]
 
   @@map("photo_sessions")

@@ -116,14 +116,7 @@ export const useAuthStore = create<AuthStore>((set, _get) => {
             }
           : null
 
-        if (user) {
-          console.log('Auth store re-initialized:', {
-            user,
-            session: !!session,
-          })
-        } else {
-          console.log('Auth store initialization - no user session found')
-        }
+        // Auth store re-initialized
 
         set({
           session,

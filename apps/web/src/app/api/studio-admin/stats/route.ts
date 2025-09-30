@@ -29,46 +29,25 @@ export async function GET(request: NextRequest) {
     }
 
     // Get statistics for client
-    const stats = {
-      totalGuests: 0,
-      totalPhotos: 0,
-      totalOrders: 0,
-      revenue: 0,
-    }
+    const [totalPhotographers, totalPhotoSessions, totalPhotos] =
+      await Promise.all([
+        prisma.photographer.count({ where: { clientId } }),
+        prisma.photoSession.count({ where: { clientId } }),
+        prisma.photo.count({ where: { clientId } }),
+      ])
 
-    // Count guests
-    stats.totalGuests = await prisma.guest.count({
-      where: { clientId },
-    })
-
-    // Count photos
-    stats.totalPhotos = await prisma.photo.count({
-      where: { clientId },
-    })
-
-    // Count orders
-    stats.totalOrders = await prisma.order.count({
-      where: { clientId },
-    })
-
-    // Calculate revenue
-    const orders = await prisma.order.findMany({
-      where: {
-        clientId,
-        totalAmount: { not: null },
-      },
-      select: { totalAmount: true },
-    })
-
-    stats.revenue = orders.reduce(
-      (sum: number, order: { totalAmount: number | null }) => {
-        return sum + (order.totalAmount || 0)
-      },
-      0
-    )
+    // Orders not implemented yet
+    const totalOrders = 0
+    const revenue = 0
 
     return NextResponse.json({
-      stats,
+      stats: {
+        totalPhotographers,
+        totalPhotoSessions,
+        totalPhotos,
+        totalOrders,
+        revenue,
+      },
       clientId,
     })
   } catch (error) {
