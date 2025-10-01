@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
 import { type NextRequest, NextResponse } from 'next/server'
-import { NotificationService } from '@/lib/services/notification.service'
+import { notifyPaymentReceived } from '@/lib/services/notification.service'
 import { prisma } from '@/shared/lib/prisma/client'
 
 const ROBOKASSA_PASSWORD_2 = process.env.ROBOKASSA_PASSWORD_2 || ''
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     console.log('Order payment confirmed:', order.id)
 
     // Send payment notification
-    await NotificationService.notifyPaymentReceived(order.id)
+    await notifyPaymentReceived(order.id)
 
     return new NextResponse(`OK${invId}`, { status: 200 })
   } catch (error) {

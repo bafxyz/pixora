@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { NotificationService } from '@/lib/services/notification.service'
+import {
+  getAllNotifications,
+  getUnreadNotifications,
+} from '@/lib/services/notification.service'
 import { createClient } from '@/shared/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
@@ -17,8 +20,8 @@ export async function GET(request: NextRequest) {
     const unreadOnly = searchParams.get('unread') === 'true'
 
     const notifications = unreadOnly
-      ? await NotificationService.getUnread(user.email)
-      : await NotificationService.getAll(user.email)
+      ? await getUnreadNotifications(user.email)
+      : await getAllNotifications(user.email)
 
     return NextResponse.json({ notifications })
   } catch (error) {

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { NotificationService } from '@/lib/services/notification.service'
+import { markNotificationAsRead } from '@/lib/services/notification.service'
 import { createClient } from '@/shared/lib/supabase/server'
 
 export async function POST(
@@ -17,7 +17,7 @@ export async function POST(
     }
 
     const { id } = await params
-    const notification = await NotificationService.markAsRead(id)
+    const notification = await markNotificationAsRead(id)
 
     return NextResponse.json({ notification })
   } catch (error) {

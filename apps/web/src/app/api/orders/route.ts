@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
 import { type NextRequest, NextResponse } from 'next/server'
-import { NotificationService } from '@/lib/services/notification.service'
+import { notifyNewOrder } from '@/lib/services/notification.service'
 import { prisma } from '@/shared/lib/prisma/client'
 
 // Robokassa configuration
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Send notification for new order
-    await NotificationService.notifyNewOrder(order.id)
+    await notifyNewOrder(order.id)
 
     return NextResponse.json({
       success: true,
