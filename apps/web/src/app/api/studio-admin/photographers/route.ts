@@ -1,6 +1,22 @@
+import { createClient } from '@supabase/supabase-js'
 import { type NextRequest, NextResponse } from 'next/server'
 import { withRoleCheck } from '@/shared/lib/auth/role-guard'
 import { prisma } from '@/shared/lib/prisma/client'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing required environment variables for Supabase')
+}
+
+// Admin client for creating users
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+})
 
 export async function GET(request: NextRequest) {
   // Check studio-admin or admin role
@@ -10,27 +26,27 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // For studio-admin, only show photographers from their client
-    // For admin, show all photographers or by client header
-    let clientId = auth.clientId
+    // For studio-admin, only show photographers from their studio
+    // For admin, show all photographers or by studio header
+    let studioId = auth.studioId
 
     if (auth.user.role === 'admin') {
-      const headerClientId = request.headers.get('x-client-id')
-      if (headerClientId) {
-        clientId = headerClientId
+      const headerStudioId = request.headers.get('x-studio-id')
+      if (headerStudioId) {
+        studioId = headerStudioId
       }
     }
 
-    if (!clientId) {
+    if (!studioId) {
       return NextResponse.json(
-        { error: 'Client ID is required' },
+        { error: 'Studio ID is required' },
         { status: 400 }
       )
     }
 
     // Get photographers with statistics
     const photographers = await prisma.photographer.findMany({
-      where: { clientId },
+      where: { studioId: studioId },
       include: {
         _count: {
           select: {
@@ -75,7 +91,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { name, email, phone } = body
+    const { name, email, phone, password } = body
 
     if (!name || !email) {
       return NextResponse.json(
@@ -93,20 +109,28 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // For studio-admin, use their client
-    // For admin, use client from header
-    let clientId = auth.clientId
+    // Password is optional, but if provided must be at least 6 characters
+    if (password && password.length < 6) {
+      return NextResponse.json(
+        { error: 'Password must be at least 6 characters long' },
+        { status: 400 }
+      )
+    }
+
+    // For studio-admin, use their studio
+    // For admin, use studio from header
+    let studioId = auth.studioId
 
     if (auth.user.role === 'admin') {
-      const headerClientId = request.headers.get('x-client-id')
-      if (headerClientId) {
-        clientId = headerClientId
+      const headerStudioId = request.headers.get('x-studio-id')
+      if (headerStudioId) {
+        studioId = headerStudioId
       }
     }
 
-    if (!clientId) {
+    if (!studioId) {
       return NextResponse.json(
-        { error: 'Client ID is required' },
+        { error: 'Studio ID is required' },
         { status: 400 }
       )
     }
@@ -114,8 +138,7 @@ export async function POST(request: NextRequest) {
     // Check if photographer with this email already exists
     const existingPhotographer = await prisma.photographer.findFirst({
       where: {
-        email,
-        clientId,
+        email: email.trim().toLowerCase(),
       },
     })
 
@@ -126,13 +149,39 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Create Supabase auth user if password is provided
+    let authUserId: string | undefined
+    if (password) {
+      const { data: authUser, error: authError } =
+        await supabaseAdmin.auth.admin.createUser({
+          email: email.trim().toLowerCase(),
+          password: password,
+          email_confirm: true,
+          user_metadata: {
+            role: 'photographer',
+            name: name.trim(),
+            studioId: studioId,
+          },
+        })
+
+      if (authError || !authUser.user) {
+        console.error('Supabase user creation error:', authError)
+        return NextResponse.json(
+          { error: authError?.message || 'Failed to create auth user' },
+          { status: 500 }
+        )
+      }
+
+      authUserId = authUser.user.id
+    }
+
     // Create photographer
     const photographer = await prisma.photographer.create({
       data: {
         name: name.trim(),
         email: email.trim().toLowerCase(),
         phone: phone?.trim() || null,
-        clientId,
+        studioId: studioId,
         // Default branding settings
         branding: {
           brandColor: '#000000',
@@ -160,6 +209,7 @@ export async function POST(request: NextRequest) {
       createdAt: photographer.createdAt,
       photoCount: photographer._count.photos,
       sessionCount: photographer._count.photoSessions,
+      authUserId,
     }
 
     return NextResponse.json({

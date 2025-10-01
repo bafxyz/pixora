@@ -64,7 +64,7 @@ export async function PATCH(request: NextRequest) {
       select: {
         id: true,
         email: true,
-        clientId: true,
+        studioId: true,
       },
     })
 
@@ -80,7 +80,7 @@ export async function PATCH(request: NextRequest) {
       const emailExists = await prisma.photographer.findFirst({
         where: {
           email: email.trim().toLowerCase(),
-          clientId: existingPhotographer.clientId,
+          studioId: existingPhotographer.studioId,
           id: { not: auth.user.id },
         },
       })

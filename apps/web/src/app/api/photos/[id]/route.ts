@@ -26,22 +26,22 @@ export async function DELETE(
       )
     }
 
-    // For studio-admin/photographer use their client_id, for admin - from header or all
-    let clientId = auth.clientId
+    // For studio-admin/photographer use their studio_id, for admin - from header or all
+    let studioId = auth.studioId
 
-    // If admin and x-client-id is provided, use it
+    // If admin and x-studio-id is provided, use it
     if (auth.user.role === 'admin') {
-      const headerClientId = request.headers.get('x-client-id')
-      if (headerClientId) {
-        clientId = headerClientId
+      const headerStudioId = request.headers.get('x-studio-id')
+      if (headerStudioId) {
+        studioId = headerStudioId
       }
     }
 
-    // Verify photo exists and belongs to the client
+    // Verify photo exists and belongs to the studio
     const photo = await prisma.photo.findFirst({
       where: {
         id: photoId,
-        ...(clientId ? { clientId } : {}),
+        ...(studioId ? { studioId } : {}),
       },
     })
 

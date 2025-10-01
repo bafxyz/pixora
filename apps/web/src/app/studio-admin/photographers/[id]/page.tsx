@@ -191,15 +191,15 @@ export default function PhotographerDetailsPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">
+                    <span className="text-sm font-medium text-muted-foreground">
                       Имя
-                    </label>
+                    </span>
                     <p className="text-lg font-semibold">{photographer.name}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">
+                    <span className="text-sm font-medium text-muted-foreground">
                       Дата регистрации
-                    </label>
+                    </span>
                     <p className="flex items-center">
                       <Calendar className="w-4 h-4 mr-2" />
                       {formatDate(photographer.createdAt)}
@@ -209,9 +209,9 @@ export default function PhotographerDetailsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">
+                    <span className="text-sm font-medium text-muted-foreground">
                       Email
-                    </label>
+                    </span>
                     <p className="flex items-center">
                       <Mail className="w-4 h-4 mr-2" />
                       {photographer.email}
@@ -219,9 +219,9 @@ export default function PhotographerDetailsPage() {
                   </div>
                   {photographer.phone && (
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">
+                      <span className="text-sm font-medium text-muted-foreground">
                         Телефон
-                      </label>
+                      </span>
                       <p className="flex items-center">
                         <Phone className="w-4 h-4 mr-2" />
                         {photographer.phone}
@@ -241,9 +241,9 @@ export default function PhotographerDetailsPage() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">
+                      <span className="text-sm font-medium text-muted-foreground">
                         Основной цвет
-                      </label>
+                      </span>
                       <div className="flex items-center gap-2">
                         <div
                           className="w-6 h-6 rounded border"
@@ -259,9 +259,9 @@ export default function PhotographerDetailsPage() {
                     </div>
                     {photographer.branding.logoUrl && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">
+                        <span className="text-sm font-medium text-muted-foreground">
                           Логотип
-                        </label>
+                        </span>
                         <p className="text-blue-600 hover:underline cursor-pointer">
                           Просмотреть логотип
                         </p>
@@ -271,9 +271,9 @@ export default function PhotographerDetailsPage() {
 
                   {photographer.branding.welcomeMessage && (
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">
+                      <span className="text-sm font-medium text-muted-foreground">
                         Приветственное сообщение
-                      </label>
+                      </span>
                       <p className="text-sm bg-muted/30 p-3 rounded">
                         {photographer.branding.welcomeMessage}
                       </p>

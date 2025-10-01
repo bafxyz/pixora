@@ -12,14 +12,14 @@ export async function GET(request: NextRequest) {
   try {
     // Get platform statistics using real data
     const [
-      totalClients,
+      totalStudios,
       totalPhotographers,
       totalPhotos,
       totalOrders,
       totalRevenue,
       uniqueGuests,
     ] = await Promise.all([
-      prisma.client.count(),
+      prisma.studio.count(),
       prisma.photographer.count(),
       prisma.photo.count(),
       prisma.order.count(),
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       stats: {
-        totalClients,
+        totalStudios,
         totalPhotographers,
         totalPhotos,
         totalOrders,

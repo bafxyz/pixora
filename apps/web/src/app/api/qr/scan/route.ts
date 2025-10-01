@@ -23,12 +23,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Use client_id from auth
-    const clientId = auth.clientId
+    // Use studio_id from auth
+    const studioId = auth.studioId
 
-    if (!clientId && auth.user.role !== 'admin') {
+    if (!studioId && auth.user.role !== 'admin') {
       return NextResponse.json(
-        { error: 'Client ID is required' },
+        { error: 'Studio ID is required' },
         { status: 400 }
       )
     }
@@ -38,12 +38,12 @@ export async function POST(request: NextRequest) {
     const photographer = await prisma.photographer.findFirst({
       where: {
         email: auth.user.email,
-        ...(clientId ? { clientId } : {}),
+        ...(studioId ? { studioId } : {}),
       },
       select: {
         id: true,
         name: true,
-        clientId: true,
+        studioId: true,
       },
     })
 

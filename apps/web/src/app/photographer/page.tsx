@@ -10,7 +10,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/card'
-import { Camera, Clock, Image as ImageIcon, QrCode, ShoppingCart, Upload } from 'lucide-react'
+import {
+  Camera,
+  Clock,
+  Image as ImageIcon,
+  QrCode,
+  ShoppingCart,
+  Upload,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 

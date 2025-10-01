@@ -17,8 +17,9 @@ import {
   Trash2,
   Upload,
 } from 'lucide-react'
+import NextImage from 'next/image'
 import { useRouter } from 'next/navigation'
-import { use, useEffect, useState } from 'react'
+import { use, useCallback, useEffect, useState } from 'react'
 import QRCode from 'react-qr-code'
 import { toast } from 'sonner'
 import { PageLayout } from '@/shared/components/page-layout'
@@ -62,7 +63,7 @@ export default function SessionDetailsPage({
   const [isUpdatingPhotos, setIsUpdatingPhotos] = useState(false)
   const [sessionLink, setSessionLink] = useState<string>('')
 
-  const fetchSessionDetails = async () => {
+  const fetchSessionDetails = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch(`/api/photographer/sessions/${sessionId}`)
@@ -100,12 +101,11 @@ export default function SessionDetailsPage({
     } finally {
       setLoading(false)
     }
-  }
+  }, [sessionId])
 
   useEffect(() => {
     fetchSessionDetails()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [fetchSessionDetails])
 
   const togglePhotoSelection = (photoId: string) => {
     setSelectedPhotos((prev) => {
@@ -398,10 +398,12 @@ export default function SessionDetailsPage({
                     }`}
                   >
                     <div className="aspect-square relative">
-                      <img
+                      <NextImage
                         src={photo.filePath}
                         alt={photo.fileName}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
 
                       {/* Selection overlay */}

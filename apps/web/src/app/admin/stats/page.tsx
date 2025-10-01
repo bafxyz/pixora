@@ -2,22 +2,20 @@
 
 import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
+import { Badge } from '@repo/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
 import {
   BarChart3,
   Building,
-  Camera,
   Download,
   FileImage,
   ShoppingCart,
   TrendingUp,
   Users,
 } from 'lucide-react'
-import { PageLayout } from '@/shared/components/page-layout'
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
-import { Badge } from '@repo/ui/badge'
-import { Button } from '@repo/ui/button'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { PageLayout } from '@/shared/components/page-layout'
 
 interface PlatformStats {
   totalClients: number
@@ -82,7 +80,7 @@ export default function AdminStatsPage() {
 
   useEffect(() => {
     loadStats()
-  }, [])
+  }, [loadStats])
 
   const handleExport = () => {
     const data = {
@@ -305,9 +303,7 @@ export default function AdminStatsPage() {
                 </span>
                 <Badge variant="secondary">
                   {stats.totalGuests > 0
-                    ? ((stats.totalOrders / stats.totalGuests) * 100).toFixed(
-                        1
-                      )
+                    ? ((stats.totalOrders / stats.totalGuests) * 100).toFixed(1)
                     : 0}
                   %
                 </Badge>

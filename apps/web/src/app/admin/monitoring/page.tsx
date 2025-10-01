@@ -2,26 +2,24 @@
 
 import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
+import { Badge } from '@repo/ui/badge'
+import { Button } from '@repo/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
 import {
   Activity,
-  AlertCircle,
   AlertTriangle,
   CheckCircle,
   Clock,
   Database,
   Download,
-  HardDrive,
   Info,
   RefreshCw,
   Server,
   XCircle,
 } from 'lucide-react'
-import { PageLayout } from '@/shared/components/page-layout'
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
-import { Badge } from '@repo/ui/badge'
-import { Button } from '@repo/ui/button'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { PageLayout } from '@/shared/components/page-layout'
 
 interface SystemHealth {
   status: 'healthy' | 'warning' | 'critical'
@@ -72,7 +70,6 @@ export default function AdminMonitoringPage() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [filterLevel, setFilterLevel] = useState<string>('all')
 
-
   const loadMonitoringData = useCallback(async () => {
     setIsRefreshing(true)
     try {
@@ -95,7 +92,7 @@ export default function AdminMonitoringPage() {
     loadMonitoringData()
     const interval = setInterval(loadMonitoringData, 30000) // Refresh every 30s
     return () => clearInterval(interval)
-  }, [])
+  }, [loadMonitoringData])
 
   const handleDownloadLogs = () => {
     const logsText = logs
@@ -117,8 +114,7 @@ export default function AdminMonitoringPage() {
     toast.success(_(msg`Logs downloaded successfully`))
   }
 
-
-  const getStatusColor = (status: SystemHealth['status']) => {
+  const _getStatusColor = (status: SystemHealth['status']) => {
     switch (status) {
       case 'healthy':
         return 'bg-green-500'
@@ -126,6 +122,8 @@ export default function AdminMonitoringPage() {
         return 'bg-yellow-500'
       case 'critical':
         return 'bg-red-500'
+      default:
+        return 'bg-gray-500'
     }
   }
 
@@ -137,11 +135,15 @@ export default function AdminMonitoringPage() {
         return <AlertTriangle className="w-4 h-4 text-yellow-500" />
       case 'error':
         return <XCircle className="w-4 h-4 text-red-500" />
+      default:
+        return <Info className="w-4 h-4 text-gray-500" />
     }
   }
 
   const filteredLogs =
-    filterLevel === 'all' ? logs : logs.filter((log) => log.level === filterLevel)
+    filterLevel === 'all'
+      ? logs
+      : logs.filter((log) => log.level === filterLevel)
 
   return (
     <PageLayout
@@ -270,15 +272,21 @@ export default function AdminMonitoringPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Total Revenue</span>
-                    <Badge variant="secondary">${stats.totalRevenue.toFixed(2)}</Badge>
+                    <Badge variant="secondary">
+                      ${stats.totalRevenue.toFixed(2)}
+                    </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Pending Payments</span>
-                    <Badge variant="secondary">${stats.pendingPayments.toFixed(2)}</Badge>
+                    <Badge variant="secondary">
+                      ${stats.pendingPayments.toFixed(2)}
+                    </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Active Connections</span>
-                    <Badge variant="secondary">{health.activeConnections}</Badge>
+                    <Badge variant="secondary">
+                      {health.activeConnections}
+                    </Badge>
                   </div>
                 </div>
               </div>

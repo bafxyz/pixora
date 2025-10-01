@@ -2,9 +2,13 @@
 
 import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
+import { Badge } from '@repo/ui/badge'
+import { Button } from '@repo/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { Input } from '@repo/ui/input'
+import { Label } from '@repo/ui/label'
 import {
   Bell,
-  Clock,
   Database,
   DollarSign,
   Globe,
@@ -15,14 +19,9 @@ import {
   Shield,
   Zap,
 } from 'lucide-react'
-import { PageLayout } from '@/shared/components/page-layout'
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
-import { Input } from '@repo/ui/input'
-import { Label } from '@repo/ui/label'
-import { Button } from '@repo/ui/button'
-import { Badge } from '@repo/ui/badge'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { PageLayout } from '@/shared/components/page-layout'
 
 interface SystemConfig {
   // Platform settings
@@ -251,8 +250,9 @@ export default function AdminSystemPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div
-                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+              <button
+                type="button"
+                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors w-full"
                 onClick={() => toggleFeature('enableGuestRegistration')}
               >
                 <div className="flex items-center gap-3">
@@ -279,10 +279,11 @@ export default function AdminSystemPage() {
                     <Trans>OFF</Trans>
                   )}
                 </Badge>
-              </div>
+              </button>
 
-              <div
-                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+              <button
+                type="button"
+                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors w-full"
                 onClick={() => toggleFeature('enableEmailNotifications')}
               >
                 <div className="flex items-center gap-3">
@@ -309,10 +310,11 @@ export default function AdminSystemPage() {
                     <Trans>OFF</Trans>
                   )}
                 </Badge>
-              </div>
+              </button>
 
-              <div
-                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+              <button
+                type="button"
+                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors w-full"
                 onClick={() => toggleFeature('enableAnalytics')}
               >
                 <div className="flex items-center gap-3">
@@ -337,10 +339,11 @@ export default function AdminSystemPage() {
                     <Trans>OFF</Trans>
                   )}
                 </Badge>
-              </div>
+              </button>
 
-              <div
-                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+              <button
+                type="button"
+                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors w-full"
                 onClick={() => toggleFeature('maintenanceMode')}
               >
                 <div className="flex items-center gap-3">
@@ -365,7 +368,7 @@ export default function AdminSystemPage() {
                     <Trans>OFF</Trans>
                   )}
                 </Badge>
-              </div>
+              </button>
             </div>
           </CardContent>
         </Card>
@@ -472,7 +475,11 @@ export default function AdminSystemPage() {
             size="lg"
           >
             <Save className="w-4 h-4 mr-2" />
-            {isSaving ? <Trans>Saving...</Trans> : <Trans>Save All Changes</Trans>}
+            {isSaving ? (
+              <Trans>Saving...</Trans>
+            ) : (
+              <Trans>Save All Changes</Trans>
+            )}
           </Button>
         </div>
       </div>

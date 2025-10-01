@@ -1,6 +1,6 @@
 'use client'
 
-import { Trans, msg } from '@lingui/macro'
+import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent } from '@repo/ui/card'
@@ -307,6 +307,7 @@ export default function CartPage() {
                   </h2>
                   <div className="grid gap-4">
                     <button
+                      type="button"
                       onClick={() => setSelectedPaymentMethod('robokassa')}
                       className={`p-4 border-2 rounded-lg transition-all ${
                         selectedPaymentMethod === 'robokassa'
@@ -321,7 +322,9 @@ export default function CartPage() {
                             <Trans>Online Payment (Robokassa)</Trans>
                           </p>
                           <p className="text-sm text-slate-600">
-                            <Trans>Pay securely with card or other methods</Trans>
+                            <Trans>
+                              Pay securely with card or other methods
+                            </Trans>
                           </p>
                         </div>
                         {selectedPaymentMethod === 'robokassa' && (
@@ -331,6 +334,7 @@ export default function CartPage() {
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => setSelectedPaymentMethod('cash')}
                       className={`p-4 border-2 rounded-lg transition-all ${
                         selectedPaymentMethod === 'cash'

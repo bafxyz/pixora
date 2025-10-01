@@ -44,7 +44,7 @@ enum NotificationType {
   payment_received
 }
 
-model Client {
+model Studio {
   id        String   @id @default(uuid()) @db.Uuid
   name      String
   email     String   @unique
@@ -60,7 +60,7 @@ model Client {
   photoSessions PhotoSession[]
   orders        Order[]
 
-  @@map("clients")
+  @@map("studios")
 }
 
 model Photographer {
@@ -68,12 +68,12 @@ model Photographer {
   email     String   @unique
   name      String?
   phone     String?
-  clientId  String   @map("client_id") @db.Uuid
+  studioId  String   @map("studio_id") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
   branding  Json?
 
-  client        Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  studio        Studio         @relation(fields: [studioId], references: [id], onDelete: Cascade)
   photos        Photo[]
   photoSessions PhotoSession[]
   orders        Order[]
@@ -85,7 +85,7 @@ model Photographer {
 model Photo {
   id             String    @id @default(uuid()) @db.Uuid
   photographerId String    @map("photographer_id") @db.Uuid
-  clientId       String    @map("client_id") @db.Uuid
+  studioId       String    @map("studio_id") @db.Uuid
   photoSessionId String    @map("photo_session_id") @db.Uuid
   filePath       String    @map("file_path")
   fileName       String    @map("file_name")
@@ -96,7 +96,7 @@ model Photo {
   updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
   photographer Photographer  @relation(fields: [photographerId], references: [id])
-  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  studio       Studio        @relation(fields: [studioId], references: [id], onDelete: Cascade)
   photoSession PhotoSession  @relation(fields: [photoSessionId], references: [id], onDelete: Cascade)
   orderItems   OrderItem[]
 
@@ -109,7 +109,7 @@ model PhotoSession {
   name           String
   description    String?
   photographerId String             @map("photographer_id") @db.Uuid
-  clientId       String             @map("client_id") @db.Uuid
+  studioId       String             @map("studio_id") @db.Uuid
   status         PhotoSessionStatus @default(created)
   scheduledAt    DateTime?          @map("scheduled_at") @db.Timestamptz
   completedAt    DateTime?          @map("completed_at") @db.Timestamptz
@@ -118,7 +118,7 @@ model PhotoSession {
   updatedAt      DateTime           @updatedAt @map("updated_at") @db.Timestamptz
 
   photographer Photographer @relation(fields: [photographerId], references: [id])
-  client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  studio       Studio       @relation(fields: [studioId], references: [id], onDelete: Cascade)
   photos       Photo[]
   orders       Order[]
 
@@ -127,7 +127,7 @@ model PhotoSession {
 
 model Order {
   id             String        @id @default(uuid()) @db.Uuid
-  clientId       String        @map("client_id") @db.Uuid
+  studioId       String        @map("studio_id") @db.Uuid
   photographerId String        @map("photographer_id") @db.Uuid
   sessionId      String        @map("session_id") @db.Uuid
   guestEmail     String        @map("guest_email")
@@ -152,7 +152,7 @@ model Order {
   createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz
 
-  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  studio       Studio        @relation(fields: [studioId], references: [id], onDelete: Cascade)
   photographer Photographer  @relation(fields: [photographerId], references: [id])
   session      PhotoSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   items        OrderItem[]

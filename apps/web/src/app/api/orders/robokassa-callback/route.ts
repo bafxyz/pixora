@@ -1,7 +1,7 @@
+import crypto from 'node:crypto'
 import { type NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/shared/lib/prisma/client'
 import { NotificationService } from '@/lib/services/notification.service'
-import crypto from 'crypto'
+import { prisma } from '@/shared/lib/prisma/client'
 
 const ROBOKASSA_PASSWORD_2 = process.env.ROBOKASSA_PASSWORD_2 || ''
 
@@ -28,15 +28,23 @@ export async function POST(request: NextRequest) {
     const invId = formData.get('InvId') as string
     const signatureValue = formData.get('SignatureValue') as string
 
-    console.log('Robokassa callback received:', { outSum, invId, signatureValue })
+    console.log('Robokassa callback received:', {
+      outSum,
+      invId,
+      signatureValue,
+    })
 
     // Verify signature
-    if (!verifyRobokassaSignature(outSum, invId, signatureValue, ROBOKASSA_PASSWORD_2)) {
-      console.error('Invalid Robokassa signature')
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 400 }
+    if (
+      !verifyRobokassaSignature(
+        outSum,
+        invId,
+        signatureValue,
+        ROBOKASSA_PASSWORD_2
       )
+    ) {
+      console.error('Invalid Robokassa signature')
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
 
     // Find order
@@ -44,16 +52,13 @@ export async function POST(request: NextRequest) {
       where: { id: invId },
       include: {
         photographer: true,
-        client: true,
+        studio: true,
       },
     })
 
     if (!order) {
       console.error('Order not found:', invId)
-      return NextResponse.json(
-        { error: 'Order not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
     // Update order status

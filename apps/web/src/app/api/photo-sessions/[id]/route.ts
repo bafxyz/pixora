@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import {
-  canAccessClientResource,
+  canAccessStudioResource,
   withRoleCheck,
 } from '@/shared/lib/auth/role-guard'
 import { prisma } from '@/shared/lib/prisma/client'
@@ -43,7 +43,7 @@ export async function GET(
             branding: true,
           },
         },
-        client: {
+        studio: {
           select: {
             id: true,
             name: true,
@@ -89,11 +89,11 @@ export async function GET(
             ? JSON.parse(JSON.stringify(photoSession.photographer.branding))
             : undefined,
         },
-        client: {
-          id: photoSession.client.id,
-          name: photoSession.client.name,
-          branding: photoSession.client.branding
-            ? JSON.parse(JSON.stringify(photoSession.client.branding))
+        studio: {
+          id: photoSession.studio.id,
+          name: photoSession.studio.name,
+          branding: photoSession.studio.branding
+            ? JSON.parse(JSON.stringify(photoSession.studio.branding))
             : undefined,
         },
         photos: photoSession.photos,
@@ -134,8 +134,8 @@ export async function PATCH(
       auth.user.email,
       'Role:',
       auth.user.role,
-      'ClientId:',
-      auth.clientId
+      'StudioId:',
+      auth.studioId
     )
 
     if (!sessionId) {
@@ -162,7 +162,7 @@ export async function PATCH(
       },
       select: {
         id: true,
-        clientId: true,
+        studioId: true,
       },
     })
 
@@ -173,11 +173,11 @@ export async function PATCH(
       )
     }
 
-    // Check access to client resources
+    // Check access to studio resources
     if (
-      !canAccessClientResource(
-        auth.clientId,
-        existingSession.clientId,
+      !canAccessStudioResource(
+        auth.studioId,
+        existingSession.studioId,
         auth.user.role
       )
     ) {
@@ -329,7 +329,7 @@ export async function DELETE(
       },
       select: {
         id: true,
-        clientId: true,
+        studioId: true,
       },
     })
 
@@ -340,11 +340,11 @@ export async function DELETE(
       )
     }
 
-    // Check access to client resources
+    // Check access to studio resources
     if (
-      !canAccessClientResource(
-        auth.clientId,
-        existingSession.clientId,
+      !canAccessStudioResource(
+        auth.studioId,
+        existingSession.studioId,
         auth.user.role
       )
     ) {

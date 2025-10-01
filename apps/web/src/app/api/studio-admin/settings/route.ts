@@ -24,27 +24,27 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // For studio-admin, get their client's settings
-    // For admin, get client from headers if specified
-    let clientId = auth.clientId
+    // For studio-admin, get their studio's settings
+    // For admin, get studio from headers if specified
+    let studioId = auth.studioId
 
     if (auth.user.role === 'admin') {
-      const headerClientId = request.headers.get('x-client-id')
-      if (headerClientId) {
-        clientId = headerClientId
+      const headerStudioId = request.headers.get('x-studio-id')
+      if (headerStudioId) {
+        studioId = headerStudioId
       }
     }
 
-    if (!clientId) {
+    if (!studioId) {
       return NextResponse.json(
-        { error: 'Client ID is required' },
+        { error: 'Studio ID is required' },
         { status: 400 }
       )
     }
 
-    // Get client with settings
-    const client = await prisma.client.findUnique({
-      where: { id: clientId },
+    // Get studio with settings
+    const studio = await prisma.studio.findUnique({
+      where: { id: studioId },
       select: {
         id: true,
         name: true,
@@ -56,19 +56,19 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    if (!client) {
-      return NextResponse.json({ error: 'Client not found' }, { status: 404 })
+    if (!studio) {
+      return NextResponse.json({ error: 'Studio not found' }, { status: 404 })
     }
 
     // Extract branding and settings data
-    const branding = (client.branding as Record<string, unknown>) || {}
-    const settings = (client.settings as Record<string, unknown>) || {}
+    const branding = (studio.branding as Record<string, unknown>) || {}
+    const settings = (studio.settings as Record<string, unknown>) || {}
 
     return NextResponse.json({
-      studioName: client.name,
-      contactEmail: client.email,
-      contactPhone: client.phone || '',
-      contactAddress: client.address || '',
+      studioName: studio.name,
+      contactEmail: studio.email,
+      contactPhone: studio.phone || '',
+      contactAddress: studio.address || '',
       brandColor: branding.brandColor || '#000000',
       logoUrl: branding.logoUrl || '',
       welcomeMessage: branding.welcomeMessage || '',
@@ -96,20 +96,20 @@ export async function PATCH(request: NextRequest) {
   try {
     const settings: StudioSettings = await request.json()
 
-    // For studio-admin, use their client_id
-    // For admin, get client from headers if specified
-    let clientId = auth.clientId
+    // For studio-admin, use their studio_id
+    // For admin, get studio from headers if specified
+    let studioId = auth.studioId
 
     if (auth.user.role === 'admin') {
-      const headerClientId = request.headers.get('x-client-id')
-      if (headerClientId) {
-        clientId = headerClientId
+      const headerStudioId = request.headers.get('x-studio-id')
+      if (headerStudioId) {
+        studioId = headerStudioId
       }
     }
 
-    if (!clientId) {
+    if (!studioId) {
       return NextResponse.json(
-        { error: 'Client ID is required' },
+        { error: 'Studio ID is required' },
         { status: 400 }
       )
     }
@@ -135,8 +135,8 @@ export async function PATCH(request: NextRequest) {
     if (Object.keys(branding).length > 0) {
       updateData.branding = {
         ...(((
-          await prisma.client.findUnique({
-            where: { id: clientId },
+          await prisma.studio.findUnique({
+            where: { id: studioId },
             select: { branding: true },
           })
         )?.branding as Record<string, unknown>) || {}),
@@ -148,8 +148,8 @@ export async function PATCH(request: NextRequest) {
     if (settings.pricing) {
       const currentSettings =
         ((
-          await prisma.client.findUnique({
-            where: { id: clientId },
+          await prisma.studio.findUnique({
+            where: { id: studioId },
             select: { settings: true },
           })
         )?.settings as Record<string, unknown>) || {}
@@ -160,9 +160,9 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
-    // Update client in database
-    const updatedClient = await prisma.client.update({
-      where: { id: clientId },
+    // Update studio in database
+    const updatedStudio = await prisma.studio.update({
+      where: { id: studioId },
       data: updateData,
       select: {
         id: true,
@@ -178,19 +178,19 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({
       success: true,
       settings: {
-        studioName: updatedClient.name,
-        contactEmail: updatedClient.email,
-        contactPhone: updatedClient.phone || '',
-        contactAddress: updatedClient.address || '',
+        studioName: updatedStudio.name,
+        contactEmail: updatedStudio.email,
+        contactPhone: updatedStudio.phone || '',
+        contactAddress: updatedStudio.address || '',
         brandColor:
-          (updatedClient.branding as Record<string, unknown>)?.brandColor ||
+          (updatedStudio.branding as Record<string, unknown>)?.brandColor ||
           '#000000',
         logoUrl:
-          (updatedClient.branding as Record<string, unknown>)?.logoUrl || '',
+          (updatedStudio.branding as Record<string, unknown>)?.logoUrl || '',
         welcomeMessage:
-          (updatedClient.branding as Record<string, unknown>)?.welcomeMessage ||
+          (updatedStudio.branding as Record<string, unknown>)?.welcomeMessage ||
           '',
-        pricing: (updatedClient.settings as Record<string, unknown>)
+        pricing: (updatedStudio.settings as Record<string, unknown>)
           ?.pricing || {
           digital: 25,
           print: 50,

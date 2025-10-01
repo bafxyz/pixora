@@ -54,7 +54,7 @@ export async function PUT(
     const whereClause: {
       id: string
       photographerId?: string
-      clientId?: string
+      studioId?: string
     } = { id: sessionId }
 
     if (auth.user.role === 'photographer') {
@@ -71,8 +71,8 @@ export async function PUT(
       }
 
       whereClause.photographerId = photographer.id
-    } else if (auth.clientId) {
-      whereClause.clientId = auth.clientId
+    } else if (auth.studioId) {
+      whereClause.studioId = auth.studioId
     }
 
     const session = await prisma.photoSession.findFirst({

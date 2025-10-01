@@ -10,30 +10,30 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // For studio-admin use their client_id, for admin - from header or all
-    let clientId = auth.clientId
+    // For studio-admin use their studio_id, for admin - from header or all
+    let studioId = auth.studioId
 
-    // If admin and x-client-id is provided, use it
+    // If admin and x-studio-id is provided, use it
     if (auth.user.role === 'admin') {
-      const headerClientId = request.headers.get('x-client-id')
-      if (headerClientId) {
-        clientId = headerClientId
+      const headerStudioId = request.headers.get('x-studio-id')
+      if (headerStudioId) {
+        studioId = headerStudioId
       }
     }
 
-    if (!clientId) {
+    if (!studioId) {
       return NextResponse.json(
-        { error: 'Client ID is required' },
+        { error: 'Studio ID is required' },
         { status: 400 }
       )
     }
 
-    // Get statistics for client
+    // Get statistics for studio
     const [totalPhotographers, totalPhotoSessions, totalPhotos] =
       await Promise.all([
-        prisma.photographer.count({ where: { clientId } }),
-        prisma.photoSession.count({ where: { clientId } }),
-        prisma.photo.count({ where: { clientId } }),
+        prisma.photographer.count({ where: { studioId } }),
+        prisma.photoSession.count({ where: { studioId } }),
+        prisma.photo.count({ where: { studioId } }),
       ])
 
     // Orders not implemented yet
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
         totalOrders,
         revenue,
       },
-      clientId,
+      studioId,
     })
   } catch (error) {
     console.error('Admin stats API error:', error)

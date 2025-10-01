@@ -70,14 +70,14 @@ export async function POST(request: NextRequest) {
       let photographer = await prisma.photographer.findFirst({
         where: { email },
         include: {
-          client: true,
+          studio: true,
         },
       })
 
-      // If photographer doesn't exist, create one with a default client
+      // If photographer doesn't exist, create one with a default studio
       if (!photographer) {
-        // Create a default client for the user
-        const client = await prisma.client.create({
+        // Create a default studio for the user
+        const studio = await prisma.studio.create({
           data: {
             name: data.user.user_metadata?.name || email.split('@')[0],
             email,
@@ -87,11 +87,11 @@ export async function POST(request: NextRequest) {
         photographer = await prisma.photographer.create({
           data: {
             email,
-            clientId: client.id,
+            studioId: studio.id,
             name: data.user.user_metadata?.name,
           },
           include: {
-            client: true,
+            studio: true,
           },
         })
       }
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
           name: photographer.name,
           role: userRole,
         },
-        clientId: photographer.clientId,
+        studioId: photographer.studioId,
       })
     }
 

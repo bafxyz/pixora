@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Get all clients with statistics
-    const clients = await prisma.client.findMany({
+    // Get all studios with statistics
+    const studios = await prisma.studio.findMany({
       include: {
         _count: {
           select: {
@@ -26,22 +26,22 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    const clientsWithStats = clients.map((client) => ({
-      id: client.id,
-      name: client.name,
-      email: client.email,
-      createdAt: client.createdAt,
-      photographersCount: client._count.photographers,
-      photosCount: client._count.photos,
-      sessionsCount: client._count.photoSessions,
+    const studiosWithStats = studios.map((studio) => ({
+      id: studio.id,
+      name: studio.name,
+      email: studio.email,
+      createdAt: studio.createdAt,
+      photographersCount: studio._count.photographers,
+      photosCount: studio._count.photos,
+      sessionsCount: studio._count.photoSessions,
     }))
 
     return NextResponse.json({
-      clients: clientsWithStats,
-      total: clientsWithStats.length,
+      studios: studiosWithStats,
+      total: studiosWithStats.length,
     })
   } catch (error) {
-    console.error('Super admin clients API error:', error)
+    console.error('Super admin studios API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -66,20 +66,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if client with this email already exists
-    const existingClient = await prisma.client.findUnique({
+    // Check if studio with this email already exists
+    const existingStudio = await prisma.studio.findUnique({
       where: { email: email.trim() },
     })
 
-    if (existingClient) {
+    if (existingStudio) {
       return NextResponse.json(
-        { error: 'Client with this email already exists' },
+        { error: 'Studio with this email already exists' },
         { status: 409 }
       )
     }
 
-    // Create new client
-    const client = await prisma.client.create({
+    // Create new studio
+    const studio = await prisma.studio.create({
       data: {
         name: name.trim(),
         email: email.trim(),
@@ -88,15 +88,15 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      client: {
-        ...client,
+      studio: {
+        ...studio,
         guestsCount: 0,
         photosCount: 0,
         ordersCount: 0,
       },
     })
   } catch (error) {
-    console.error('Create client API error:', error)
+    console.error('Create studio API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

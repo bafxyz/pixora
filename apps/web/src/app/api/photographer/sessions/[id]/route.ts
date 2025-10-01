@@ -29,7 +29,7 @@ export async function GET(
     const whereClause: {
       id: string
       photographerId?: string
-      clientId?: string
+      studioId?: string
     } = { id: sessionId }
 
     if (auth.user.role === 'photographer') {
@@ -47,9 +47,9 @@ export async function GET(
       }
 
       whereClause.photographerId = photographer.id
-    } else if (auth.clientId) {
-      // For studio-admin, only show sessions from their client
-      whereClause.clientId = auth.clientId
+    } else if (auth.studioId) {
+      // For studio-admin, only show sessions from their studio
+      whereClause.studioId = auth.studioId
     }
 
     const session = await prisma.photoSession.findFirst({

@@ -30,7 +30,7 @@ export async function DELETE(
     const whereClause: {
       id: string
       photographerId?: string
-      clientId?: string
+      studioId?: string
     } = { id: photoId }
 
     if (auth.user.role === 'photographer') {
@@ -47,8 +47,8 @@ export async function DELETE(
       }
 
       whereClause.photographerId = photographer.id
-    } else if (auth.clientId) {
-      whereClause.clientId = auth.clientId
+    } else if (auth.studioId) {
+      whereClause.studioId = auth.studioId
     }
 
     const photo = await prisma.photo.findFirst({

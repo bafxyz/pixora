@@ -10,7 +10,7 @@ interface AuthResult {
     email: string
     role: UserRole
   }
-  clientId?: string
+  studioId?: string
 }
 
 /**
@@ -59,27 +59,27 @@ export async function requireRole(
       )
     }
 
-    // For studio-admins and photographers, get their client_id
-    let clientId: string | undefined
+    // For studio-admins and photographers, get their studio_id
+    let studioId: string | undefined
 
     if (userRole === 'studio-admin' || userRole === 'photographer') {
       try {
         const photographer = await prisma.photographer.findFirst({
           where: { email: user.email || '' },
-          select: { clientId: true },
+          select: { studioId: true },
         })
 
         if (photographer) {
-          clientId = photographer.clientId
+          studioId = photographer.studioId
         } else if (userRole === 'studio-admin') {
-          // Studio admin must have a client_id
+          // Studio admin must have a studio_id
           console.error(
-            `Studio admin user ${user.email} has no associated client`
+            `Studio admin user ${user.email} has no associated studio`
           )
           return NextResponse.json(
             {
               error:
-                'Configuration error: Studio admin user has no associated client',
+                'Configuration error: Studio admin user has no associated studio',
             },
             { status: 500 }
           )
@@ -100,7 +100,7 @@ export async function requireRole(
         email: user.email || '',
         role: userRole,
       },
-      clientId,
+      studioId,
     }
   } catch (error) {
     console.error('Unexpected error in role-guard:', error)
@@ -112,15 +112,15 @@ export async function requireRole(
 }
 
 /**
- * Checks if a resource belongs to the user's client
- * @param userClientId - User's client ID
- * @param resourceClientId - Resource's client ID
+ * Checks if a resource belongs to the user's studio
+ * @param userStudioId - User's studio ID
+ * @param resourceStudioId - Resource's studio ID
  * @param userRole - User role
  * @returns true if access is allowed
  */
-export function canAccessClientResource(
-  userClientId: string | undefined,
-  resourceClientId: string,
+export function canAccessStudioResource(
+  userStudioId: string | undefined,
+  resourceStudioId: string,
   userRole: UserRole
 ): boolean {
   // Admin has access to all resources
@@ -128,8 +128,8 @@ export function canAccessClientResource(
     return true
   }
 
-  // For other roles, check if client_id matches
-  return userClientId === resourceClientId
+  // For other roles, check if studio_id matches
+  return userStudioId === resourceStudioId
 }
 
 /**

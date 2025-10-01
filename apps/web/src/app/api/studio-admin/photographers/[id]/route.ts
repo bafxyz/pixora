@@ -39,7 +39,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Check access permissions
     if (
       auth.user.role === 'studio-admin' &&
-      photographer.clientId !== auth.clientId
+      photographer.studioId !== auth.studioId
     ) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -83,7 +83,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       where: { id },
       select: {
         id: true,
-        clientId: true,
+        studioId: true,
         email: true,
       },
     })
@@ -98,7 +98,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // Check access permissions
     if (
       auth.user.role === 'studio-admin' &&
-      existingPhotographer.clientId !== auth.clientId
+      existingPhotographer.studioId !== auth.studioId
     ) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -108,7 +108,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       const emailExists = await prisma.photographer.findFirst({
         where: {
           email: email.trim().toLowerCase(),
-          clientId: existingPhotographer.clientId,
+          studioId: existingPhotographer.studioId,
           id: { not: id },
         },
       })
@@ -181,7 +181,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       where: { id },
       select: {
         id: true,
-        clientId: true,
+        studioId: true,
         name: true,
         _count: {
           select: {
@@ -202,7 +202,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     // Check access permissions
     if (
       auth.user.role === 'studio-admin' &&
-      existingPhotographer.clientId !== auth.clientId
+      existingPhotographer.studioId !== auth.studioId
     ) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }

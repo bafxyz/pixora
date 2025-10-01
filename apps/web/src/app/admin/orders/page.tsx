@@ -1,69 +1,69 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { PageLayout } from '@/shared/components/page-layout';
-import { Trans } from '@lingui/react/macro';
-import { msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
-import { toast } from 'sonner';
+import { msg } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
+import { Trans } from '@lingui/react/macro'
+import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { PageLayout } from '@/shared/components/page-layout'
 
 interface OrderItem {
-  id: string;
+  id: string
   photo: {
-    fileName: string;
-    filePath: string;
-  };
-  price: number;
+    fileName: string
+    filePath: string
+  }
+  price: number
 }
 
 interface Order {
-  id: string;
-  guestEmail: string;
-  guestName: string | null;
-  guestPhone: string | null;
-  status: string;
-  paymentMethod: string;
-  paymentStatus: string;
-  totalAmount: number;
-  discount: number;
-  finalAmount: number;
-  createdAt: string;
+  id: string
+  guestEmail: string
+  guestName: string | null
+  guestPhone: string | null
+  status: string
+  paymentMethod: string
+  paymentStatus: string
+  totalAmount: number
+  discount: number
+  finalAmount: number
+  createdAt: string
   session: {
-    name: string;
-    scheduledAt: string | null;
-  };
-  items: OrderItem[];
+    name: string
+    scheduledAt: string | null
+  }
+  items: OrderItem[]
 }
 
 export default function OrdersPage() {
-  const { _ } = useLingui();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [paymentFilter, setPaymentFilter] = useState<string>('');
+  const { _ } = useLingui()
+  const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
+  const [statusFilter, setStatusFilter] = useState<string>('')
+  const [paymentFilter, setPaymentFilter] = useState<string>('')
 
-  useEffect(() => {
-    fetchOrders();
-  }, [statusFilter, paymentFilter]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
-      const params = new URLSearchParams();
-      if (statusFilter) params.append('status', statusFilter);
-      if (paymentFilter) params.append('paymentStatus', paymentFilter);
+      const params = new URLSearchParams()
+      if (statusFilter) params.append('status', statusFilter)
+      if (paymentFilter) params.append('paymentStatus', paymentFilter)
 
-      const response = await fetch(`/api/orders/list?${params.toString()}`);
-      const data = await response.json();
+      const response = await fetch(`/api/orders/list?${params.toString()}`)
+      const data = await response.json()
 
       if (response.ok) {
-        setOrders(data.orders);
+        setOrders(data.orders)
       }
     } catch (error) {
-      console.error('Failed to fetch orders:', error);
+      console.error('Failed to fetch orders:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }, [statusFilter, paymentFilter])
+
+  useEffect(() => {
+    fetchOrders()
+  }, [fetchOrders])
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
@@ -71,20 +71,20 @@ export default function OrdersPage() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
-      });
+      })
 
       if (response.ok) {
-        toast.success(_(msg`Order status updated successfully`));
-        fetchOrders();
+        toast.success(_(msg`Order status updated successfully`))
+        fetchOrders()
       } else {
-        const data = await response.json();
-        toast.error(data.error || _(msg`Failed to update order status`));
+        const data = await response.json()
+        toast.error(data.error || _(msg`Failed to update order status`))
       }
     } catch (error) {
-      console.error('Failed to update order status:', error);
-      toast.error(_(msg`Failed to update order status`));
+      console.error('Failed to update order status:', error)
+      toast.error(_(msg`Failed to update order status`))
     }
-  };
+  }
 
   const getStatusBadge = (status: string) => {
     const colors = {
@@ -92,9 +92,9 @@ export default function OrdersPage() {
       processing: 'bg-blue-100 text-blue-800',
       completed: 'bg-green-100 text-green-800',
       cancelled: 'bg-red-100 text-red-800',
-    };
-    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
-  };
+    }
+    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+  }
 
   const getPaymentBadge = (status: string) => {
     const colors = {
@@ -102,9 +102,9 @@ export default function OrdersPage() {
       paid: 'bg-green-100 text-green-800',
       failed: 'bg-red-100 text-red-800',
       refunded: 'bg-gray-100 text-gray-800',
-    };
-    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
-  };
+    }
+    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+  }
 
   if (loading) {
     return (
@@ -115,7 +115,7 @@ export default function OrdersPage() {
           </div>
         </div>
       </PageLayout>
-    );
+    )
   }
 
   return (
@@ -159,7 +159,9 @@ export default function OrdersPage() {
             <div key={order.id} className="bg-white border rounded-lg p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="font-semibold text-lg">{order.session.name}</h3>
+                  <h3 className="font-semibold text-lg">
+                    {order.session.name}
+                  </h3>
                   <p className="text-sm text-gray-600">
                     Order ID: {order.id.slice(0, 8)}...
                   </p>
@@ -168,10 +170,14 @@ export default function OrdersPage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mb-2 ${getStatusBadge(order.status)}`}>
+                  <div
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium mb-2 ${getStatusBadge(order.status)}`}
+                  >
                     {order.status.toUpperCase()}
                   </div>
-                  <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium ml-2 ${getPaymentBadge(order.paymentStatus)}`}>
+                  <div
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ml-2 ${getPaymentBadge(order.paymentStatus)}`}
+                  >
                     {order.paymentStatus.toUpperCase()}
                   </div>
                 </div>
@@ -179,35 +185,52 @@ export default function OrdersPage() {
 
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <p className="text-sm text-gray-600"><Trans>Guest</Trans></p>
-                  <p className="font-medium">{order.guestName || order.guestEmail}</p>
+                  <p className="text-sm text-gray-600">
+                    <Trans>Guest</Trans>
+                  </p>
+                  <p className="font-medium">
+                    {order.guestName || order.guestEmail}
+                  </p>
                   <p className="text-sm text-gray-500">{order.guestEmail}</p>
                   {order.guestPhone && (
                     <p className="text-sm text-gray-500">{order.guestPhone}</p>
                   )}
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600"><Trans>Payment</Trans></p>
-                  <p className="font-medium">{order.paymentMethod.toUpperCase()}</p>
+                  <p className="text-sm text-gray-600">
+                    <Trans>Payment</Trans>
+                  </p>
+                  <p className="font-medium">
+                    {order.paymentMethod.toUpperCase()}
+                  </p>
                   <p className="text-sm text-gray-500">
-                    <Trans>{order.items.length} photo{order.items.length > 1 ? 's' : ''}</Trans>
+                    <Trans>
+                      {order.items.length} photo
+                      {order.items.length > 1 ? 's' : ''}
+                    </Trans>
                   </p>
                 </div>
               </div>
 
               <div className="border-t pt-4 mb-4">
                 <div className="flex justify-between text-sm">
-                  <span><Trans>Subtotal:</Trans></span>
+                  <span>
+                    <Trans>Subtotal:</Trans>
+                  </span>
                   <span>${Number(order.totalAmount).toFixed(2)}</span>
                 </div>
                 {Number(order.discount) > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
-                    <span><Trans>Discount:</Trans></span>
+                    <span>
+                      <Trans>Discount:</Trans>
+                    </span>
                     <span>-${Number(order.discount).toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-lg mt-2">
-                  <span><Trans>Total:</Trans></span>
+                  <span>
+                    <Trans>Total:</Trans>
+                  </span>
                   <span>${Number(order.finalAmount).toFixed(2)}</span>
                 </div>
               </div>
@@ -215,6 +238,7 @@ export default function OrdersPage() {
               <div className="flex gap-2">
                 {order.status === 'pending' && (
                   <button
+                    type="button"
                     onClick={() => updateOrderStatus(order.id, 'processing')}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                   >
@@ -223,14 +247,17 @@ export default function OrdersPage() {
                 )}
                 {order.status === 'processing' && (
                   <button
+                    type="button"
                     onClick={() => updateOrderStatus(order.id, 'completed')}
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                   >
                     <Trans>Mark as Completed</Trans>
                   </button>
                 )}
-                {(order.status === 'pending' || order.status === 'processing') && (
+                {(order.status === 'pending' ||
+                  order.status === 'processing') && (
                   <button
+                    type="button"
                     onClick={() => updateOrderStatus(order.id, 'cancelled')}
                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                   >
@@ -243,5 +270,5 @@ export default function OrdersPage() {
         )}
       </div>
     </PageLayout>
-  );
+  )
 }

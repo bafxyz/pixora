@@ -13,18 +13,18 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // For studio-admin use their client_id, for admin - from header or all
-    let clientId = auth.clientId
+    // For studio-admin use their studio_id, for admin - from header or all
+    let studioId = auth.studioId
 
-    // If admin and x-client-id is provided, use it
+    // If admin and x-studio-id is provided, use it
     if (auth.user.role === 'admin') {
-      const headerClientId = request.headers.get('x-client-id')
-      if (headerClientId) {
-        clientId = headerClientId
+      const headerStudioId = request.headers.get('x-studio-id')
+      if (headerStudioId) {
+        studioId = headerStudioId
       }
     }
 
-    const whereClause = clientId ? { clientId } : {}
+    const whereClause = studioId ? { studioId } : {}
 
     const photoSessions = await prisma.photoSession.findMany({
       where: whereClause,
@@ -146,12 +146,12 @@ export async function POST(request: NextRequest) {
       validatedScheduledAt = date
     }
 
-    // Use client_id from auth
-    const clientId = auth.clientId
+    // Use studio_id from auth
+    const studioId = auth.studioId
 
-    if (!clientId && auth.user.role !== 'admin') {
+    if (!studioId && auth.user.role !== 'admin') {
       return NextResponse.json(
-        { error: 'Client ID is required' },
+        { error: 'Studio ID is required' },
         { status: 400 }
       )
     }
@@ -172,14 +172,14 @@ export async function POST(request: NextRequest) {
       }
       photographerId = photographer.id
     } else {
-      // For admin/studio-admin, find first photographer of the client
+      // For admin/studio-admin, find first photographer of the studio
       const photographer = await prisma.photographer.findFirst({
-        where: { clientId },
+        where: { studioId },
         select: { id: true },
       })
       if (!photographer) {
         return NextResponse.json(
-          { error: 'No photographer found for this client' },
+          { error: 'No photographer found for this studio' },
           { status: 400 }
         )
       }
@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
         name: name.trim(),
         description: description?.trim() || null,
         photographerId,
-        clientId: clientId || '',
+        studioId: studioId || '',
         scheduledAt: validatedScheduledAt,
       },
       include: {

@@ -1,19 +1,18 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/shared/lib/prisma/client';
-import { withRoleCheck } from '@/shared/lib/auth/role-guard';
+import { type NextRequest, NextResponse } from 'next/server'
+import { withRoleCheck } from '@/shared/lib/auth/role-guard'
+import { prisma } from '@/shared/lib/prisma/client'
 
 export async function GET(request: NextRequest) {
   // Check admin role
-  const auth = await withRoleCheck(['admin'], request);
+  const auth = await withRoleCheck(['admin'], request)
   if (auth instanceof NextResponse) {
-    return auth;
+    return auth
   }
 
   try {
-
     // Get counts for various entities
     const [
-      totalClients,
+      totalStudios,
       totalPhotographers,
       totalSessions,
       totalPhotos,
@@ -24,7 +23,7 @@ export async function GET(request: NextRequest) {
       totalRevenue,
       pendingPayments,
     ] = await Promise.all([
-      prisma.client.count(),
+      prisma.studio.count(),
       prisma.photographer.count(),
       prisma.photoSession.count(),
       prisma.photo.count(),
@@ -40,7 +39,7 @@ export async function GET(request: NextRequest) {
         _sum: { finalAmount: true },
         where: { paymentStatus: 'pending' },
       }),
-    ]);
+    ])
 
     // Get recent orders with activity
     const recentOrders = await prisma.order.findMany({
@@ -50,21 +49,25 @@ export async function GET(request: NextRequest) {
         photographer: { select: { email: true, name: true } },
         session: { select: { name: true } },
       },
-    });
+    })
 
     // Transform orders into log entries
     const logs = recentOrders.map((order) => ({
       id: order.id,
       timestamp: order.createdAt,
-      level: order.paymentStatus === 'failed' ? 'error' :
-             order.paymentStatus === 'pending' ? 'warning' : 'info',
+      level:
+        order.paymentStatus === 'failed'
+          ? 'error'
+          : order.paymentStatus === 'pending'
+            ? 'warning'
+            : 'info',
       category: 'Orders',
       message: `${order.status.toUpperCase()} - ${order.session.name} - $${order.finalAmount}`,
       user: order.guestEmail,
-    }));
+    }))
 
     // Calculate resource usage metrics (simulated for now)
-    const activeConnections = pendingOrders + processingOrders;
+    const activeConnections = pendingOrders + processingOrders
 
     return NextResponse.json({
       health: {
@@ -72,7 +75,7 @@ export async function GET(request: NextRequest) {
         activeConnections,
       },
       stats: {
-        totalClients,
+        totalStudios,
         totalPhotographers,
         totalSessions,
         totalPhotos,
@@ -84,12 +87,12 @@ export async function GET(request: NextRequest) {
         pendingPayments: Number(pendingPayments._sum.finalAmount || 0),
       },
       logs,
-    });
+    })
   } catch (error) {
-    console.error('Monitoring API error:', error);
+    console.error('Monitoring API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 }

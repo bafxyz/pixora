@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import {
-  canAccessClientResource,
+  canAccessStudioResource,
   withRoleCheck,
 } from '@/shared/lib/auth/role-guard'
 import { prisma } from '@/shared/lib/prisma/client'
@@ -30,17 +30,17 @@ export async function POST(request: NextRequest) {
   console.log('Auth passed:', {
     userId: auth.user.id,
     role: auth.user.role,
-    clientId: auth.clientId,
+    studioId: auth.studioId,
   })
 
   try {
-    // Use client_id from auth
-    const clientId = auth.clientId
+    // Use studio_id from auth
+    const studioId = auth.studioId
 
-    if (!clientId && auth.user.role !== 'admin') {
-      console.error('Client ID not found for non-admin user')
+    if (!studioId && auth.user.role !== 'admin') {
+      console.error('Studio ID not found for non-admin user')
       return NextResponse.json(
-        { error: 'Client ID not found' },
+        { error: 'Studio ID not found' },
         { status: 400 }
       )
     }
@@ -70,12 +70,12 @@ export async function POST(request: NextRequest) {
     const photoSession = await prisma.photoSession.findFirst({
       where: {
         id: photoSessionId,
-        ...(clientId ? { clientId } : {}),
+        ...(studioId ? { studioId } : {}),
       },
       select: {
         id: true,
         photographerId: true,
-        clientId: true,
+        studioId: true,
       },
     })
 
@@ -86,11 +86,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check access to client resources
+    // Check access to studio resources
     if (
-      !canAccessClientResource(
-        auth.clientId,
-        photoSession.clientId,
+      !canAccessStudioResource(
+        auth.studioId,
+        photoSession.studioId,
         auth.user.role
       )
     ) {
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     }
 
     const targetPhotographerId = photoSession.photographerId || auth.user.id // Use user ID as fallback
-    const targetClientId = photoSession.clientId
+    const targetStudioId = photoSession.studioId
 
     // Insert photos into database with expiration date (configurable)
     const expirationDays = parseInt(
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     const photosToInsert = photoUrls.map((url: string) => ({
       photoSessionId: photoSessionId,
       photographerId: targetPhotographerId,
-      clientId: targetClientId,
+      studioId: targetStudioId,
       filePath: url,
       fileName: url.split('/').pop() || 'photo.jpg',
       expiresAt: expirationDate,

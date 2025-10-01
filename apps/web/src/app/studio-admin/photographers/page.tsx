@@ -36,6 +36,7 @@ interface NewPhotographer {
   name: string
   email: string
   phone: string
+  password: string
 }
 
 interface EditPhotographer {
@@ -55,6 +56,7 @@ export default function StudioAdminPhotographersPage() {
     name: '',
     email: '',
     phone: '',
+    password: '',
   })
   const [editPhotographer, setEditPhotographer] =
     useState<EditPhotographer | null>(null)
@@ -89,6 +91,11 @@ export default function StudioAdminPhotographersPage() {
       return
     }
 
+    if (newPhotographer.password && newPhotographer.password.length < 6) {
+      toast.error('Пароль должен содержать минимум 6 символов')
+      return
+    }
+
     try {
       const response = await fetch('/api/studio-admin/photographers', {
         method: 'POST',
@@ -103,7 +110,7 @@ export default function StudioAdminPhotographersPage() {
       if (response.ok) {
         toast.success('Фотограф создан успешно')
         setPhotographers([data.photographer, ...photographers])
-        setNewPhotographer({ name: '', email: '', phone: '' })
+        setNewPhotographer({ name: '', email: '', phone: '', password: '' })
         setShowCreateModal(false)
       } else {
         toast.error(data.error || 'Ошибка при создании фотографа')
@@ -285,6 +292,26 @@ export default function StudioAdminPhotographersPage() {
                     }
                     placeholder="+7 (XXX) XXX-XXXX"
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Пароль (опционально)</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={newPhotographer.password}
+                    onChange={(e) =>
+                      setNewPhotographer({
+                        ...newPhotographer,
+                        password: e.target.value,
+                      })
+                    }
+                    placeholder="Минимум 6 символов"
+                    minLength={6}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Если указан пароль, для фотографа будет создан аккаунт для
+                    входа
+                  </p>
                 </div>
               </div>
               <div className="flex justify-end space-x-2 mt-6">

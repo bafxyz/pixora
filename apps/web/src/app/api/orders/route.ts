@@ -1,7 +1,7 @@
+import crypto from 'node:crypto'
 import { type NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/shared/lib/prisma/client'
 import { NotificationService } from '@/lib/services/notification.service'
-import crypto from 'crypto'
+import { prisma } from '@/shared/lib/prisma/client'
 
 // Robokassa configuration
 const ROBOKASSA_LOGIN = process.env.ROBOKASSA_LOGIN || ''
@@ -31,7 +31,13 @@ export async function POST(request: NextRequest) {
     } = body
 
     // Validation
-    if (!sessionId || !guestEmail || !photoIds || !Array.isArray(photoIds) || photoIds.length === 0) {
+    if (
+      !sessionId ||
+      !guestEmail ||
+      !photoIds ||
+      !Array.isArray(photoIds) ||
+      photoIds.length === 0
+    ) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -45,11 +51,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get session with client and photographer info
+    // Get session with studio and photographer info
     const session = await prisma.photoSession.findUnique({
       where: { id: sessionId },
       include: {
-        client: true,
+        studio: true,
         photographer: true,
         photos: {
           where: {
@@ -60,10 +66,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!session) {
-      return NextResponse.json(
-        { error: 'Session not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
     // Check if all photos exist and belong to this session
@@ -75,7 +78,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate pricing
-    const pricePerPhoto = 5.00 // TODO: Get from settings
+    const pricePerPhoto = 5.0 // TODO: Get from settings
     const bulkDiscountThreshold = 20 // TODO: Get from settings
     const bulkDiscountPercent = 15 // TODO: Get from settings
 
@@ -92,7 +95,7 @@ export async function POST(request: NextRequest) {
     // Create order
     const order = await prisma.order.create({
       data: {
-        clientId: session.clientId,
+        studioId: session.studioId,
         photographerId: session.photographerId,
         sessionId: session.id,
         guestEmail,

@@ -7,7 +7,7 @@ import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
 import { Calendar, Clock, Image, Loader2, Upload, Users } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { PhotoUpload } from '@/features/photographer/components/photo-upload'
 
@@ -35,21 +35,7 @@ export default function PhotographerUploadPage() {
   const [sessions, setSessions] = useState<PhotoSession[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Handle URL parameters
-  useEffect(() => {
-    const sessionIdParam = searchParams.get('sessionId')
-
-    if (sessionIdParam) {
-      setSelectedSessionId(sessionIdParam)
-      setLoading(false)
-    } else {
-      // No target selected, fetch sessions
-      fetchSessions()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams])
-
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     try {
       const response = await fetch('/api/photo-sessions')
       const data = await response.json()
@@ -66,7 +52,20 @@ export default function PhotographerUploadPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  // Handle URL parameters
+  useEffect(() => {
+    const sessionIdParam = searchParams.get('sessionId')
+
+    if (sessionIdParam) {
+      setSelectedSessionId(sessionIdParam)
+      setLoading(false)
+    } else {
+      // No target selected, fetch sessions
+      fetchSessions()
+    }
+  }, [searchParams, fetchSessions])
 
   const handleUploadComplete = (
     _uploadedUrls: string[],

@@ -10,12 +10,20 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/card'
-import { BarChart3, Building, Monitor, Settings, ShoppingCart, Users } from 'lucide-react'
+import {
+  BarChart3,
+  Building,
+  Monitor,
+  Settings,
+  ShieldCheck,
+  ShoppingCart,
+  Users,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 
 interface GlobalStats {
-  totalClients: number
+  totalStudios: number
   totalGuests: number
   totalPhotos: number
   totalOrders: number
@@ -26,7 +34,7 @@ export default function AdminPage() {
   const { _ } = useLingui()
   const router = useRouter()
   const [globalStats, setGlobalStats] = useState<GlobalStats>({
-    totalClients: 0,
+    totalStudios: 0,
     totalGuests: 0,
     totalPhotos: 0,
     totalOrders: 0,
@@ -42,7 +50,7 @@ export default function AdminPage() {
         const statsData = await statsResponse.json()
         setGlobalStats(
           statsData.stats || {
-            totalClients: 0,
+            totalStudios: 0,
             totalGuests: 0,
             totalPhotos: 0,
             totalOrders: 0,
@@ -96,10 +104,10 @@ export default function AdminPage() {
                 </div>
                 <div className="ml-3 lg:ml-4 min-w-0">
                   <p className="text-xs lg:text-sm font-medium text-slate-600 truncate">
-                    <Trans>Clients</Trans>
+                    <Trans>Studios</Trans>
                   </p>
                   <p className="text-lg lg:text-2xl font-bold text-slate-800">
-                    {globalStats.totalClients}
+                    {globalStats.totalStudios}
                   </p>
                 </div>
               </div>
@@ -183,7 +191,7 @@ export default function AdminPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card
             className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1"
-            onClick={() => router.push('/admin/clients')}
+            onClick={() => router.push('/admin/studios')}
           >
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
@@ -191,16 +199,40 @@ export default function AdminPage() {
                   <Building className="w-5 h-5 text-white" />
                 </div>
                 <CardTitle className="text-lg">
-                  <Trans>Client Management</Trans>
+                  <Trans>Studio Management</Trans>
                 </CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <CardDescription className="mb-4">
-                <Trans>Create, manage and monitor photo studio accounts</Trans>
+                <Trans>Create, manage and monitor photo studios</Trans>
               </CardDescription>
               <Button className="w-full" variant="outline">
-                <Trans>Manage Clients</Trans>
+                <Trans>Manage Studios</Trans>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card
+            className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1"
+            onClick={() => router.push('/admin/studio-admins')}
+          >
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <ShieldCheck className="w-5 h-5 text-white" />
+                </div>
+                <CardTitle className="text-lg">
+                  <Trans>Studio Admins</Trans>
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription className="mb-4">
+                <Trans>Create and manage studio administrator accounts</Trans>
+              </CardDescription>
+              <Button className="w-full" variant="outline">
+                <Trans>Manage Studio Admins</Trans>
               </Button>
             </CardContent>
           </Card>

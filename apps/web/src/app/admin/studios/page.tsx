@@ -2,12 +2,11 @@
 
 import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
-import { PageLayout } from '@/shared/components/page-layout'
+import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
 import { Input } from '@repo/ui/input'
 import { Label } from '@repo/ui/label'
-import { Badge } from '@repo/ui/badge'
 import {
   Building,
   Camera,
@@ -19,8 +18,9 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { PageLayout } from '@/shared/components/page-layout'
 
-interface Client {
+interface Studio {
   id: string
   name: string
   email: string
@@ -30,56 +30,56 @@ interface Client {
   sessionsCount: number
 }
 
-export default function AdminClientsPage() {
+export default function AdminStudiosPage() {
   const { _ } = useLingui()
-  const [clients, setClients] = useState<Client[]>([])
-  const [filteredClients, setFilteredClients] = useState<Client[]>([])
+  const [studios, setStudios] = useState<Studio[]>([])
+  const [filteredStudios, setFilteredStudios] = useState<Studio[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [editingClient, setEditingClient] = useState<Client | null>(null)
+  const [editingStudio, setEditingStudio] = useState<Studio | null>(null)
   const [formData, setFormData] = useState({ name: '', email: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const loadClients = useCallback(async () => {
+  const loadStudios = useCallback(async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/admin/clients')
+      const response = await fetch('/api/admin/studios')
       if (response.ok) {
         const data = await response.json()
-        setClients(data.clients || [])
-        setFilteredClients(data.clients || [])
+        setStudios(data.studios || [])
+        setFilteredStudios(data.studios || [])
       } else {
-        toast.error(_(msg`Failed to load clients`))
+        toast.error(_(msg`Failed to load studios`))
       }
     } catch (error) {
-      console.error('Error loading clients:', error)
-      toast.error(_(msg`Error loading clients`))
+      console.error('Error loading studios:', error)
+      toast.error(_(msg`Error loading studios`))
     } finally {
       setIsLoading(false)
     }
   }, [_])
 
   useEffect(() => {
-    loadClients()
-  }, [loadClients])
+    loadStudios()
+  }, [loadStudios])
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
-      setFilteredClients(clients)
+      setFilteredStudios(studios)
     } else {
       const query = searchQuery.toLowerCase()
-      setFilteredClients(
-        clients.filter(
-          (client) =>
-            client.name.toLowerCase().includes(query) ||
-            client.email.toLowerCase().includes(query)
+      setFilteredStudios(
+        studios.filter(
+          (studio) =>
+            studio.name.toLowerCase().includes(query) ||
+            studio.email.toLowerCase().includes(query)
         )
       )
     }
-  }, [searchQuery, clients])
+  }, [searchQuery, studios])
 
-  const handleCreateClient = async (e: React.FormEvent) => {
+  const handleCreateStudio = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.name.trim() || !formData.email.trim()) {
       toast.error(_(msg`Name and email are required`))
@@ -88,66 +88,66 @@ export default function AdminClientsPage() {
 
     setIsSubmitting(true)
     try {
-      const response = await fetch('/api/admin/clients', {
+      const response = await fetch('/api/admin/studios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
 
       if (response.ok) {
-        toast.success(_(msg`Client created successfully`))
+        toast.success(_(msg`Studio created successfully`))
         setIsCreateDialogOpen(false)
         setFormData({ name: '', email: '' })
-        loadClients()
+        loadStudios()
       } else {
         const error = await response.json()
-        toast.error(error.error || _(msg`Failed to create client`))
+        toast.error(error.error || _(msg`Failed to create studio`))
       }
     } catch (error) {
-      console.error('Error creating client:', error)
-      toast.error(_(msg`Error creating client`))
+      console.error('Error creating studio:', error)
+      toast.error(_(msg`Error creating studio`))
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleUpdateClient = async (e: React.FormEvent) => {
+  const handleUpdateStudio = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!editingClient || !formData.name.trim()) {
+    if (!editingStudio || !formData.name.trim()) {
       toast.error(_(msg`Name is required`))
       return
     }
 
     setIsSubmitting(true)
     try {
-      const response = await fetch(`/api/admin/clients/${editingClient.id}`, {
+      const response = await fetch(`/api/admin/studios/${editingStudio.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
 
       if (response.ok) {
-        toast.success(_(msg`Client updated successfully`))
-        setEditingClient(null)
+        toast.success(_(msg`Studio updated successfully`))
+        setEditingStudio(null)
         setFormData({ name: '', email: '' })
-        loadClients()
+        loadStudios()
       } else {
         const error = await response.json()
-        toast.error(error.error || _(msg`Failed to update client`))
+        toast.error(error.error || _(msg`Failed to update studio`))
       }
     } catch (error) {
-      console.error('Error updating client:', error)
-      toast.error(_(msg`Error updating client`))
+      console.error('Error updating studio:', error)
+      toast.error(_(msg`Error updating studio`))
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleDeleteClient = async (client: Client) => {
+  const handleDeleteStudio = async (studio: Studio) => {
     if (
       !confirm(
         _(
-          msg`Are you sure you want to delete "${client.name}"? This action cannot be undone.`
+          msg`Are you sure you want to delete "${studio.name}"? This action cannot be undone.`
         )
       )
     ) {
@@ -155,45 +155,45 @@ export default function AdminClientsPage() {
     }
 
     try {
-      const response = await fetch(`/api/admin/clients/${client.id}`, {
+      const response = await fetch(`/api/admin/studios/${studio.id}`, {
         method: 'DELETE',
       })
 
       if (response.ok) {
-        toast.success(_(msg`Client deleted successfully`))
-        loadClients()
+        toast.success(_(msg`Studio deleted successfully`))
+        loadStudios()
       } else {
         const error = await response.json()
-        toast.error(error.error || _(msg`Failed to delete client`))
+        toast.error(error.error || _(msg`Failed to delete studio`))
       }
     } catch (error) {
-      console.error('Error deleting client:', error)
-      toast.error(_(msg`Error deleting client`))
+      console.error('Error deleting studio:', error)
+      toast.error(_(msg`Error deleting studio`))
     }
   }
 
-  const openEditDialog = (client: Client) => {
-    setEditingClient(client)
-    setFormData({ name: client.name, email: client.email })
+  const openEditDialog = (studio: Studio) => {
+    setEditingStudio(studio)
+    setFormData({ name: studio.name, email: studio.email })
   }
 
   const closeDialogs = () => {
     setIsCreateDialogOpen(false)
-    setEditingClient(null)
+    setEditingStudio(null)
     setFormData({ name: '', email: '' })
   }
 
   if (isLoading) {
     return (
       <PageLayout
-        title={_(msg`Client Management`)}
-        description={_(msg`View and manage platform clients`)}
+        title={_(msg`Studio Management`)}
+        description={_(msg`Create, manage and monitor photo studios`)}
       >
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-slate-600">
-              <Trans>Loading clients...</Trans>
+              <Trans>Loading studios...</Trans>
             </p>
           </div>
         </div>
@@ -203,8 +203,8 @@ export default function AdminClientsPage() {
 
   return (
     <PageLayout
-      title={_(msg`Client Management`)}
-      description={_(msg`View and manage platform clients`)}
+      title={_(msg`Studio Management`)}
+      description={_(msg`Create, manage and monitor photo studios`)}
     >
       <div className="space-y-6">
         {/* Actions Bar */}
@@ -221,27 +221,29 @@ export default function AdminClientsPage() {
           </div>
           <Button onClick={() => setIsCreateDialogOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
-            <Trans>Create Client</Trans>
+            <Trans>Create Studio</Trans>
           </Button>
         </div>
 
-        {/* Clients Grid */}
-        {filteredClients.length === 0 ? (
+        {/* Studios Grid */}
+        {filteredStudios.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <Building className="w-12 h-12 text-slate-300 mx-auto mb-4" />
               <p className="text-slate-500">
                 {searchQuery
-                  ? _(msg`No clients found matching your search`)
-                  : _(msg`No clients yet. Create your first client to get started.`)}
+                  ? _(msg`No studios found matching your search`)
+                  : _(
+                      msg`No studios yet. Create your first studio to get started.`
+                    )}
               </p>
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredClients.map((client) => (
+            {filteredStudios.map((studio) => (
               <Card
-                key={client.id}
+                key={studio.id}
                 className="hover:shadow-lg transition-shadow"
               >
                 <CardHeader>
@@ -252,10 +254,10 @@ export default function AdminClientsPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-lg truncate">
-                          {client.name}
+                          {studio.name}
                         </CardTitle>
                         <p className="text-sm text-slate-500 truncate">
-                          {client.email}
+                          {studio.email}
                         </p>
                       </div>
                     </div>
@@ -263,14 +265,14 @@ export default function AdminClientsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => openEditDialog(client)}
+                        onClick={() => openEditDialog(studio)}
                       >
                         <Pencil className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteClient(client)}
+                        onClick={() => handleDeleteStudio(studio)}
                       >
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </Button>
@@ -287,7 +289,7 @@ export default function AdminClientsPage() {
                         </span>
                       </div>
                       <Badge variant="secondary">
-                        {client.photographersCount}
+                        {studio.photographersCount}
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between text-sm">
@@ -297,7 +299,7 @@ export default function AdminClientsPage() {
                           <Trans>Photos</Trans>
                         </span>
                       </div>
-                      <Badge variant="secondary">{client.photosCount}</Badge>
+                      <Badge variant="secondary">{studio.photosCount}</Badge>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2 text-slate-600">
@@ -306,11 +308,11 @@ export default function AdminClientsPage() {
                           <Trans>Sessions</Trans>
                         </span>
                       </div>
-                      <Badge variant="secondary">{client.sessionsCount}</Badge>
+                      <Badge variant="secondary">{studio.sessionsCount}</Badge>
                     </div>
                     <div className="pt-2 border-t text-xs text-slate-500">
                       <Trans>Created:</Trans>{' '}
-                      {new Date(client.createdAt).toLocaleDateString()}
+                      {new Date(studio.createdAt).toLocaleDateString()}
                     </div>
                   </div>
                 </CardContent>
@@ -321,31 +323,33 @@ export default function AdminClientsPage() {
       </div>
 
       {/* Create/Edit Dialog */}
-      {(isCreateDialogOpen || editingClient) && (
+      {(isCreateDialogOpen || editingStudio) && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md">
             <CardHeader>
               <CardTitle>
-                {editingClient ? (
-                  <Trans>Edit Client</Trans>
+                {editingStudio ? (
+                  <Trans>Edit Studio</Trans>
                 ) : (
-                  <Trans>Create New Client</Trans>
+                  <Trans>Create New Studio</Trans>
                 )}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <form
-                onSubmit={editingClient ? handleUpdateClient : handleCreateClient}
+                onSubmit={
+                  editingStudio ? handleUpdateStudio : handleCreateStudio
+                }
                 className="space-y-4"
               >
                 <div className="space-y-2">
                   <Label htmlFor="name">
-                    <Trans>Client Name</Trans>
+                    <Trans>Studio Name</Trans>
                   </Label>
                   <Input
                     id="name"
                     type="text"
-                    placeholder={_(msg`Enter client name`)}
+                    placeholder={_(msg`Enter studio name`)}
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
@@ -365,7 +369,7 @@ export default function AdminClientsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    required={!editingClient}
+                    required={!editingStudio}
                   />
                 </div>
                 <div className="flex gap-3 pt-4">
@@ -385,7 +389,7 @@ export default function AdminClientsPage() {
                   >
                     {isSubmitting ? (
                       <Trans>Saving...</Trans>
-                    ) : editingClient ? (
+                    ) : editingStudio ? (
                       <Trans>Update</Trans>
                     ) : (
                       <Trans>Create</Trans>

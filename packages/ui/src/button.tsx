@@ -26,7 +26,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         'border-2 border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400 active:bg-slate-100',
       secondary:
         'bg-slate-100 text-slate-900 border border-slate-200 hover:bg-slate-200 active:bg-slate-300',
-      ghost: 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 active:bg-slate-200',
+      ghost:
+        'text-slate-700 hover:bg-slate-100 hover:text-slate-900 active:bg-slate-200',
       link: 'text-blue-600 underline-offset-4 hover:underline hover:text-blue-700',
     }
 
