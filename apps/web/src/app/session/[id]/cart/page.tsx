@@ -87,9 +87,9 @@ export default function CartPage() {
       }
 
   const productTypeLabels: Record<ProductType, string> = {
-    print: _('Print Photo'),
-    magnet: _('Photo Magnet'),
-    digital: _('Digital Copy'),
+    print: _(msg`Print Photo`),
+    magnet: _(msg`Photo Magnet`),
+    digital: _(msg`Digital Copy`),
   }
 
   // Calculate total
