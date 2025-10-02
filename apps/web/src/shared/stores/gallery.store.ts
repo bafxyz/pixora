@@ -13,6 +13,8 @@ export interface Photo {
   updated_at: string
 }
 
+export type ProductType = 'print' | 'magnet' | 'digital'
+
 export interface CartItem {
   id: string
   photographer_id: string
@@ -25,8 +27,8 @@ export interface CartItem {
   created_at: string
   updated_at: string
   quantity: number
-  type: 'digital' | 'print'
-  price: number // Add price for cart calculations
+  productType: ProductType
+  price: number // Price for cart calculations
 }
 
 export interface PhotographerProfile {
@@ -83,12 +85,17 @@ interface GalleryActions {
   setIsLoadingPhotographer: (loading: boolean) => void
 
   // Cart
-  addToCart: (photo: Photo, type: 'digital' | 'print') => void
-  removeFromCart: (photoId: string, type: 'digital' | 'print') => void
+  addToCart: (photo: Photo, productType: ProductType) => void
+  removeFromCart: (photoId: string, productType: ProductType) => void
   updateQuantity: (
     photoId: string,
-    type: 'digital' | 'print',
+    productType: ProductType,
     quantity: number
+  ) => void
+  updateProductType: (
+    photoId: string,
+    oldType: ProductType,
+    newType: ProductType
   ) => void
   clearCart: () => void
   setShowCart: (show: boolean) => void
@@ -144,55 +151,81 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
   setIsLoadingPhotographer: (isLoadingPhotographer) =>
     set({ isLoadingPhotographer }),
 
-  addToCart: (photo, type) => {
+  addToCart: (photo, productType) => {
     const { cart } = get()
     const existingItem = cart.find(
-      (item) => item.id === photo.id && item.type === type
+      (item) => item.id === photo.id && item.productType === productType
     )
 
     if (existingItem) {
       set({
         cart: cart.map((item) =>
-          item.id === photo.id && item.type === type
+          item.id === photo.id && item.productType === productType
             ? { ...item, quantity: item.quantity + 1 }
             : item
         ),
       })
     } else {
+      // Default prices per product type (in RUB)
+      const priceMap: Record<ProductType, number> = {
+        digital: 500,
+        print: 1000,
+        magnet: 750,
+      }
+
       set({
         cart: [
           ...cart,
           {
             ...photo,
             quantity: 1,
-            type,
-            price: 25, // Default price, could be configurable
+            productType,
+            price: priceMap[productType],
           },
         ],
       })
     }
   },
 
-  removeFromCart: (photoId, type) => {
+  removeFromCart: (photoId, productType) => {
     const { cart } = get()
     set({
-      cart: cart.filter((item) => !(item.id === photoId && item.type === type)),
+      cart: cart.filter(
+        (item) => !(item.id === photoId && item.productType === productType)
+      ),
     })
   },
 
-  updateQuantity: (photoId, type, quantity) => {
+  updateQuantity: (photoId, productType, quantity) => {
     const { cart } = get()
     if (quantity <= 0) {
-      get().removeFromCart(photoId, type)
+      get().removeFromCart(photoId, productType)
     } else {
       set({
         cart: cart.map((item) =>
-          item.id === photoId && item.type === type
+          item.id === photoId && item.productType === productType
             ? { ...item, quantity }
             : item
         ),
       })
     }
+  },
+
+  updateProductType: (photoId, oldType, newType) => {
+    const { cart } = get()
+    const priceMap: Record<ProductType, number> = {
+      digital: 500,
+      print: 1000,
+      magnet: 750,
+    }
+
+    set({
+      cart: cart.map((item) =>
+        item.id === photoId && item.productType === oldType
+          ? { ...item, productType: newType, price: priceMap[newType] }
+          : item
+      ),
+    })
   },
 
   clearCart: () => set({ cart: [] }),
@@ -307,9 +340,9 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
     try {
       const orderItems = cart.map((item) => ({
         photoId: item.id,
-        type: item.type,
+        productType: item.productType,
         quantity: item.quantity,
-        price: item.type === 'digital' ? item.price : item.price * 2,
+        price: item.price,
         photographerId: item.photographer_id,
       }))
 
@@ -331,8 +364,7 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
         try {
           const { photographer } = get()
           const total = get().cart.reduce((sum, item) => {
-            const price = item.type === 'digital' ? item.price : item.price * 2
-            return sum + price * item.quantity
+            return sum + item.price * item.quantity
           }, 0)
 
           const emailData = {
@@ -344,9 +376,9 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
               : 'Photographer',
             studioName: photographer?.studioName || 'Photo Studio',
             items: get().cart.map((item) => ({
-              name: `${item.file_name} (${item.type})`,
+              name: `${item.file_name} (${item.productType})`,
               quantity: item.quantity,
-              price: item.type === 'digital' ? item.price : item.price * 2,
+              price: item.price,
             })),
             totalAmount: total,
             orderDate: new Date().toISOString(),
@@ -384,8 +416,7 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
 export const useCartTotal = () =>
   useGalleryStore((state) =>
     state.cart.reduce((total, item) => {
-      const price = item.type === 'digital' ? item.price : item.price * 2
-      return total + price * item.quantity
+      return total + item.price * item.quantity
     }, 0)
   )
 

@@ -57,7 +57,7 @@ export const ConfirmationDialog = React.forwardRef<
     const styles = variantStyles[variant]
 
     return (
-      <Modal isOpen={isOpen} onClose={onClose} size="sm">
+      <Modal isOpen={isOpen} onClose={onClose} size="sm" zIndex={60}>
         <ModalHeader>
           <div className="flex items-center gap-3">
             <div

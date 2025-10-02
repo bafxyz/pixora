@@ -7,6 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
 import { Input } from '@repo/ui/input'
 import { Label } from '@repo/ui/label'
 import { PageLayout } from '@repo/ui/page-layout'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@repo/ui/select'
 // Components not available
 // import { Separator, ColorPicker } from '@repo/ui'
 import { Camera, CreditCard, Loader2, Mail, Save } from 'lucide-react'
@@ -24,6 +31,8 @@ interface StudioSettings {
   pricing: {
     digital: number
     print: number
+    magnet: number
+    currency: string
   }
 }
 
@@ -38,8 +47,10 @@ export default function StudioAdminSettingsPage() {
     logoUrl: '',
     welcomeMessage: '',
     pricing: {
-      digital: 25,
-      print: 50,
+      digital: 500,
+      print: 750,
+      magnet: 750,
+      currency: 'RUB',
     },
   })
   const [loading, setLoading] = useState(true)
@@ -103,12 +114,25 @@ export default function StudioAdminSettingsPage() {
     }))
   }
 
-  const handlePricingChange = (type: 'digital' | 'print', value: number) => {
+  const handlePricingChange = (
+    type: 'digital' | 'print' | 'magnet',
+    value: number
+  ) => {
     setSettings((prev) => ({
       ...prev,
       pricing: {
         ...prev.pricing,
         [type]: value,
+      },
+    }))
+  }
+
+  const handleCurrencyChange = (currency: string) => {
+    setSettings((prev) => ({
+      ...prev,
+      pricing: {
+        ...prev.pricing,
+        currency,
       },
     }))
   }
@@ -254,10 +278,29 @@ export default function StudioAdminSettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="currency">
+                  <Trans>Currency</Trans>
+                </Label>
+                <Select
+                  value={settings.pricing.currency}
+                  onValueChange={handleCurrencyChange}
+                >
+                  <SelectTrigger id="currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="RUB">₽ RUB (Рубли)</SelectItem>
+                    <SelectItem value="USD">$ USD (Dollars)</SelectItem>
+                    <SelectItem value="EUR">€ EUR (Euros)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="digitalPrice">
-                    <Trans>Digital Copy Price ($)</Trans>
+                    <Trans>Digital Copy Price</Trans>
                   </Label>
                   <Input
                     id="digitalPrice"
@@ -276,7 +319,7 @@ export default function StudioAdminSettingsPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="printPrice">
-                    <Trans>Print Copy Price ($)</Trans>
+                    <Trans>Print Copy Price</Trans>
                   </Label>
                   <Input
                     id="printPrice"
@@ -287,6 +330,25 @@ export default function StudioAdminSettingsPage() {
                     onChange={(e) =>
                       handlePricingChange(
                         'print',
+                        parseFloat(e.target.value) || 0
+                      )
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="magnetPrice">
+                    <Trans>Magnet Copy Price</Trans>
+                  </Label>
+                  <Input
+                    id="magnetPrice"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={settings.pricing.magnet}
+                    onChange={(e) =>
+                      handlePricingChange(
+                        'magnet',
                         parseFloat(e.target.value) || 0
                       )
                     }

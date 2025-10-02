@@ -7,6 +7,13 @@ import { Card, CardContent } from '@repo/ui/card'
 import { Input } from '@repo/ui/input'
 import { Label } from '@repo/ui/label'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@repo/ui/select'
+import {
   ArrowLeft,
   Banknote,
   CheckCircle,
@@ -21,16 +28,27 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { LanguageSwitcher } from '@/shared/components/language-switcher'
 
+type ProductType = 'print' | 'magnet' | 'digital'
+
 interface CartItem {
   id: string
   filePath: string
   fileName: string
+  productType: ProductType
+  quantity: number
+  price: number
 }
 
 interface PhotoSession {
   id: string
   name: string
   photographerName: string
+  pricing: {
+    digital: number
+    print: number
+    magnet: number
+    currency: string
+  }
 }
 
 export default function CartPage() {
@@ -55,18 +73,31 @@ export default function CartPage() {
     phone: '',
   })
 
-  // Pricing configuration (should match backend)
-  const pricePerPhoto = 5.0
-  const bulkDiscountThreshold = 20
-  const bulkDiscountPercent = 15
+  // Pricing per product type - dynamically loaded from session
+  const priceMap: Record<ProductType, number> = session?.pricing
+    ? {
+        digital: session.pricing.digital,
+        print: session.pricing.print,
+        magnet: session.pricing.magnet,
+      }
+    : {
+        digital: 500,
+        print: 750,
+        magnet: 750,
+      }
 
-  const photoCount = cart.length
-  const totalAmount = photoCount * pricePerPhoto
-  const discount =
-    photoCount >= bulkDiscountThreshold
-      ? (totalAmount * bulkDiscountPercent) / 100
-      : 0
-  const finalAmount = totalAmount - discount
+  const productTypeLabels: Record<ProductType, string> = {
+    print: _('Print Photo'),
+    magnet: _('Photo Magnet'),
+    digital: _('Digital Copy'),
+  }
+
+  // Calculate total
+  const totalAmount = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  )
+  const finalAmount = totalAmount
 
   useEffect(() => {
     if (!sessionId) return
@@ -83,9 +114,25 @@ export default function CartPage() {
           const savedCart = localStorage.getItem(`cart_${sessionId}`)
           if (savedCart) {
             const cartPhotoIds = JSON.parse(savedCart) as string[]
-            const cartItems = data.session.photos.filter((photo: CartItem) =>
-              cartPhotoIds.includes(photo.id)
-            )
+            const cartItems: CartItem[] = data.session.photos
+              .filter(
+                (photo: { id: string; filePath: string; fileName: string }) =>
+                  cartPhotoIds.includes(photo.id)
+              )
+              .map(
+                (photo: {
+                  id: string
+                  filePath: string
+                  fileName: string
+                }) => ({
+                  id: photo.id,
+                  filePath: photo.filePath,
+                  fileName: photo.fileName,
+                  productType: 'digital' as ProductType,
+                  quantity: 1,
+                  price: priceMap.digital,
+                })
+              )
             setCart(cartItems)
           }
         }
@@ -97,7 +144,29 @@ export default function CartPage() {
     }
 
     fetchSessionAndCart()
-  }, [sessionId])
+  }, [sessionId, priceMap.digital])
+
+  const updateProductType = (photoId: string, newType: ProductType) => {
+    setCart((prev) =>
+      prev.map((item) =>
+        item.id === photoId
+          ? { ...item, productType: newType, price: priceMap[newType] }
+          : item
+      )
+    )
+  }
+
+  const updateQuantity = (photoId: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      removeFromCart(photoId)
+      return
+    }
+    setCart((prev) =>
+      prev.map((item) =>
+        item.id === photoId ? { ...item, quantity: newQuantity } : item
+      )
+    )
+  }
 
   const removeFromCart = (photoId: string) => {
     setCart((prev) => {
@@ -138,7 +207,12 @@ export default function CartPage() {
           guestEmail: guestInfo.email,
           guestName: guestInfo.name || null,
           guestPhone: guestInfo.phone || null,
-          photoIds: cart.map((item) => item.id),
+          items: cart.map((item) => ({
+            photoId: item.id,
+            productType: item.productType,
+            quantity: item.quantity,
+            price: item.price,
+          })),
           paymentMethod: selectedPaymentMethod,
         }),
       })
@@ -370,23 +444,15 @@ export default function CartPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span>
-                        <Trans>Photos</Trans> ({photoCount})
+                        <Trans>Items</Trans> ({cart.length})
                       </span>
-                      <span>${totalAmount.toFixed(2)}</span>
+                      <span>₽{totalAmount.toFixed(0)}</span>
                     </div>
-                    {discount > 0 && (
-                      <div className="flex justify-between text-green-600">
-                        <span>
-                          <Trans>Discount</Trans> ({bulkDiscountPercent}%)
-                        </span>
-                        <span>-${discount.toFixed(2)}</span>
-                      </div>
-                    )}
                     <div className="border-t pt-3 flex justify-between text-lg font-bold">
                       <span>
                         <Trans>Total</Trans>
                       </span>
-                      <span>${finalAmount.toFixed(2)}</span>
+                      <span>₽{finalAmount.toFixed(0)}</span>
                     </div>
                   </div>
 
@@ -423,7 +489,7 @@ export default function CartPage() {
                   className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg"
                 >
                   <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-start gap-4">
                       <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
                         <Image
                           src={item.filePath}
@@ -432,13 +498,93 @@ export default function CartPage() {
                           className="object-cover"
                         />
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 space-y-4">
                         <h3 className="font-medium text-slate-800">
                           {item.fileName}
                         </h3>
-                        <p className="text-sm text-slate-600">
-                          ${pricePerPhoto.toFixed(2)}
-                        </p>
+
+                        <div className="space-y-2">
+                          <Label className="text-sm text-slate-600">
+                            <Trans>Product Type</Trans>
+                          </Label>
+                          <Select
+                            value={item.productType}
+                            onValueChange={(value: string) =>
+                              updateProductType(item.id, value as ProductType)
+                            }
+                          >
+                            <SelectTrigger className="w-full bg-white">
+                              <SelectValue>
+                                {productTypeLabels[item.productType]}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="print">
+                                <Trans>Print Photo</Trans> -{' '}
+                                {session?.pricing.currency === 'USD'
+                                  ? '$'
+                                  : session?.pricing.currency === 'EUR'
+                                    ? '€'
+                                    : '₽'}
+                                {priceMap.print}
+                              </SelectItem>
+                              <SelectItem value="magnet">
+                                <Trans>Photo Magnet</Trans> -{' '}
+                                {session?.pricing.currency === 'USD'
+                                  ? '$'
+                                  : session?.pricing.currency === 'EUR'
+                                    ? '€'
+                                    : '₽'}
+                                {priceMap.magnet}
+                              </SelectItem>
+                              <SelectItem value="digital">
+                                <Trans>Digital Copy</Trans> -{' '}
+                                {session?.pricing.currency === 'USD'
+                                  ? '$'
+                                  : session?.pricing.currency === 'EUR'
+                                    ? '€'
+                                    : '₽'}
+                                {priceMap.digital}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Label className="text-sm text-slate-600">
+                              <Trans>Quantity</Trans>:
+                            </Label>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                onClick={() =>
+                                  updateQuantity(item.id, item.quantity - 1)
+                                }
+                                variant="outline"
+                                size="sm"
+                                className="w-8 h-8 rounded-full p-0"
+                              >
+                                -
+                              </Button>
+                              <span className="w-8 text-center font-medium">
+                                {item.quantity}
+                              </span>
+                              <Button
+                                onClick={() =>
+                                  updateQuantity(item.id, item.quantity + 1)
+                                }
+                                variant="outline"
+                                size="sm"
+                                className="w-8 h-8 rounded-full p-0"
+                              >
+                                +
+                              </Button>
+                            </div>
+                          </div>
+                          <span className="text-lg font-semibold text-slate-800">
+                            ₽{(item.price * item.quantity).toFixed(0)}
+                          </span>
+                        </div>
                       </div>
                       <Button
                         onClick={() => removeFromCart(item.id)}
@@ -459,29 +605,24 @@ export default function CartPage() {
                 <div className="space-y-3 mb-4">
                   <div className="flex items-center justify-between">
                     <span className="text-lg">
-                      <Trans>Subtotal</Trans> ({photoCount}{' '}
-                      <Trans>photos</Trans>)
+                      <Trans>Subtotal</Trans> ({cart.length}{' '}
+                      {cart.length === 1 ? (
+                        <Trans>item</Trans>
+                      ) : (
+                        <Trans>items</Trans>
+                      )}
+                      )
                     </span>
                     <span className="text-lg font-semibold">
-                      ${totalAmount.toFixed(2)}
+                      ₽{totalAmount.toFixed(0)}
                     </span>
                   </div>
-                  {discount > 0 && (
-                    <div className="flex items-center justify-between text-green-600">
-                      <span>
-                        <Trans>Bulk Discount</Trans> ({bulkDiscountPercent}%)
-                      </span>
-                      <span className="font-semibold">
-                        -${discount.toFixed(2)}
-                      </span>
-                    </div>
-                  )}
                   <div className="border-t pt-3 flex items-center justify-between">
                     <span className="text-xl font-bold">
                       <Trans>Total</Trans>
                     </span>
                     <span className="text-2xl font-bold text-blue-600">
-                      ${finalAmount.toFixed(2)}
+                      ₽{finalAmount.toFixed(0)}
                     </span>
                   </div>
                 </div>

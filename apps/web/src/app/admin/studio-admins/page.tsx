@@ -5,6 +5,7 @@ import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { useConfirmation } from '@repo/ui/confirmation-dialog'
 import { EmptyState } from '@repo/ui/empty-state'
 import { FormField } from '@repo/ui/form-field'
 import { Input } from '@repo/ui/input'
@@ -18,6 +19,7 @@ import {
   Phone,
   Search,
   ShieldCheck,
+  Trash2,
   UserPlus,
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
@@ -64,6 +66,7 @@ export default function AdminStudioAdminsPage() {
     studioId: '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { confirm, dialog } = useConfirmation()
 
   const loadStudioAdmins = useCallback(async () => {
     try {
@@ -168,6 +171,35 @@ export default function AdminStudioAdminsPage() {
   const closeDialog = () => {
     setIsCreateDialogOpen(false)
     setFormData({ name: '', email: '', password: '', phone: '', studioId: '' })
+  }
+
+  const handleDeleteStudioAdmin = async (admin: StudioAdmin) => {
+    const confirmed = await confirm({
+      title: _(msg`Delete Studio Admin`),
+      description: _(
+        msg`Are you sure you want to delete "${admin.name}"? This action cannot be undone.`
+      ),
+      variant: 'danger',
+    })
+
+    if (!confirmed) return
+
+    try {
+      const response = await fetch(`/api/admin/studio-admins/${admin.id}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        toast.success(_(msg`Studio admin deleted successfully`))
+        loadStudioAdmins()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || _(msg`Failed to delete studio admin`))
+      }
+    } catch (error) {
+      console.error('Error deleting studio admin:', error)
+      toast.error(_(msg`Error deleting studio admin`))
+    }
   }
 
   if (isLoading) {
@@ -287,6 +319,17 @@ export default function AdminStudioAdminsPage() {
                       <Trans>Created:</Trans>{' '}
                       {new Date(admin.createdAt).toLocaleDateString()}
                     </div>
+                    <div className="pt-3 border-t">
+                      <Button
+                        onClick={() => handleDeleteStudioAdmin(admin)}
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        <Trans>Delete</Trans>
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -391,6 +434,9 @@ export default function AdminStudioAdminsPage() {
           </Button>
         </ModalFooter>
       </Modal>
+
+      {/* Confirmation Dialog */}
+      {dialog}
     </PageLayout>
   )
 }

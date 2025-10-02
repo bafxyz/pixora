@@ -2,24 +2,12 @@
 
 import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
-import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
 import { Input } from '@repo/ui/input'
 import { Label } from '@repo/ui/label'
 import { PageLayout } from '@repo/ui/page-layout'
-import {
-  Bell,
-  Database,
-  DollarSign,
-  Globe,
-  Lock,
-  Mail,
-  Save,
-  Server,
-  Shield,
-  Zap,
-} from 'lucide-react'
+import { Database, Globe, Save, Server } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -29,17 +17,6 @@ interface SystemConfig {
   supportEmail: string
   maxUploadSize: number
   sessionTimeout: number
-
-  // Pricing
-  pricePerPhoto: number
-  bulkDiscountThreshold: number
-  bulkDiscountPercent: number
-
-  // Features
-  enableGuestRegistration: boolean
-  enableEmailNotifications: boolean
-  enableAnalytics: boolean
-  maintenanceMode: boolean
 
   // Storage
   storageProvider: string
@@ -54,13 +31,6 @@ export default function AdminSystemPage() {
     supportEmail: 'support@pixora.com',
     maxUploadSize: 10,
     sessionTimeout: 30,
-    pricePerPhoto: 5,
-    bulkDiscountThreshold: 20,
-    bulkDiscountPercent: 15,
-    enableGuestRegistration: true,
-    enableEmailNotifications: true,
-    enableAnalytics: true,
-    maintenanceMode: false,
     storageProvider: 'Supabase Storage',
     maxStoragePerClient: 1000,
     autoCleanupDays: 90,
@@ -79,10 +49,6 @@ export default function AdminSystemPage() {
     } finally {
       setIsSaving(false)
     }
-  }
-
-  const toggleFeature = (key: keyof SystemConfig) => {
-    setConfig((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
   return (
@@ -164,211 +130,6 @@ export default function AdminSystemPage() {
                   }
                 />
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Pricing Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="w-5 h-5" />
-              <Trans>Pricing Settings</Trans>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="pricePerPhoto">
-                  <Trans>Price per Photo ($)</Trans>
-                </Label>
-                <Input
-                  id="pricePerPhoto"
-                  type="number"
-                  step="0.01"
-                  value={config.pricePerPhoto}
-                  onChange={(e) =>
-                    setConfig({
-                      ...config,
-                      pricePerPhoto: Number(e.target.value),
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bulkDiscountThreshold">
-                  <Trans>Bulk Discount Threshold</Trans>
-                </Label>
-                <Input
-                  id="bulkDiscountThreshold"
-                  type="number"
-                  value={config.bulkDiscountThreshold}
-                  onChange={(e) =>
-                    setConfig({
-                      ...config,
-                      bulkDiscountThreshold: Number(e.target.value),
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bulkDiscountPercent">
-                  <Trans>Bulk Discount (%)</Trans>
-                </Label>
-                <Input
-                  id="bulkDiscountPercent"
-                  type="number"
-                  value={config.bulkDiscountPercent}
-                  onChange={(e) =>
-                    setConfig({
-                      ...config,
-                      bulkDiscountPercent: Number(e.target.value),
-                    })
-                  }
-                />
-              </div>
-            </div>
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800">
-                <Trans>
-                  Current pricing: ${config.pricePerPhoto}/photo, with{' '}
-                  {config.bulkDiscountPercent}% discount for orders of{' '}
-                  {config.bulkDiscountThreshold}+ photos
-                </Trans>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Feature Toggles */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="w-5 h-5" />
-              <Trans>Feature Toggles</Trans>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                type="button"
-                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors w-full"
-                onClick={() => toggleFeature('enableGuestRegistration')}
-              >
-                <div className="flex items-center gap-3">
-                  <Lock className="w-5 h-5 text-slate-600" />
-                  <div>
-                    <p className="font-medium text-slate-800">
-                      <Trans>Guest Registration</Trans>
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      <Trans>Allow guests to register accounts</Trans>
-                    </p>
-                  </div>
-                </div>
-                <Badge
-                  className={
-                    config.enableGuestRegistration
-                      ? 'bg-green-500'
-                      : 'bg-slate-400'
-                  }
-                >
-                  {config.enableGuestRegistration ? (
-                    <Trans>ON</Trans>
-                  ) : (
-                    <Trans>OFF</Trans>
-                  )}
-                </Badge>
-              </button>
-
-              <button
-                type="button"
-                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors w-full"
-                onClick={() => toggleFeature('enableEmailNotifications')}
-              >
-                <div className="flex items-center gap-3">
-                  <Mail className="w-5 h-5 text-slate-600" />
-                  <div>
-                    <p className="font-medium text-slate-800">
-                      <Trans>Email Notifications</Trans>
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      <Trans>Send email notifications to users</Trans>
-                    </p>
-                  </div>
-                </div>
-                <Badge
-                  className={
-                    config.enableEmailNotifications
-                      ? 'bg-green-500'
-                      : 'bg-slate-400'
-                  }
-                >
-                  {config.enableEmailNotifications ? (
-                    <Trans>ON</Trans>
-                  ) : (
-                    <Trans>OFF</Trans>
-                  )}
-                </Badge>
-              </button>
-
-              <button
-                type="button"
-                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors w-full"
-                onClick={() => toggleFeature('enableAnalytics')}
-              >
-                <div className="flex items-center gap-3">
-                  <Shield className="w-5 h-5 text-slate-600" />
-                  <div>
-                    <p className="font-medium text-slate-800">
-                      <Trans>Analytics</Trans>
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      <Trans>Track user behavior and metrics</Trans>
-                    </p>
-                  </div>
-                </div>
-                <Badge
-                  className={
-                    config.enableAnalytics ? 'bg-green-500' : 'bg-slate-400'
-                  }
-                >
-                  {config.enableAnalytics ? (
-                    <Trans>ON</Trans>
-                  ) : (
-                    <Trans>OFF</Trans>
-                  )}
-                </Badge>
-              </button>
-
-              <button
-                type="button"
-                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors w-full"
-                onClick={() => toggleFeature('maintenanceMode')}
-              >
-                <div className="flex items-center gap-3">
-                  <Bell className="w-5 h-5 text-slate-600" />
-                  <div>
-                    <p className="font-medium text-slate-800">
-                      <Trans>Maintenance Mode</Trans>
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      <Trans>Disable platform for maintenance</Trans>
-                    </p>
-                  </div>
-                </div>
-                <Badge
-                  className={
-                    config.maintenanceMode ? 'bg-red-500' : 'bg-slate-400'
-                  }
-                >
-                  {config.maintenanceMode ? (
-                    <Trans>ON</Trans>
-                  ) : (
-                    <Trans>OFF</Trans>
-                  )}
-                </Badge>
-              </button>
             </div>
           </CardContent>
         </Card>

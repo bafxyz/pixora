@@ -140,18 +140,19 @@ export function Checkout() {
             <div className="space-y-3 mb-4">
               {cart.map((item) => (
                 <div
-                  key={`${item.id}-${item.type}`}
+                  key={`${item.id}-${item.productType}`}
                   className="flex justify-between"
                 >
                   <span className="text-sm text-gray-600">
                     {_(
-                      t`Photo ${item.id.slice(-8)} (${item.type}) x${item.quantity}`
+                      t`Photo ${item.id.slice(-8)} (${item.productType}) x${item.quantity}`
                     )}
                   </span>
                   <span className="text-sm font-medium text-gray-900">
                     $
-                    {(item.type === 'digital' ? item.price : item.price * 2) *
-                      item.quantity}
+                    {(item.productType === 'digital'
+                      ? item.price
+                      : item.price * 2) * item.quantity}
                   </span>
                 </div>
               ))}

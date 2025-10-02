@@ -4,7 +4,9 @@ import { prisma } from '@/shared/lib/prisma/client'
 import { createClient } from '@/shared/lib/supabase/client'
 
 const pricingSchema = z.object({
-  pricePerPhoto: z.number().min(0),
+  priceDigital: z.number().min(0),
+  pricePrint: z.number().min(0),
+  priceMagnet: z.number().min(0),
   bulkDiscountThreshold: z.number().min(0),
   bulkDiscountPercent: z.number().min(0).max(100),
   currency: z.string().default('RUB'),
@@ -51,7 +53,9 @@ export async function GET(_request: NextRequest) {
       const defaultPricing = await prisma.pricing.create({
         data: {
           studioId: studio.id,
-          pricePerPhoto: 5.0,
+          priceDigital: 500,
+          pricePrint: 750,
+          priceMagnet: 750,
           bulkDiscountThreshold: 20,
           bulkDiscountPercent: 15,
           currency: 'RUB',

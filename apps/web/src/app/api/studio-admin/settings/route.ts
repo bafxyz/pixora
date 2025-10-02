@@ -13,6 +13,8 @@ interface StudioSettings {
   pricing?: {
     digital: number
     print: number
+    magnet: number
+    currency: string
   }
 }
 
@@ -42,7 +44,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get studio with settings
+    // Get studio with settings and pricing
     const studio = await prisma.studio.findUnique({
       where: { id: studioId },
       select: {
@@ -52,6 +54,11 @@ export async function GET(request: NextRequest) {
         phone: true,
         address: true,
         settings: true,
+        pricing: {
+          where: { isActive: true },
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+        },
       },
     })
 
@@ -59,17 +66,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Studio not found' }, { status: 404 })
     }
 
-    const settings = (studio.settings as Record<string, unknown>) || {}
+    const activePricing = studio.pricing[0]
 
     return NextResponse.json({
       studioName: studio.name,
       contactEmail: studio.email,
       contactPhone: studio.phone || '',
       contactAddress: studio.address || '',
-      pricing: settings.pricing || {
-        digital: 25,
-        print: 50,
-      },
+      pricing: activePricing
+        ? {
+            digital: Number(activePricing.priceDigital),
+            print: Number(activePricing.pricePrint),
+            magnet: Number(activePricing.priceMagnet),
+            currency: activePricing.currency,
+          }
+        : {
+            digital: 500,
+            print: 750,
+            magnet: 750,
+            currency: 'RUB',
+          },
     })
   } catch (error) {
     console.error('Studio settings API error:', error)
@@ -116,22 +132,6 @@ export async function PATCH(request: NextRequest) {
       ...(settings.contactAddress && { address: settings.contactAddress }),
     }
 
-    // Update settings in settings object
-    if (settings.pricing) {
-      const currentSettings =
-        ((
-          await prisma.studio.findUnique({
-            where: { id: studioId },
-            select: { settings: true },
-          })
-        )?.settings as Record<string, unknown>) || {}
-
-      updateData.settings = {
-        ...currentSettings,
-        pricing: settings.pricing,
-      }
-    }
-
     // Update studio in database
     const updatedStudio = await prisma.studio.update({
       where: { id: studioId },
@@ -142,8 +142,34 @@ export async function PATCH(request: NextRequest) {
         email: true,
         phone: true,
         address: true,
-        settings: true,
       },
+    })
+
+    // Update or create pricing
+    if (settings.pricing) {
+      // First, deactivate all existing pricing entries
+      await prisma.pricing.updateMany({
+        where: { studioId, isActive: true },
+        data: { isActive: false },
+      })
+
+      // Create new pricing entry
+      await prisma.pricing.create({
+        data: {
+          studioId,
+          priceDigital: settings.pricing.digital,
+          pricePrint: settings.pricing.print,
+          priceMagnet: settings.pricing.magnet,
+          currency: settings.pricing.currency,
+          isActive: true,
+        },
+      })
+    }
+
+    // Get latest pricing
+    const latestPricing = await prisma.pricing.findFirst({
+      where: { studioId, isActive: true },
+      orderBy: { createdAt: 'desc' },
     })
 
     return NextResponse.json({
@@ -153,11 +179,19 @@ export async function PATCH(request: NextRequest) {
         contactEmail: updatedStudio.email,
         contactPhone: updatedStudio.phone || '',
         contactAddress: updatedStudio.address || '',
-        pricing: (updatedStudio.settings as Record<string, unknown>)
-          ?.pricing || {
-          digital: 25,
-          print: 50,
-        },
+        pricing: latestPricing
+          ? {
+              digital: Number(latestPricing.priceDigital),
+              print: Number(latestPricing.pricePrint),
+              magnet: Number(latestPricing.priceMagnet),
+              currency: latestPricing.currency,
+            }
+          : {
+              digital: 500,
+              print: 750,
+              magnet: 750,
+              currency: 'RUB',
+            },
       },
     })
   } catch (error) {

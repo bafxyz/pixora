@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       guestEmail,
       guestName,
       guestPhone,
-      photoIds,
+      items,
       paymentMethod,
     } = body
 
@@ -18,9 +18,9 @@ export async function POST(request: NextRequest) {
     if (
       !sessionId ||
       !guestEmail ||
-      !photoIds ||
-      !Array.isArray(photoIds) ||
-      photoIds.length === 0
+      !items ||
+      !Array.isArray(items) ||
+      items.length === 0
     ) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -34,6 +34,24 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Validate items structure
+    for (const item of items) {
+      if (!item.photoId || !item.productType || !item.quantity || !item.price) {
+        return NextResponse.json(
+          { error: 'Invalid item structure' },
+          { status: 400 }
+        )
+      }
+      if (!['print', 'magnet', 'digital'].includes(item.productType)) {
+        return NextResponse.json(
+          { error: 'Invalid product type' },
+          { status: 400 }
+        )
+      }
+    }
+
+    const photoIds = items.map((item: { photoId: string }) => item.photoId)
 
     // Get session with studio and photographer info
     const session = await prisma.photoSession.findUnique({
@@ -61,28 +79,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Calculate pricing
-    // Get pricing from studio settings
-    const pricing = await prisma.pricing.findFirst({
-      where: {
-        studioId: session.studioId,
-        isActive: true,
-      },
-    })
-
-    const pricePerPhoto = pricing ? Number(pricing.pricePerPhoto) : 5.0
-    const bulkDiscountThreshold = pricing ? pricing.bulkDiscountThreshold : 20
-    const bulkDiscountPercent = pricing ? pricing.bulkDiscountPercent : 15
-
-    const photoCount = photoIds.length
-    const totalAmount = photoCount * pricePerPhoto
-    let discount = 0
-
-    if (photoCount >= bulkDiscountThreshold) {
-      discount = (totalAmount * bulkDiscountPercent) / 100
-    }
-
-    const finalAmount = totalAmount - discount
+    // Calculate total amount from items
+    const totalAmount = items.reduce(
+      (sum: number, item: { price: number; quantity: number }) =>
+        sum + item.price * item.quantity,
+      0
+    )
+    const discount = 0 // No discount for now
+    const finalAmount = totalAmount
 
     // Create order
     const order = await prisma.order.create({
@@ -100,10 +104,19 @@ export async function POST(request: NextRequest) {
         status: 'pending',
         paymentStatus: paymentMethod === 'cash' ? 'pending' : 'pending',
         items: {
-          create: photoIds.map((photoId) => ({
-            photoId,
-            price: pricePerPhoto,
-          })),
+          create: items.map(
+            (item: {
+              photoId: string
+              productType: 'print' | 'magnet' | 'digital'
+              quantity: number
+              price: number
+            }) => ({
+              photoId: item.photoId,
+              productType: item.productType,
+              quantity: item.quantity,
+              price: item.price,
+            })
+          ),
         },
       },
       include: {

@@ -9,6 +9,7 @@ interface ModalProps {
   className?: string
   closeOnEscape?: boolean
   closeOnBackdrop?: boolean
+  zIndex?: number
 }
 
 const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
@@ -21,6 +22,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
       className,
       closeOnEscape = true,
       closeOnBackdrop = true,
+      zIndex = 50,
       ...props
     },
     _ref
@@ -131,7 +133,8 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
 
     return (
       <div
-        className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center p-4"
+        style={{ zIndex }}
         onClick={handleBackdropClick}
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
@@ -144,7 +147,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
         <div
           ref={modalRef}
           className={cn(
-            'bg-white rounded-lg shadow-2xl max-h-[90vh] overflow-auto',
+            'bg-white rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.5)] max-h-[90vh] overflow-auto',
             sizeClasses[size],
             className
           )}
