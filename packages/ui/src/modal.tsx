@@ -129,22 +129,17 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
       }
     }
 
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        if (closeOnBackdrop) {
-          onClose()
-        }
-      }
-    }
-
     return (
       <div
         className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         onClick={handleBackdropClick}
-        onKeyDown={handleKeyDown}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            onClose()
+          }
+        }}
         role="dialog"
         aria-modal="true"
-        tabIndex={-1}
       >
         <div
           ref={modalRef}

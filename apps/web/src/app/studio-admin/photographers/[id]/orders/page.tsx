@@ -17,6 +17,7 @@ import {
   ShoppingBag,
   User,
 } from 'lucide-react'
+import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -388,9 +389,11 @@ export default function PhotographerOrdersPage() {
                           key={item.id}
                           className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"
                         >
-                          <img
+                          <Image
                             src={item.photoThumbnailUrl}
                             alt={item.photoFilename}
+                            width={48}
+                            height={48}
                             className="w-12 h-12 object-cover rounded"
                           />
                           <div className="flex-1 min-w-0">

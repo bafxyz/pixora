@@ -117,6 +117,30 @@ export function Notifications() {
     return () => clearInterval(interval)
   }, [fetchNotifications])
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false)
+      }
+    }
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Element
+      if (!target.closest('.relative')) {
+        setIsOpen(false)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
+      document.addEventListener('click', handleClickOutside)
+      return () => {
+        document.removeEventListener('keydown', handleEscape)
+        document.removeEventListener('click', handleClickOutside)
+      }
+    }
+  }, [isOpen])
+
   return (
     <div className="relative">
       {/* Notification Bell */}
@@ -141,23 +165,14 @@ export function Notifications() {
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') setIsOpen(false)
-            }}
-            role="button"
-            tabIndex={-1}
-            aria-label="Close notifications"
-          />
+          <div className="fixed inset-0 z-40" />
 
           {/* Dropdown Content */}
-          <Card className="absolute right-0 top-12 w-80 max-h-96 z-50 shadow-lg">
+          <Card className="absolute right-0 top-12 w-96 max-h-[600px] z-50 shadow-lg">
             <CardContent className="p-0">
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b">
-                <h3 className="font-semibold">
+                <h3 className="font-semibold text-lg">
                   <Trans>Notifications</Trans>
                 </h3>
                 <div className="flex items-center gap-2">
@@ -166,7 +181,7 @@ export function Notifications() {
                       variant="ghost"
                       size="sm"
                       onClick={markAllAsRead}
-                      className="text-xs"
+                      className="text-xs h-8"
                     >
                       <Check className="w-3 h-3 mr-1" />
                       <Trans>Mark all read</Trans>
@@ -176,7 +191,7 @@ export function Notifications() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsOpen(false)}
-                    className="p-1"
+                    className="p-1 h-8 w-8"
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -184,7 +199,7 @@ export function Notifications() {
               </div>
 
               {/* Notifications List */}
-              <div className="max-h-80 overflow-y-auto">
+              <div className="max-h-[500px] overflow-y-auto">
                 {loading ? (
                   <div className="flex items-center justify-center p-8">
                     <Loader2 className="w-6 h-6 animate-spin" />
@@ -199,9 +214,10 @@ export function Notifications() {
                 ) : (
                   <div className="divide-y">
                     {notifications.map((notification) => (
-                      <div
+                      <button
                         key={notification.id}
-                        className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
+                        type="button"
+                        className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors text-left w-full ${
                           !notification.isRead ? 'bg-blue-50' : ''
                         }`}
                         onClick={() => {
@@ -209,31 +225,21 @@ export function Notifications() {
                             markAsRead(notification.id)
                           }
                         }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            if (!notification.isRead) {
-                              markAsRead(notification.id)
-                            }
-                          }
-                        }}
-                        role="button"
-                        tabIndex={0}
                       >
                         <div className="flex items-start gap-3">
-                          <div className="mt-1">
+                          <div className="mt-0.5 flex-shrink-0">
                             {getNotificationIcon(notification.type)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-1">
-                              <h4 className="font-medium text-sm truncate">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <h4 className="font-medium text-sm flex-1">
                                 {notification.title}
                               </h4>
                               {!notification.isRead && (
-                                <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 ml-2" />
+                                <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5" />
                               )}
                             </div>
-                            <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                            <p className="text-sm text-gray-600 mb-2 break-words">
                               {notification.message}
                             </p>
                             <p className="text-xs text-gray-400">
@@ -241,7 +247,7 @@ export function Notifications() {
                             </p>
                           </div>
                         </div>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 )}

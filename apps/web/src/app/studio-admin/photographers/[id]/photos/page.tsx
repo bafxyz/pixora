@@ -15,9 +15,10 @@ import {
   Camera,
   Download,
   Eye,
-  Image,
+  Image as ImageIcon,
   Search,
 } from 'lucide-react'
+import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -232,7 +233,7 @@ export default function PhotographerPhotosPage() {
                   </p>
                   <p className="text-2xl font-bold">{photos.length}</p>
                 </div>
-                <Image className="w-8 h-8 text-blue-500" />
+                <ImageIcon className="w-8 h-8 text-blue-500" />
               </div>
             </CardContent>
           </Card>
@@ -273,7 +274,7 @@ export default function PhotographerPhotosPage() {
         {/* Photos Grid */}
         {filteredPhotos.length === 0 ? (
           <EmptyState
-            icon={<Image className="w-12 h-12" />}
+            icon={<ImageIcon className="w-12 h-12" />}
             title={searchQuery ? _(msg`No Photos Found`) : _(msg`No Photos`)}
             description={
               searchQuery
@@ -289,9 +290,10 @@ export default function PhotographerPhotosPage() {
                 className="overflow-hidden hover:shadow-lg transition-shadow group"
               >
                 <div className="aspect-square relative overflow-hidden bg-slate-100">
-                  <img
+                  <Image
                     src={photo.thumbnailUrl}
                     alt={photo.filename}
+                    fill
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">

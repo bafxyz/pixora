@@ -44,7 +44,7 @@ export default function AdminStudiosPage() {
   const [editingStudio, setEditingStudio] = useState<Studio | null>(null)
   const [formData, setFormData] = useState({ name: '', email: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { confirm } = useConfirmation()
+  const { confirm, dialog } = useConfirmation()
 
   const loadStudios = useCallback(async () => {
     try {
@@ -397,6 +397,9 @@ export default function AdminStudiosPage() {
           </Button>
         </ModalFooter>
       </Modal>
+
+      {/* Confirmation Dialog */}
+      {dialog}
     </PageLayout>
   )
 }
