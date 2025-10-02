@@ -1,7 +1,4 @@
-/**
- * API Error Handler
- * Provides consistent error responses for API routes
- */
+import { type NextRequest, NextResponse } from 'next/server'
 
 export interface ApiError {
   error: string
@@ -10,9 +7,6 @@ export interface ApiError {
   status: number
 }
 
-/**
- * Creates a standardized API error response
- */
 export function createApiError(
   message: string,
   status: number,
@@ -27,81 +21,79 @@ export function createApiError(
   }
 }
 
-/**
- * Handles API errors and returns appropriate response
- */
 export function handleApiError(
   error: Error & { status?: number; code?: string },
-  context?: string
-): Response {
+  context?: string,
+  request?: NextRequest
+): NextResponse {
   // Log the error with context
   console.error(`API Error in ${context || 'unknown context'}:`, {
     message: error.message,
     stack: error.stack,
+    url: request?.url,
     timestamp: new Date().toISOString(),
   })
 
   // Determine error type and return appropriate status
   if (error.status && error.status >= 400 && error.status < 600) {
-    return new Response(
-      JSON.stringify({
-        error: error.message || 'An error occurred',
-        status: error.status,
-      }),
+    return NextResponse.json(
       {
-        status: error.status,
-        headers: { 'Content-Type': 'application/json' },
-      }
+        error: error.message || 'An error occurred',
+        ...(error.code && { code: error.code }),
+      },
+      { status: error.status }
     )
   }
 
   // Default to 500 for unexpected errors
-  return new Response(
-    JSON.stringify({
-      error: error.message || 'Internal server error',
-      status: 500,
-    }),
-    {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    }
+  const message =
+    process.env.NODE_ENV === 'production'
+      ? 'Internal server error'
+      : error.message || 'Internal server error'
+
+  return NextResponse.json(
+    { error: message, code: 'INTERNAL_ERROR' },
+    { status: 500 }
   )
 }
 
-/**
- * Async handler wrapper for API routes
- * Wraps API route handlers to provide consistent error handling
- */
-export function withApiHandler<
-  T extends (...args: unknown[]) => Promise<unknown>,
->(handler: T): (...args: Parameters<T>) => Promise<unknown> {
-  return async (...args: Parameters<T>): Promise<unknown> => {
+export function withApiHandler(
+  handler: (request: NextRequest) => Promise<NextResponse>,
+  context?: string
+): (request: NextRequest) => Promise<NextResponse> {
+  return async (request: NextRequest): Promise<NextResponse> => {
     try {
-      return await handler(...args)
+      return await handler(request)
     } catch (error: unknown) {
-      // This function will be called from an API route context, so we return a response
       const errorObj = error instanceof Error ? error : new Error(String(error))
-      return handleApiError(errorObj, handler.name || 'unknown handler')
+      return handleApiError(errorObj, context || handler.name, request)
     }
   }
 }
 
-/**
- * Specific error responses for common scenarios
- */
 export const ApiErrors = {
   unauthorized: (
     message = 'Unauthorized: Please login to access this resource'
-  ) => createApiError(message, 401),
+  ) => createApiError(message, 401, undefined, 'UNAUTHORIZED'),
 
   forbidden: (
     message = 'Forbidden: You do not have permission to access this resource'
-  ) => createApiError(message, 403),
+  ) => createApiError(message, 403, undefined, 'FORBIDDEN'),
 
-  notFound: (message = 'Resource not found') => createApiError(message, 404),
+  notFound: (message = 'Resource not found') =>
+    createApiError(message, 404, undefined, 'NOT_FOUND'),
 
-  badRequest: (message = 'Bad request') => createApiError(message, 400),
+  badRequest: (message = 'Bad request', details?: Record<string, unknown>) =>
+    createApiError(message, 400, details, 'BAD_REQUEST'),
+
+  rateLimit: (message = 'Rate limit exceeded', retryAfter?: number) => {
+    const error = createApiError(message, 429, undefined, 'RATE_LIMIT')
+    return { error, retryAfter }
+  },
+
+  validation: (message: string, details?: Record<string, unknown>) =>
+    createApiError(message, 400, details, 'VALIDATION_ERROR'),
 
   internalError: (message = 'Internal server error') =>
-    createApiError(message, 500),
+    createApiError(message, 500, undefined, 'INTERNAL_ERROR'),
 }

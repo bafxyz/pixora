@@ -47,7 +47,7 @@ export async function multiTenantMiddleware(request: NextRequest) {
     },
   })
 
-  const _supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+  createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll()
@@ -66,19 +66,7 @@ export async function multiTenantMiddleware(request: NextRequest) {
     },
   })
 
-  if (!user) {
-    // Если пользователь не авторизован, перенаправляем на логин
-    console.log(
-      'Multi-tenant middleware: No user found, redirecting to login',
-      {
-        path: request.nextUrl.pathname,
-        timestamp: new Date().toISOString(),
-      }
-    )
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
-    return NextResponse.redirect(loginUrl)
-  }
+  // Note: This block is redundant since we already handled the !user case above
 
   // Получаем client_id пользователя из его профиля или из JWT
   const clientId = user.user_metadata?.client_id || user.id
@@ -87,19 +75,16 @@ export async function multiTenantMiddleware(request: NextRequest) {
     console.error('Multi-tenant middleware: No client_id found for user', {
       userId: user.id,
       userMetadata: user.user_metadata,
-      path: request.nextUrl.pathname,
-      timestamp: new Date().toISOString(),
     })
-    // Если у пользователя нет client_id, перенаправляем на страницу настройки
     return NextResponse.redirect(new URL('/setup', request.url))
   }
 
-  console.log('Multi-tenant middleware: Processing user with client_id', {
-    userId: user.id,
-    clientId,
-    path: request.nextUrl.pathname,
-    timestamp: new Date().toISOString(),
-  })
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Multi-tenant middleware: Processing user with client_id', {
+      userId: user.id,
+      clientId,
+    })
+  }
 
   // Добавляем client_id в заголовки запроса для использования в API
   const requestHeaders = new Headers(request.headers)

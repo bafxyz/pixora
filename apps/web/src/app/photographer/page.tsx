@@ -1,7 +1,7 @@
 'use client'
 
 import { useLingui } from '@lingui/react'
-import { Trans } from '@lingui/react/macro'
+import { msg, Trans } from '@lingui/macro'
 import { Button } from '@repo/ui/button'
 import {
   Card,
@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/card'
+import { LoadingScreen } from '@repo/ui/loading-screen'
 import {
   Camera,
   Clock,
@@ -84,16 +85,7 @@ export default function PhotographerPage() {
   }, [loadStats])
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">
-            <Trans>Loading...</Trans>
-          </p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message={_(msg`Loading...`)} />
   }
 
   return (
@@ -109,7 +101,7 @@ export default function PhotographerPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -145,19 +137,6 @@ export default function PhotographerPage() {
               </div>
             </CardContent>
           </Card>
-
-          <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg">
-            <CardContent className="p-6">
-              <Button
-                onClick={() => router.push('/photographer/sessions')}
-                size="lg"
-                className="w-full h-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
-              >
-                <Camera className="w-5 h-5 mr-2" />
-                <Trans>New Session</Trans>
-              </Button>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Recent Sessions */}
@@ -176,7 +155,7 @@ export default function PhotographerPage() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {stats.recentSessions.map((session) => (
                 <Card
                   key={session.id}
@@ -234,104 +213,67 @@ export default function PhotographerPage() {
         )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all">
-            <CardHeader className="pb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Card
+            className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:-translate-y-1"
+            onClick={() => router.push('/photographer/sessions')}
+          >
+            <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                   <Camera className="w-5 h-5 text-white" />
                 </div>
-                <CardTitle className="text-base">
-                  <Trans>Sessions</Trans>
-                </CardTitle>
+                <div>
+                  <CardTitle className="text-base">
+                    <Trans>Sessions</Trans>
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    <Trans>Manage sessions</Trans>
+                  </CardDescription>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="mb-4 text-sm">
-                <Trans>Manage all your photo sessions</Trans>
-              </CardDescription>
-              <Button
-                onClick={() => router.push('/photographer/sessions')}
-                className="w-full"
-                variant="outline"
-              >
-                <Trans>Manage Sessions</Trans>
-              </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all">
-            <CardHeader className="pb-3">
+          <Card
+            className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:-translate-y-1"
+            onClick={() => router.push('/photographer/upload')}
+          >
+            <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
                   <Upload className="w-5 h-5 text-white" />
                 </div>
-                <CardTitle className="text-base">
-                  <Trans>Upload</Trans>
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="mb-4 text-sm">
-                <Trans>Upload photos to your sessions</Trans>
-              </CardDescription>
-              <Button
-                onClick={() => router.push('/photographer/upload')}
-                className="w-full"
-                variant="outline"
-              >
-                <Trans>Upload Photos</Trans>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-600 to-amber-600 rounded-lg flex items-center justify-center">
-                  <ShoppingCart className="w-5 h-5 text-white" />
+                <div>
+                  <CardTitle className="text-base">
+                    <Trans>Upload</Trans>
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    <Trans>Upload photos</Trans>
+                  </CardDescription>
                 </div>
-                <CardTitle className="text-base">
-                  <Trans>Orders</Trans>
-                </CardTitle>
               </div>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="mb-4 text-sm">
-                <Trans>View and manage your orders</Trans>
-              </CardDescription>
-              <Button
-                onClick={() => router.push('/admin/orders')}
-                className="w-full"
-                variant="outline"
-              >
-                <Trans>Manage Orders</Trans>
-              </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all">
-            <CardHeader className="pb-3">
+          <Card
+            className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:-translate-y-1"
+            onClick={() => router.push('/photographer/qr-scanner')}
+          >
+            <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-emerald-600 rounded-lg flex items-center justify-center">
                   <QrCode className="w-5 h-5 text-white" />
                 </div>
-                <CardTitle className="text-base">
-                  <Trans>QR Codes</Trans>
-                </CardTitle>
+                <div>
+                  <CardTitle className="text-base">
+                    <Trans>QR Scanner</Trans>
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    <Trans>Scan QR codes</Trans>
+                  </CardDescription>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="mb-4 text-sm">
-                <Trans>Generate QR codes for sessions</Trans>
-              </CardDescription>
-              <Button
-                onClick={() => router.push('/photographer/sessions')}
-                className="w-full"
-                variant="outline"
-              >
-                <Trans>View Sessions</Trans>
-              </Button>
             </CardContent>
           </Card>
         </div>

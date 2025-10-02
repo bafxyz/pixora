@@ -85,55 +85,119 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { id: guestId, name: guestName } = validationResult.data
+    const { id: qrCodeId, name: guestName, type } = validationResult.data
 
-    // Guest functionality not implemented yet
-    // TODO: Implement guest model and functionality
-    return NextResponse.json({
-      success: true,
-      guest: { id: guestId, name: guestName },
-      message: 'Guest scanned successfully',
-    })
+    // Handle different QR code types
+    if (type === 'session') {
+      // This is a session QR code, not a guest
+      const session = await prisma.photoSession.findFirst({
+        where: {
+          id: qrCodeId,
+          studioId: photographer.studioId,
+        },
+        select: {
+          id: true,
+          name: true,
+          photographer: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      })
 
-    /* Guest model not implemented yet
-    // Check if guest already exists
-    const existingGuest = await prisma.guest.findFirst({
-      where: {
-        id: guestId as string,
-        ...(clientId ? { clientId } : {}),
-      },
-      select: {
-        id: true,
-        name: true,
-      },
-    })
+      if (!session) {
+        return NextResponse.json(
+          { error: 'Session not found' },
+          { status: 404 }
+        )
+      }
 
-    if (existingGuest) {
-      // Guest already exists
       return NextResponse.json({
         success: true,
-        guest: existingGuest,
-        message: 'Guest already exists',
+        type: 'session',
+        session,
+        message: 'Session scanned successfully',
       })
     }
 
-    // Create new guest
-    const newGuest = await prisma.guest.create({
-      data: {
-        id: guestId as string,
-        name: guestName as string,
-        clientId: clientId || photographer.clientId,
-        email: null, // Can be added later
-        photographerId: photographer.id,
-      },
-    })
+    // Handle guest QR code
+    if (type === 'guest') {
+      // Check if guest already exists
+      const existingGuest = await prisma.guest.findFirst({
+        where: {
+          qrCode: qrCodeId,
+          studioId: photographer.studioId,
+        },
+        include: {
+          session: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          orders: {
+            select: {
+              id: true,
+              status: true,
+              totalAmount: true,
+              createdAt: true,
+            },
+            take: 5,
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
+        },
+      })
 
-    return NextResponse.json({
-      success: true,
-      guest: newGuest,
-      message: 'Guest created successfully',
-    })
-    */
+      if (existingGuest) {
+        // Update last access time
+        await prisma.guest.update({
+          where: { id: existingGuest.id },
+          data: { lastAccessAt: new Date() },
+        })
+
+        return NextResponse.json({
+          success: true,
+          type: 'guest',
+          guest: existingGuest,
+          message: 'Guest scanned successfully',
+        })
+      }
+
+      // Create new guest
+      const newGuest = await prisma.guest.create({
+        data: {
+          email: `guest_${qrCodeId}@placeholder.com`, // Placeholder email
+          name: guestName,
+          studioId: photographer.studioId,
+          photographerId: photographer.id,
+          qrCode: qrCodeId,
+        },
+        include: {
+          session: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      })
+
+      return NextResponse.json({
+        success: true,
+        type: 'guest',
+        guest: newGuest,
+        message: 'Guest created successfully',
+      })
+    }
+
+    return NextResponse.json(
+      { error: 'Unsupported QR code type' },
+      { status: 400 }
+    )
   } catch (error) {
     console.error('QR scan API error:', error)
     return NextResponse.json(

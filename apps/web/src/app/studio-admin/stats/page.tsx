@@ -1,6 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { PageLayout } from '@repo/ui/page-layout'
 import {
   Activity,
   BarChart3,
@@ -13,7 +14,6 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { PageLayout } from '@/shared/components/page-layout'
 
 interface StudioStats {
   totalGuests: number
@@ -90,7 +90,7 @@ export default function StudioAdminStatsPage() {
           {/* Total Photos Card */}
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Всего фото</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Photos</CardTitle>
               <Image className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>

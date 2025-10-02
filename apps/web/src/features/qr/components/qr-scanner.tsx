@@ -1,7 +1,7 @@
 'use client'
 
 import { useLingui } from '@lingui/react'
-import { Trans } from '@lingui/react/macro'
+import { Trans } from '@lingui/macro'
 import { Button } from '@repo/ui/button'
 import {
   Card,
@@ -134,17 +134,18 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
   }
 
   const simulateScan = () => {
-    // Simulate scanning for testing
-    const mockData = JSON.stringify({
-      id: 'guest-1234567890-abc123def',
+    // For development/testing - create a test QR code with proper format
+    const testData = JSON.stringify({
+      id: `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: 'Test Guest',
       type: 'guest',
       timestamp: new Date().toISOString(),
     })
 
-    setLastScanned(mockData)
+    setLastScanned(testData)
+    setScanError(null)
     if (onScan) {
-      onScan(mockData)
+      onScan(testData)
     }
   }
 
@@ -214,13 +215,15 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
             </Button>
           )}
 
-          <Button
-            onClick={simulateScan}
-            size="sm"
-            className="bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300"
-          >
-            <Trans>Test</Trans>
-          </Button>
+          {process.env.NODE_ENV === 'development' && (
+            <Button
+              onClick={simulateScan}
+              size="sm"
+              className="bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300"
+            >
+              <Trans>Test</Trans>
+            </Button>
+          )}
         </div>
 
         {/* Manual input */}

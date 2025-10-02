@@ -1,8 +1,10 @@
 'use client'
 
-import { Trans } from '@lingui/react/macro'
+import { msg, Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent } from '@repo/ui/card'
+import { LoadingScreen } from '@repo/ui/loading-screen'
 import { Check, ShoppingCart, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -25,6 +27,7 @@ interface PhotoSession {
 }
 
 export default function SessionPage() {
+  const { _ } = useLingui()
   const params = useParams()
   const router = useRouter()
   const sessionId = params?.id as string
@@ -87,14 +90,7 @@ export default function SessionPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">
-            <Trans>Loading your photo session...</Trans>
-          </p>
-        </div>
-      </div>
+      <LoadingScreen message={_(msg`Loading your photo session...`)} />
     )
   }
 

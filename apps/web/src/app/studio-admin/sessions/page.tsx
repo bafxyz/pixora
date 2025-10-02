@@ -1,4 +1,4 @@
-import { PageLayout } from '@/shared/components/page-layout'
+import { PageLayout } from '@repo/ui/page-layout'
 
 export default async function StudioAdminSessionsPage() {
   return (

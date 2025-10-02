@@ -1,10 +1,14 @@
 'use client'
 
+import { useLingui } from '@lingui/react'
+import { msg } from '@lingui/macro'
+import { LoadingScreen } from '@repo/ui/loading-screen'
 import { Check, X } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 export default function PaymentSuccessPage() {
+  const { _ } = useLingui()
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>(
@@ -22,14 +26,7 @@ export default function PaymentSuccessPage() {
   }, [sessionId])
 
   if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Processing payment...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message={_(msg`Processing payment...`)} />
   }
 
   if (status === 'error') {

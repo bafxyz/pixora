@@ -3,6 +3,7 @@
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { PageLayout } from '@repo/ui/page-layout'
 import {
   ArrowLeft,
   Calendar,
@@ -18,14 +19,12 @@ import {
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { PageLayout } from '@/shared/components/page-layout'
 
 interface PhotographerDetails {
   id: string
   name: string
   email: string
   phone: string | null
-  branding: { brandColor?: string; logoUrl?: string; welcomeMessage?: string }
   createdAt: string
   guestCount: number
   photoCount: number
@@ -156,24 +155,33 @@ export default function PhotographerDetailsPage() {
       description="Подробная информация о фотографе и его деятельности"
     >
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <Button
             variant="outline"
             onClick={() => router.push('/studio-admin/photographers')}
+            className="w-full sm:w-auto"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Назад к списку
           </Button>
 
-          <div className="flex gap-2">
-            <Button variant="outline">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button
+              variant="outline"
+              onClick={() =>
+                router.push(
+                  `/studio-admin/photographers/${photographerId}/edit`
+                )
+              }
+              className="w-full sm:w-auto"
+            >
               <Edit className="w-4 h-4 mr-2" />
               Редактировать
             </Button>
             <Button
               variant="outline"
               onClick={handleDelete}
-              className="text-red-600 hover:text-red-700"
+              className="text-red-600 hover:text-red-700 w-full sm:w-auto"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Удалить
@@ -181,40 +189,46 @@ export default function PhotographerDetailsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Main Info */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="xl:col-span-2 space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Основная информация</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <span className="text-sm font-medium text-muted-foreground">
                       Имя
                     </span>
-                    <p className="text-lg font-semibold">{photographer.name}</p>
+                    <p className="text-lg font-semibold break-words">
+                      {photographer.name}
+                    </p>
                   </div>
                   <div>
                     <span className="text-sm font-medium text-muted-foreground">
                       Дата регистрации
                     </span>
                     <p className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      {formatDate(photographer.createdAt)}
+                      <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span className="break-words">
+                        {formatDate(photographer.createdAt)}
+                      </span>
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <span className="text-sm font-medium text-muted-foreground">
                       Email
                     </span>
                     <p className="flex items-center">
-                      <Mail className="w-4 h-4 mr-2" />
-                      {photographer.email}
+                      <Mail className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span className="break-words text-sm">
+                        {photographer.email}
+                      </span>
                     </p>
                   </div>
                   {photographer.phone && (
@@ -223,65 +237,16 @@ export default function PhotographerDetailsPage() {
                         Телефон
                       </span>
                       <p className="flex items-center">
-                        <Phone className="w-4 h-4 mr-2" />
-                        {photographer.phone}
+                        <Phone className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span className="break-words">
+                          {photographer.phone}
+                        </span>
                       </p>
                     </div>
                   )}
                 </div>
               </CardContent>
             </Card>
-
-            {/* Branding Settings */}
-            {photographer.branding && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Настройки брендинга</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-sm font-medium text-muted-foreground">
-                        Основной цвет
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-6 h-6 rounded border"
-                          style={{
-                            backgroundColor:
-                              photographer.branding.brandColor || '#000000',
-                          }}
-                        />
-                        <span>
-                          {photographer.branding.brandColor || '#000000'}
-                        </span>
-                      </div>
-                    </div>
-                    {photographer.branding.logoUrl && (
-                      <div>
-                        <span className="text-sm font-medium text-muted-foreground">
-                          Логотип
-                        </span>
-                        <p className="text-blue-600 hover:underline cursor-pointer">
-                          Просмотреть логотип
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {photographer.branding.welcomeMessage && (
-                    <div>
-                      <span className="text-sm font-medium text-muted-foreground">
-                        Приветственное сообщение
-                      </span>
-                      <p className="text-sm bg-muted/30 p-3 rounded">
-                        {photographer.branding.welcomeMessage}
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
           </div>
 
           {/* Statistics */}
@@ -292,27 +257,33 @@ export default function PhotographerDetailsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-muted/30 rounded">
-                  <div className="flex items-center">
-                    <Users className="w-5 h-5 mr-2 text-blue-600" />
-                    <span className="font-medium">Гости</span>
+                  <div className="flex items-center min-w-0">
+                    <Users className="w-5 h-5 mr-2 text-blue-600 flex-shrink-0" />
+                    <span className="font-medium truncate">Гости</span>
                   </div>
-                  <Badge variant="secondary">{photographer.guestCount}</Badge>
+                  <Badge variant="secondary" className="flex-shrink-0">
+                    {photographer.guestCount}
+                  </Badge>
                 </div>
 
                 <div className="flex items-center justify-between p-3 bg-muted/30 rounded">
-                  <div className="flex items-center">
-                    <Camera className="w-5 h-5 mr-2 text-green-600" />
-                    <span className="font-medium">Фотографии</span>
+                  <div className="flex items-center min-w-0">
+                    <Camera className="w-5 h-5 mr-2 text-green-600 flex-shrink-0" />
+                    <span className="font-medium truncate">Фотографии</span>
                   </div>
-                  <Badge variant="secondary">{photographer.photoCount}</Badge>
+                  <Badge variant="secondary" className="flex-shrink-0">
+                    {photographer.photoCount}
+                  </Badge>
                 </div>
 
                 <div className="flex items-center justify-between p-3 bg-muted/30 rounded">
-                  <div className="flex items-center">
-                    <ShoppingBag className="w-5 h-5 mr-2 text-purple-600" />
-                    <span className="font-medium">Заказы</span>
+                  <div className="flex items-center min-w-0">
+                    <ShoppingBag className="w-5 h-5 mr-2 text-purple-600 flex-shrink-0" />
+                    <span className="font-medium truncate">Заказы</span>
                   </div>
-                  <Badge variant="secondary">{photographer.orderCount}</Badge>
+                  <Badge variant="secondary" className="flex-shrink-0">
+                    {photographer.orderCount}
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
@@ -323,15 +294,39 @@ export default function PhotographerDetailsPage() {
                 <CardTitle>Быстрые действия</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() =>
+                    router.push(
+                      `/studio-admin/photographers/${photographerId}/guests`
+                    )
+                  }
+                >
                   <Users className="w-4 h-4 mr-2" />
                   Просмотреть гостей
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() =>
+                    router.push(
+                      `/studio-admin/photographers/${photographerId}/photos`
+                    )
+                  }
+                >
                   <Camera className="w-4 h-4 mr-2" />
                   Просмотреть фото
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() =>
+                    router.push(
+                      `/studio-admin/photographers/${photographerId}/orders`
+                    )
+                  }
+                >
                   <ShoppingBag className="w-4 h-4 mr-2" />
                   Просмотреть заказы
                 </Button>

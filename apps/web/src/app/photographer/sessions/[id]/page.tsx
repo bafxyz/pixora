@@ -1,8 +1,11 @@
 'use client'
 
+import { useLingui } from '@lingui/react'
+import { Trans } from '@lingui/macro'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { PageLayout } from '@repo/ui/page-layout'
 import {
   ArrowLeft,
   Calendar,
@@ -22,7 +25,6 @@ import { useRouter } from 'next/navigation'
 import { use, useCallback, useEffect, useState } from 'react'
 import QRCode from 'react-qr-code'
 import { toast } from 'sonner'
-import { PageLayout } from '@/shared/components/page-layout'
 import type { QRData } from '@/shared/lib/validations/auth.schemas'
 
 interface PhotoSession {
@@ -52,6 +54,7 @@ export default function SessionDetailsPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const { _ } = useLingui()
   const router = useRouter()
   const { id: sessionId } = use(params)
 
@@ -97,7 +100,7 @@ export default function SessionDetailsPage({
       setSessionLink(link)
     } catch (error) {
       console.error('Error fetching session details:', error)
-      toast.error('Ошибка при загрузке данных фотосессии')
+      toast.error(_('Error loading photo session data'))
     } finally {
       setLoading(false)
     }
@@ -146,18 +149,18 @@ export default function SessionDetailsPage({
         throw new Error('Failed to update photo selection')
       }
 
-      toast.success('Выбор фотографий сохранен')
+      toast.success(_('Photo selection saved'))
       await fetchSessionDetails() // Refresh data
     } catch (error) {
       console.error('Error updating photo selection:', error)
-      toast.error('Ошибка при сохранении выбора фотографий')
+      toast.error(_('Error saving photo selection'))
     } finally {
       setIsUpdatingPhotos(false)
     }
   }
 
   const deletePhoto = async (photoId: string) => {
-    if (!confirm('Вы уверены, что хотите удалить эту фотографию?')) {
+    if (!confirm(_('Are you sure you want to delete this photo?'))) {
       return
     }
 
@@ -174,21 +177,19 @@ export default function SessionDetailsPage({
         throw new Error(errorData.error || 'Failed to delete photo')
       }
 
-      toast.success('Фотография удалена')
+      toast.success(_('Photo deleted'))
       await fetchSessionDetails() // Refresh data
     } catch (error) {
       console.error('Error deleting photo:', error)
       toast.error(
-        error instanceof Error
-          ? error.message
-          : 'Ошибка при удалении фотографии'
+        error instanceof Error ? error.message : _('Error deleting photo')
       )
     }
   }
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Не запланировано'
-    return new Date(dateString).toLocaleDateString('ru-RU', {
+    if (!dateString) return _('Not scheduled')
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -213,13 +214,13 @@ export default function SessionDetailsPage({
   const getStatusText = (status: string) => {
     switch (status.toLowerCase()) {
       case 'created':
-        return 'Создана'
+        return _('Created')
       case 'active':
-        return 'Активна'
+        return _('Active')
       case 'completed':
-        return 'Завершена'
+        return _('Completed')
       case 'archived':
-        return 'Архив'
+        return _('Archived')
       default:
         return status
     }
@@ -228,8 +229,8 @@ export default function SessionDetailsPage({
   if (loading) {
     return (
       <PageLayout
-        title="Детали фотосессии"
-        description="Просмотр и управление фотосессией"
+        title={_('Photo Session Details')}
+        description={_('View and manage photo session')}
       >
         <div className="flex justify-center items-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -241,13 +242,15 @@ export default function SessionDetailsPage({
   if (!session) {
     return (
       <PageLayout
-        title="Фотосессия не найдена"
-        description="Запрашиваемая фотосессия не существует"
+        title={_('Photo Session Not Found')}
+        description={_('The requested photo session does not exist')}
       >
         <div className="text-center py-12">
-          <p className="text-muted-foreground mb-4">Фотосессия не найдена</p>
+          <p className="text-muted-foreground mb-4">
+            {_('Photo session not found')}
+          </p>
           <Button onClick={() => router.push('/photographer/sessions')}>
-            Вернуться к списку сессий
+            {_('Back to sessions')}
           </Button>
         </div>
       </PageLayout>
@@ -261,49 +264,49 @@ export default function SessionDetailsPage({
   return (
     <PageLayout
       title={session.name}
-      description="Детали фотосессии и управление фотографиями"
+      description={_('Photo session details and photo management')}
     >
       <div>
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <Button
             variant="outline"
             onClick={() => router.push('/photographer/sessions')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-full sm:w-auto hover:cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
-            Назад к сессиям
+            <Trans>Back to sessions</Trans>
           </Button>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button
               onClick={() => {
                 navigator.clipboard.writeText(sessionLink)
-                toast.success('Ссылка скопирована в буфер обмена')
+                toast.success(_('Link copied to clipboard'))
               }}
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto hover:cursor-pointer"
               disabled={!sessionLink}
             >
               <Link2 className="w-4 h-4" />
-              Копировать ссылку
+              <Trans>Copy link</Trans>
             </Button>
             <Button
               onClick={() => setShowQR(true)}
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto hover:cursor-pointer"
             >
               <QrCode className="w-4 h-4" />
-              QR код
+              <Trans>QR code</Trans>
             </Button>
             <Button
               onClick={() =>
                 router.push(`/photographer/upload?sessionId=${sessionId}`)
               }
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 w-full sm:w-auto hover:cursor-pointer"
             >
               <Upload className="w-4 h-4" />
-              Загрузить фото
+              <Trans>Upload photos</Trans>
             </Button>
           </div>
         </div>
@@ -322,18 +325,24 @@ export default function SessionDetailsPage({
             )}
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
-                <span>Запланировано: {formatDate(session.scheduledAt)}</span>
+                <span>
+                  {_('Scheduled')}: {formatDate(session.scheduledAt)}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-muted-foreground" />
-                <span>Создана: {formatDate(session.createdAt)}</span>
+                <span>
+                  {_('Created')}: {formatDate(session.createdAt)}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Image className="w-4 h-4 text-muted-foreground" />
-                <span>Фотографий: {session.photos.length}</span>
+                <span>
+                  {_('Photos')}: {session.photos.length}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -345,7 +354,7 @@ export default function SessionDetailsPage({
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Image className="w-5 h-5" />
-                Управление фотографиями
+                {_('Photo Management')}
               </CardTitle>
               {hasChanges && (
                 <Button
@@ -356,17 +365,17 @@ export default function SessionDetailsPage({
                   {isUpdatingPhotos ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Сохранение...
+                      {_('Saving...')}
                     </>
                   ) : (
-                    'Сохранить изменения'
+                    _('Save changes')
                   )}
                 </Button>
               )}
             </div>
             <p className="text-sm text-muted-foreground">
-              Выберите фотографии, которые будут видны клиентам. Выбрано:{' '}
-              {selectedPhotos.size} из {session.photos.length}
+              {_('Select photos that will be visible to clients. Selected:')}{' '}
+              {selectedPhotos.size} {_('of')} {session.photos.length}
             </p>
           </CardHeader>
           <CardContent>
@@ -374,7 +383,7 @@ export default function SessionDetailsPage({
               <div className="text-center py-12">
                 <Image className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground mb-4">
-                  В этой фотосессии пока нет фотографий
+                  {_('No photos in this photo session yet')}
                 </p>
                 <Button
                   onClick={() =>
@@ -383,11 +392,11 @@ export default function SessionDetailsPage({
                   className="bg-green-600 hover:bg-green-700"
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  Загрузить первые фото
+                  {_('Upload first photos')}
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {session.photos.map((photo) => (
                   <div
                     key={photo.id}
@@ -445,7 +454,7 @@ export default function SessionDetailsPage({
                       <p className="text-xs text-muted-foreground">
                         {photo.fileSize
                           ? `${(photo.fileSize / 1024 / 1024).toFixed(1)} MB`
-                          : 'Размер неизвестен'}
+                          : _('Size unknown')}
                       </p>
                     </div>
                   </div>
@@ -457,8 +466,8 @@ export default function SessionDetailsPage({
 
         {/* QR Code Modal */}
         {showQR && qrData && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
               <h2 className="text-lg font-semibold mb-4">
                 QR код для фотосессии
               </h2>
@@ -476,7 +485,7 @@ export default function SessionDetailsPage({
 
               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800 text-center">
-                  <strong>Покажите этот QR код клиентам</strong>
+                  <strong>Show this QR code to clients</strong>
                   <br />
                   Они смогут получить доступ к фотографиям из этой сессии
                 </p>
@@ -518,9 +527,9 @@ export default function SessionDetailsPage({
                 <Button
                   onClick={() => setShowQR(false)}
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 hover:cursor-pointer"
                 >
-                  Закрыть
+                  <Trans>Close</Trans>
                 </Button>
                 <Button
                   onClick={() => {
@@ -544,10 +553,10 @@ export default function SessionDetailsPage({
                       toast.error('Не удалось найти QR код')
                     }
                   }}
-                  className="flex-1"
+                  className="flex-1 hover:cursor-pointer"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  Скачать
+                  <Trans>Скачать</Trans>
                 </Button>
               </div>
             </div>

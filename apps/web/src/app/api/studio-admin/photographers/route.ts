@@ -66,13 +66,15 @@ export async function GET(request: NextRequest) {
       name: photographer.name,
       email: photographer.email,
       phone: photographer.phone,
-      branding: photographer.branding,
       createdAt: photographer.createdAt,
       photoCount: photographer._count.photos,
       sessionCount: photographer._count.photoSessions,
     }))
 
-    return NextResponse.json({ photographers: formattedPhotographers })
+    return NextResponse.json({
+      photographers: formattedPhotographers,
+      currentUserEmail: auth.user.email
+    })
   } catch (error) {
     console.error('Photographers fetch error:', error)
     return NextResponse.json(
@@ -182,12 +184,6 @@ export async function POST(request: NextRequest) {
         email: email.trim().toLowerCase(),
         phone: phone?.trim() || null,
         studioId: studioId,
-        // Default branding settings
-        branding: {
-          brandColor: '#000000',
-          logoUrl: '',
-          welcomeMessage: `Добро пожаловать в галерею ${name}!`,
-        },
       },
       include: {
         _count: {
@@ -205,7 +201,6 @@ export async function POST(request: NextRequest) {
       name: photographer.name,
       email: photographer.email,
       phone: photographer.phone,
-      branding: photographer.branding,
       createdAt: photographer.createdAt,
       photoCount: photographer._count.photos,
       sessionCount: photographer._count.photoSessions,

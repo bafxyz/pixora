@@ -7,6 +7,7 @@ import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
 import { Input } from '@repo/ui/input'
 import { Label } from '@repo/ui/label'
+import { PageLayout } from '@repo/ui/page-layout'
 import {
   Bell,
   Database,
@@ -21,7 +22,6 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { PageLayout } from '@/shared/components/page-layout'
 
 interface SystemConfig {
   // Platform settings

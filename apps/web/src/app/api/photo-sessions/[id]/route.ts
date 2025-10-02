@@ -40,14 +40,12 @@ export async function GET(
             id: true,
             name: true,
             email: true,
-            branding: true,
           },
         },
         studio: {
           select: {
             id: true,
             name: true,
-            branding: true,
           },
         },
         photos: {
@@ -85,16 +83,10 @@ export async function GET(
         photographer: {
           id: photoSession.photographer.id,
           name: photoSession.photographer.name,
-          branding: photoSession.photographer.branding
-            ? JSON.parse(JSON.stringify(photoSession.photographer.branding))
-            : undefined,
         },
         studio: {
           id: photoSession.studio.id,
           name: photoSession.studio.name,
-          branding: photoSession.studio.branding
-            ? JSON.parse(JSON.stringify(photoSession.studio.branding))
-            : undefined,
         },
         photos: photoSession.photos,
         guestCount: 0, // Guests removed from system

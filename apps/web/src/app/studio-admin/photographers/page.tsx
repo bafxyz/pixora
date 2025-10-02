@@ -2,8 +2,10 @@
 
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { FormField } from '@repo/ui/form-field'
 import { Input } from '@repo/ui/input'
-import { Label } from '@repo/ui/label'
+import { Modal, ModalContent, ModalFooter, ModalHeader } from '@repo/ui/modal'
+import { PageLayout } from '@repo/ui/page-layout'
 import {
   Camera,
   Edit,
@@ -18,14 +20,12 @@ import {
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { PageLayout } from '@/shared/components/page-layout'
 
 interface Photographer {
   id: string
   name: string
   email: string
   phone: string | null
-  branding: { brandColor?: string; logoUrl?: string; welcomeMessage?: string }
   createdAt: string
   guestCount: number
   photoCount: number
@@ -44,7 +44,6 @@ interface EditPhotographer {
   name: string
   email: string
   phone: string
-  branding: { brandColor?: string; logoUrl?: string; welcomeMessage?: string }
 }
 
 export default function StudioAdminPhotographersPage() {
@@ -52,6 +51,7 @@ export default function StudioAdminPhotographersPage() {
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null)
   const [newPhotographer, setNewPhotographer] = useState<NewPhotographer>({
     name: '',
     email: '',
@@ -70,6 +70,7 @@ export default function StudioAdminPhotographersPage() {
 
         if (response.ok) {
           setPhotographers(data.photographers)
+          setCurrentUserEmail(data.currentUserEmail)
         } else {
           console.error('Failed to fetch photographers:', data.error)
           toast.error('Ошибка при загрузке фотографов')
@@ -127,7 +128,6 @@ export default function StudioAdminPhotographersPage() {
       name: photographer.name,
       email: photographer.email,
       phone: photographer.phone || '',
-      branding: photographer.branding,
     })
     setShowEditModal(true)
   }
@@ -154,7 +154,6 @@ export default function StudioAdminPhotographersPage() {
             name: editPhotographer.name,
             email: editPhotographer.email,
             phone: editPhotographer.phone,
-            branding: editPhotographer.branding,
           }),
         }
       )
@@ -243,157 +242,158 @@ export default function StudioAdminPhotographersPage() {
         </div>
 
         {/* Modal for creating photographer */}
-        {showCreateModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-              <h2 className="text-lg font-semibold mb-4">
-                Добавить нового фотографа
-              </h2>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Имя</Label>
-                  <Input
-                    id="name"
-                    value={newPhotographer.name}
-                    onChange={(e) =>
-                      setNewPhotographer({
-                        ...newPhotographer,
-                        name: e.target.value,
-                      })
-                    }
-                    placeholder="Имя фотографа"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={newPhotographer.email}
-                    onChange={(e) =>
-                      setNewPhotographer({
-                        ...newPhotographer,
-                        email: e.target.value,
-                      })
-                    }
-                    placeholder="email@example.com"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Телефон</Label>
-                  <Input
-                    id="phone"
-                    value={newPhotographer.phone}
-                    onChange={(e) =>
-                      setNewPhotographer({
-                        ...newPhotographer,
-                        phone: e.target.value,
-                      })
-                    }
-                    placeholder="+7 (XXX) XXX-XXXX"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Пароль (опционально)</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={newPhotographer.password}
-                    onChange={(e) =>
-                      setNewPhotographer({
-                        ...newPhotographer,
-                        password: e.target.value,
-                      })
-                    }
-                    placeholder="Минимум 6 символов"
-                    minLength={6}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Если указан пароль, для фотографа будет создан аккаунт для
-                    входа
-                  </p>
-                </div>
-              </div>
-              <div className="flex justify-end space-x-2 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowCreateModal(false)}
-                >
-                  Отмена
-                </Button>
-                <Button onClick={handleCreatePhotographer}>Создать</Button>
-              </div>
+        <Modal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          size="md"
+        >
+          <ModalHeader>
+            <h2 className="text-lg font-semibold">Добавить нового фотографа</h2>
+          </ModalHeader>
+          <ModalContent>
+            <div className="space-y-4">
+              <FormField label="Имя">
+                <Input
+                  value={newPhotographer.name}
+                  onChange={(e) =>
+                    setNewPhotographer({
+                      ...newPhotographer,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="Имя фотографа"
+                />
+              </FormField>
+              <FormField label="Email">
+                <Input
+                  type="email"
+                  value={newPhotographer.email}
+                  onChange={(e) =>
+                    setNewPhotographer({
+                      ...newPhotographer,
+                      email: e.target.value,
+                    })
+                  }
+                  placeholder="email@example.com"
+                />
+              </FormField>
+              <FormField label="Телефон">
+                <Input
+                  value={newPhotographer.phone}
+                  onChange={(e) =>
+                    setNewPhotographer({
+                      ...newPhotographer,
+                      phone: e.target.value,
+                    })
+                  }
+                  placeholder="+7 (XXX) XXX-XXXX"
+                />
+              </FormField>
+              <FormField
+                label="Пароль"
+                description="Если указан пароль, для фотографа будет создан аккаунт для входа"
+              >
+                <Input
+                  type="password"
+                  value={newPhotographer.password}
+                  onChange={(e) =>
+                    setNewPhotographer({
+                      ...newPhotographer,
+                      password: e.target.value,
+                    })
+                  }
+                  placeholder="Минимум 6 символов"
+                  minLength={6}
+                />
+              </FormField>
             </div>
-          </div>
-        )}
+          </ModalContent>
+          <ModalFooter>
+            <Button variant="outline" onClick={() => setShowCreateModal(false)}>
+              Отмена
+            </Button>
+            <Button onClick={handleCreatePhotographer}>Создать</Button>
+          </ModalFooter>
+        </Modal>
 
         {/* Modal for editing photographer */}
-        {showEditModal && editPhotographer && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-              <h2 className="text-lg font-semibold mb-4">
-                Редактировать фотографа
-              </h2>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-name">Имя</Label>
-                  <Input
-                    id="edit-name"
-                    value={editPhotographer.name}
-                    onChange={(e) =>
-                      setEditPhotographer({
-                        ...editPhotographer,
-                        name: e.target.value,
-                      })
-                    }
-                    placeholder="Имя фотографа"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-email">Email</Label>
-                  <Input
-                    id="edit-email"
-                    type="email"
-                    value={editPhotographer.email}
-                    onChange={(e) =>
-                      setEditPhotographer({
-                        ...editPhotographer,
-                        email: e.target.value,
-                      })
-                    }
-                    placeholder="email@example.com"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-phone">Телефон</Label>
-                  <Input
-                    id="edit-phone"
-                    value={editPhotographer.phone}
-                    onChange={(e) =>
-                      setEditPhotographer({
-                        ...editPhotographer,
-                        phone: e.target.value,
-                      })
-                    }
-                    placeholder="+7 (XXX) XXX-XXXX"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end space-x-2 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowEditModal(false)
-                    setEditPhotographer(null)
-                  }}
-                >
-                  Отмена
-                </Button>
-                <Button onClick={handleUpdatePhotographer}>Сохранить</Button>
-              </div>
+        <Modal
+          isOpen={showEditModal && !!editPhotographer}
+          onClose={() => {
+            setShowEditModal(false)
+            setEditPhotographer(null)
+          }}
+          size="md"
+        >
+          <ModalHeader>
+            <h2 className="text-lg font-semibold">Редактировать фотографа</h2>
+          </ModalHeader>
+          <ModalContent>
+            <div className="space-y-4">
+              <FormField label="Имя">
+                <Input
+                  value={editPhotographer?.name || ''}
+                  onChange={(e) =>
+                    setEditPhotographer(
+                      editPhotographer
+                        ? {
+                            ...editPhotographer,
+                            name: e.target.value,
+                          }
+                        : null
+                    )
+                  }
+                  placeholder="Имя фотографа"
+                />
+              </FormField>
+              <FormField label="Email">
+                <Input
+                  type="email"
+                  value={editPhotographer?.email || ''}
+                  onChange={(e) =>
+                    setEditPhotographer(
+                      editPhotographer
+                        ? {
+                            ...editPhotographer,
+                            email: e.target.value,
+                          }
+                        : null
+                    )
+                  }
+                  placeholder="email@example.com"
+                />
+              </FormField>
+              <FormField label="Телефон">
+                <Input
+                  value={editPhotographer?.phone || ''}
+                  onChange={(e) =>
+                    setEditPhotographer(
+                      editPhotographer
+                        ? {
+                            ...editPhotographer,
+                            phone: e.target.value,
+                          }
+                        : null
+                    )
+                  }
+                  placeholder="+7 (XXX) XXX-XXXX"
+                />
+              </FormField>
             </div>
-          </div>
-        )}
+          </ModalContent>
+          <ModalFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowEditModal(false)
+                setEditPhotographer(null)
+              }}
+            >
+              Отмена
+            </Button>
+            <Button onClick={handleUpdatePhotographer}>Сохранить</Button>
+          </ModalFooter>
+        </Modal>
 
         {photographers.length === 0 ? (
           <div className="text-center py-16">
@@ -412,25 +412,27 @@ export default function StudioAdminPhotographersPage() {
                 <CardHeader className="bg-muted/30">
                   <CardTitle className="flex items-center justify-between">
                     <span className="truncate">{photographer.name}</span>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditPhotographer(photographer)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          handleDeletePhotographer(photographer.id)
-                        }
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    {photographer.email !== currentUserEmail && (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditPhotographer(photographer)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            handleDeletePhotographer(photographer.id)
+                          }
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4">
