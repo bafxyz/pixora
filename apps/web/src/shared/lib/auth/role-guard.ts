@@ -47,14 +47,14 @@ export async function withRoleCheck(
   let studioId: string | undefined
 
   if (userRole === 'studio-admin') {
-    // For studio-admin, look up by Studio email
-    const studio = await prisma.studio.findUnique({
+    // For studio-admin, look up in studio_admins table
+    const studioAdmin = await prisma.studioAdmin.findFirst({
       where: { email: user.email || '' },
-      select: { id: true },
+      select: { studioId: true },
     })
 
-    if (studio) {
-      studioId = studio.id
+    if (studioAdmin) {
+      studioId = studioAdmin.studioId
     } else {
       throw ApiErrors.internalError(
         'Studio admin user has no associated studio'
