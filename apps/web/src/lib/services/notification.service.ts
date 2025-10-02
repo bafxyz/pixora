@@ -49,9 +49,11 @@ export async function notifyNewOrder(orderId: string) {
       message,
     })
 
-    console.log(
-      `✅ Notification sent to photographer: ${order.photographer.email}`
-    )
+    if (process.env.NODE_ENV === 'development') {
+      console.log(
+        `✅ Notification sent to photographer: ${order.photographer.email}`
+      )
+    }
 
     return { success: true }
   } catch (error) {
@@ -88,7 +90,11 @@ export async function notifyPaymentReceived(orderId: string) {
       message,
     })
 
-    console.log(`✅ Payment notification sent to: ${order.photographer.email}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(
+        `✅ Payment notification sent to: ${order.photographer.email}`
+      )
+    }
 
     return { success: true }
   } catch (error) {

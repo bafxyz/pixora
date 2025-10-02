@@ -1,9 +1,6 @@
-'use client'
-
-import { useLingui } from '@lingui/react'
-import { Button } from '@repo/ui/button'
 import { Plus } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { Button } from './button'
 
 interface PageLayoutProps {
   title: string
@@ -17,14 +14,12 @@ interface PageLayoutProps {
   children: ReactNode
 }
 
-export function PageLayout({
+export const PageLayout = ({
   title,
   description,
   action,
   children,
-}: PageLayoutProps) {
-  const { _ } = useLingui()
-
+}: PageLayoutProps) => {
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center justify-between mb-6">

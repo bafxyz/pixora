@@ -1,7 +1,9 @@
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { Dropzone } from '@repo/ui/dropzone'
 import { Input } from '@repo/ui/input'
 import { Label } from '@repo/ui/label'
+import { Spinner } from '@repo/ui/spinner'
 import { AlertCircle, Upload, X } from 'lucide-react'
 import Image from 'next/image'
 import React, { useCallback, useEffect, useState } from 'react'
@@ -39,32 +41,24 @@ export function PhotoUpload({
     }
   }, [presetSessionId])
 
-  const handleFileSelect = useCallback((selectedFiles: FileList | null) => {
-    if (!selectedFiles) return
+  const handleFileSelect = useCallback(
+    (selectedFiles: File[] | FileList | null) => {
+      if (!selectedFiles) return
 
-    const newFiles: UploadFile[] = Array.from(selectedFiles).map((file) => ({
-      id: `${file.name}-${Date.now()}-${Math.random()}`,
-      file,
-      preview: URL.createObjectURL(file),
-      progress: 0,
-      status: 'pending' as const,
-    }))
+      const filesArray = Array.isArray(selectedFiles)
+        ? selectedFiles
+        : Array.from(selectedFiles)
+      const newFiles: UploadFile[] = filesArray.map((file) => ({
+        id: `${file.name}-${Date.now()}-${Math.random()}`,
+        file,
+        preview: URL.createObjectURL(file),
+        progress: 0,
+        status: 'pending' as const,
+      }))
 
-    setFiles((prev) => [...prev, ...newFiles])
-  }, [])
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-  }, [])
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      handleFileSelect(e.dataTransfer.files)
+      setFiles((prev) => [...prev, ...newFiles])
     },
-    [handleFileSelect]
+    []
   )
 
   const uploadFile = useCallback(
@@ -195,29 +189,12 @@ export function PhotoUpload({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* File Drop Zone */}
-        <button
-          type="button"
-          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors cursor-pointer w-full"
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-          onClick={() => document.getElementById('file-input')?.click()}
-        >
-          <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-          <p className="text-gray-600 mb-2">
-            Drag & drop photos here or click to select
-          </p>
-          <p className="text-sm text-gray-500">
-            Supports JPG, PNG, WebP (max 10MB each)
-          </p>
-          <input
-            id="file-input"
-            type="file"
-            multiple
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => handleFileSelect(e.target.files)}
-          />
-        </button>
+        <Dropzone
+          onFilesSelected={handleFileSelect}
+          accept="image/*"
+          multiple={true}
+          maxSize={10 * 1024 * 1024} // 10MB
+        />
 
         {/* Session ID Input - only show if not preset */}
 
@@ -261,7 +238,10 @@ export function PhotoUpload({
                     {file.status === 'uploading' && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                         <div className="text-white text-center">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mx-auto mb-2"></div>
+                          <Spinner
+                            size="sm"
+                            className="mx-auto mb-2 text-white"
+                          />
                           <p className="text-sm">{file.progress}%</p>
                         </div>
                       </div>
@@ -324,7 +304,7 @@ export function PhotoUpload({
           >
             {isUploading ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                <Spinner size="sm" className="mr-2 text-white" />
                 Uploading...
               </>
             ) : (

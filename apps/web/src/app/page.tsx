@@ -1,6 +1,6 @@
 'use client'
 
-import { Trans } from '@lingui/react/macro'
+import { Trans } from '@lingui/macro'
 import { Camera, CheckCircle, Users } from 'lucide-react'
 import Link from 'next/link'
 
@@ -29,12 +29,6 @@ export default function Home() {
               className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-primary to-indigo-600 text-white hover:from-primary/90 hover:to-indigo-600/90 h-12 px-8 font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               <Trans>Get Started</Trans>
-            </Link>
-            <Link
-              href="/session"
-              className="inline-flex items-center justify-center rounded-lg border-2 border-primary/20 bg-white/80 backdrop-blur-sm hover:bg-gradient-to-r hover:from-accent/10 hover:to-secondary/10 hover:border-primary/40 h-12 px-8 font-medium transition-all duration-300 shadow-md hover:shadow-lg"
-            >
-              <Trans>Browse Gallery</Trans>
             </Link>
           </div>
         </div>

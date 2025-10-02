@@ -1,7 +1,7 @@
 'use client'
 
+import { Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
-import { Trans } from '@lingui/react/macro'
 import { Button } from '@repo/ui/button'
 import {
   Card,
@@ -309,9 +309,7 @@ export default function StudioAdminPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <CardDescription className="mb-4">
-                <Trans>Configure studio settings and branding</Trans>
-              </CardDescription>
+              <CardDescription className="mb-4"></CardDescription>
               <Button className="w-full" variant="outline">
                 <Trans>Studio Settings</Trans>
               </Button>

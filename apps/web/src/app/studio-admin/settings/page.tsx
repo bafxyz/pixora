@@ -4,12 +4,12 @@ import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
 import { Input } from '@repo/ui/input'
 import { Label } from '@repo/ui/label'
+import { PageLayout } from '@repo/ui/page-layout'
 // Components not available
 // import { Separator, ColorPicker } from '@repo/ui'
 import { Camera, CreditCard, Loader2, Mail, Palette, Save } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { PageLayout } from '@/shared/components/page-layout'
 
 interface StudioSettings {
   studioName: string

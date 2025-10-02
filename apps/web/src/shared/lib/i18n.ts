@@ -40,16 +40,14 @@ export async function loadLocale(locale: LocaleCode) {
   }
 }
 
-// Get default locale from browser or fallback to 'en'
+// Get default locale - always 'en' unless user has explicitly set a preference
 export function getDefaultLocale(): LocaleCode {
   if (typeof window === 'undefined') return 'en'
 
   const stored = localStorage.getItem('locale')
   if (stored && stored in locales) return stored as LocaleCode
 
-  const browserLang = navigator.language?.split('-')[0]
-  if (browserLang && browserLang in locales) return browserLang as LocaleCode
-
+  // Always default to 'en' instead of using browser language
   return 'en'
 }
 

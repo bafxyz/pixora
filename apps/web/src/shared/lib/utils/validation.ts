@@ -1,109 +1,72 @@
-import { NextResponse } from 'next/server'
-import { z } from 'zod'
-
-export interface ValidationSuccess<T> {
-  success: true
-  data: T
-}
-
-export interface ValidationError {
-  success: false
-  error: string
-  response: NextResponse
-}
-
-export type ValidationResult<T> = ValidationSuccess<T> | ValidationError
+import type { z } from 'zod'
+import { ApiErrors } from '../api-error-handler'
 
 /**
  * Validates request body data against a Zod schema
- * Returns a structured result with either validated data or an error response
+ * Returns validated data or throws validation error
  */
 export function validateRequestBody<T>(
   body: unknown,
   schema: z.ZodSchema<T>
-): ValidationResult<T> {
-  try {
-    const validatedData = schema.parse(body)
-    return {
-      success: true,
-      data: validatedData,
-    }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const firstError = error.issues[0]
-      const errorMessage = firstError?.message || 'Validation failed'
+): T {
+  const result = schema.safeParse(body)
 
-      return {
-        success: false,
-        error: errorMessage,
-        response: NextResponse.json(
-          {
-            error: errorMessage,
-            field: firstError?.path.join('.'),
-            details: error.issues.map((err: z.ZodIssue) => ({
-              field: err.path.join('.'),
-              message: err.message,
-            })),
-          },
-          { status: 400 }
-        ),
-      }
-    }
+  if (!result.success) {
+    const issues = result.error.issues.map((err) => ({
+      field: err.path.join('.'),
+      message: err.message,
+    }))
 
-    return {
-      success: false,
-      error: 'Validation failed',
-      response: NextResponse.json(
-        { error: 'Validation failed' },
-        { status: 400 }
-      ),
-    }
+    throw ApiErrors.validation('Validation failed', { issues })
   }
+
+  return result.data
 }
 
 /**
  * Validates query parameters against a Zod schema
+ * Returns validated data or throws validation error
  */
 export function validateQueryParams<T>(
   searchParams: URLSearchParams,
   schema: z.ZodSchema<T>
-): ValidationResult<T> {
+): T {
+  const params = Object.fromEntries(searchParams.entries())
+  const result = schema.safeParse(params)
+
+  if (!result.success) {
+    const issues = result.error.issues.map((err) => ({
+      field: err.path.join('.'),
+      message: err.message,
+    }))
+
+    throw ApiErrors.validation('Invalid query parameters', { issues })
+  }
+
+  return result.data
+}
+
+/**
+ * Optional validation - returns null if validation fails instead of throwing
+ */
+export function validateRequestBodyOptional<T>(
+  body: unknown,
+  schema: z.ZodSchema<T>
+): T | null {
   try {
-    const params = Object.fromEntries(searchParams.entries())
-    const validatedData = schema.parse(params)
-    return {
-      success: true,
-      data: validatedData,
-    }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const firstError = error.issues[0]
-      const errorMessage = firstError?.message || 'Invalid query parameters'
+    return validateRequestBody(body, schema)
+  } catch {
+    return null
+  }
+}
 
-      return {
-        success: false,
-        error: errorMessage,
-        response: NextResponse.json(
-          {
-            error: errorMessage,
-            field: firstError?.path.join('.'),
-            details: error.issues.map((err: z.ZodIssue) => ({
-              field: err.path.join('.'),
-              message: err.message,
-            })),
-          },
-          { status: 400 }
-        ),
-      }
-    }
-
-    return {
-      success: false,
-      error: 'Invalid query parameters',
-      response: NextResponse.json(
-        { error: 'Invalid query parameters' },
-        { status: 400 }
-      ),
-    }
+export function validateQueryParamsOptional<T>(
+  searchParams: URLSearchParams,
+  schema: z.ZodSchema<T>
+): T | null {
+  try {
+    return validateQueryParams(searchParams, schema)
+  } catch {
+    return null
   }
 }

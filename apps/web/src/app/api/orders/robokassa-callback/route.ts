@@ -28,11 +28,13 @@ export async function POST(request: NextRequest) {
     const invId = formData.get('InvId') as string
     const signatureValue = formData.get('SignatureValue') as string
 
-    console.log('Robokassa callback received:', {
-      outSum,
-      invId,
-      signatureValue,
-    })
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Robokassa callback received:', {
+        outSum,
+        invId,
+        signatureValue,
+      })
+    }
 
     // Verify signature
     if (
@@ -70,7 +72,9 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    console.log('Order payment confirmed:', order.id)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Order payment confirmed:', order.id)
+    }
 
     // Send payment notification
     await notifyPaymentReceived(order.id)

@@ -5,6 +5,7 @@ import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { PageLayout } from '@repo/ui/page-layout'
 import {
   Activity,
   AlertTriangle,
@@ -19,7 +20,6 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { PageLayout } from '@/shared/components/page-layout'
 
 interface SystemHealth {
   status: 'healthy' | 'warning' | 'critical'

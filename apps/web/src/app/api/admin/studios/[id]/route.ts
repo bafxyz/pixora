@@ -96,38 +96,13 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     // Check if studio exists
     const existingStudio = await prisma.studio.findUnique({
       where: { id },
-      include: {
-        _count: {
-          select: {
-            photographers: true,
-            photos: true,
-            photoSessions: true,
-          },
-        },
-      },
     })
 
     if (!existingStudio) {
       return NextResponse.json({ error: 'Studio not found' }, { status: 404 })
     }
 
-    // Check if studio has related data
-    const hasRelatedData =
-      existingStudio._count.photographers > 0 ||
-      existingStudio._count.photos > 0 ||
-      existingStudio._count.photoSessions > 0
-
-    if (hasRelatedData) {
-      return NextResponse.json(
-        {
-          error:
-            'Cannot delete studio with existing photographers, photos, or sessions',
-        },
-        { status: 409 }
-      )
-    }
-
-    // Delete studio
+    // Delete studio (cascade delete will handle all related records)
     await prisma.studio.delete({
       where: { id },
     })

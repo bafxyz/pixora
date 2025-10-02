@@ -51,7 +51,6 @@ export async function GET(request: NextRequest) {
         email: true,
         phone: true,
         address: true,
-        branding: true,
         settings: true,
       },
     })
@@ -60,8 +59,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Studio not found' }, { status: 404 })
     }
 
-    // Extract branding and settings data
-    const branding = (studio.branding as Record<string, unknown>) || {}
     const settings = (studio.settings as Record<string, unknown>) || {}
 
     return NextResponse.json({
@@ -69,9 +66,6 @@ export async function GET(request: NextRequest) {
       contactEmail: studio.email,
       contactPhone: studio.phone || '',
       contactAddress: studio.address || '',
-      brandColor: branding.brandColor || '#000000',
-      logoUrl: branding.logoUrl || '',
-      welcomeMessage: branding.welcomeMessage || '',
       pricing: settings.pricing || {
         digital: 25,
         print: 50,
@@ -114,34 +108,12 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    // Prepare branding object
-    const branding: Record<string, unknown> = {
-      ...(settings.brandColor && { brandColor: settings.brandColor }),
-      ...(settings.logoUrl && { logoUrl: settings.logoUrl }),
-      ...(settings.welcomeMessage && {
-        welcomeMessage: settings.welcomeMessage,
-      }),
-    }
-
     // Prepare settings object
     const updateData: Record<string, unknown> = {
       ...(settings.studioName && { name: settings.studioName }),
       ...(settings.contactEmail && { email: settings.contactEmail }),
       ...(settings.contactPhone && { phone: settings.contactPhone }),
       ...(settings.contactAddress && { address: settings.contactAddress }),
-    }
-
-    // Update branding in settings object
-    if (Object.keys(branding).length > 0) {
-      updateData.branding = {
-        ...(((
-          await prisma.studio.findUnique({
-            where: { id: studioId },
-            select: { branding: true },
-          })
-        )?.branding as Record<string, unknown>) || {}),
-        ...branding,
-      }
     }
 
     // Update settings in settings object
@@ -170,7 +142,6 @@ export async function PATCH(request: NextRequest) {
         email: true,
         phone: true,
         address: true,
-        branding: true,
         settings: true,
       },
     })
@@ -182,14 +153,6 @@ export async function PATCH(request: NextRequest) {
         contactEmail: updatedStudio.email,
         contactPhone: updatedStudio.phone || '',
         contactAddress: updatedStudio.address || '',
-        brandColor:
-          (updatedStudio.branding as Record<string, unknown>)?.brandColor ||
-          '#000000',
-        logoUrl:
-          (updatedStudio.branding as Record<string, unknown>)?.logoUrl || '',
-        welcomeMessage:
-          (updatedStudio.branding as Record<string, unknown>)?.welcomeMessage ||
-          '',
         pricing: (updatedStudio.settings as Record<string, unknown>)
           ?.pricing || {
           digital: 25,

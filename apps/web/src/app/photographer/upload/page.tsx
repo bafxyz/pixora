@@ -1,7 +1,7 @@
 'use client'
 
+import { Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
-import { Trans } from '@lingui/react/macro'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
@@ -67,12 +67,10 @@ export default function PhotographerUploadPage() {
     }
   }, [searchParams, fetchSessions])
 
-  const handleUploadComplete = (
-    _uploadedUrls: string[],
-    _sessionId: string
-  ) => {
+  const handleUploadComplete = (_uploadedUrls: string[], sessionId: string) => {
     toast.success(`Photos uploaded successfully to session!`)
-    setSelectedSessionId('')
+    // Redirect to the session page to see the uploaded photos
+    router.push(`/photographer/sessions/${sessionId}`)
   }
 
   const handleSessionSelect = (sessionId: string) => {
@@ -145,7 +143,7 @@ export default function PhotographerUploadPage() {
                 <Trans>Select a photo session to upload to:</Trans>
               </h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {sessions.map((session) => (
                 <Card
                   key={session.id}

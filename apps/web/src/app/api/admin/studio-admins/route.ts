@@ -183,11 +183,6 @@ export async function POST(request: NextRequest) {
         email: email.trim().toLowerCase(),
         phone: phone?.trim() || null,
         studioId: studioId,
-        branding: {
-          brandColor: '#000000',
-          logoUrl: '',
-          welcomeMessage: `Добро пожаловать в галерею ${name}!`,
-        },
       },
       include: {
         studio: {

@@ -78,9 +78,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate pricing
-    const pricePerPhoto = 5.0 // TODO: Get from settings
-    const bulkDiscountThreshold = 20 // TODO: Get from settings
-    const bulkDiscountPercent = 15 // TODO: Get from settings
+    // Get pricing from studio settings
+    const pricing = await prisma.pricing.findFirst({
+      where: {
+        studioId: session.studioId,
+        isActive: true,
+      },
+    })
+
+    const pricePerPhoto = pricing ? Number(pricing.pricePerPhoto) : 5.0
+    const bulkDiscountThreshold = pricing ? pricing.bulkDiscountThreshold : 20
+    const bulkDiscountPercent = pricing ? pricing.bulkDiscountPercent : 15
 
     const photoCount = photoIds.length
     const totalAmount = photoCount * pricePerPhoto
@@ -154,12 +162,12 @@ export async function POST(request: NextRequest) {
 
       const paymentLink = `${paymentUrl}?${paymentParams.toString()}`
 
-      // Update order with Robokassa data
+      // Update order with Tinkoff data
       await prisma.order.update({
         where: { id: order.id },
         data: {
-          robokassaInvoiceId: invId,
-          robokassaPaymentLink: paymentLink,
+          tinkoffPaymentId: invId,
+          tinkoffPaymentLink: paymentLink,
         },
       })
 

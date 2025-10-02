@@ -24,12 +24,9 @@ export async function getAuthUser(
       getAll() {
         return request.cookies.getAll()
       },
-      setAll(cookiesToSet) {
+      setAll() {
         // Note: We don't set cookies here to avoid modifying the request during middleware
         // This is handled by the main middleware response handling
-        cookiesToSet.forEach(({ name }) => {
-          console.log(`Cookie to be set: ${name}`)
-        })
       },
     },
   })

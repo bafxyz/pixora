@@ -1,25 +1,39 @@
+import crypto from 'node:crypto'
 import { type NextRequest, NextResponse } from 'next/server'
-import { withRoleCheck } from '@/shared/lib/auth/role-guard'
+import { prisma } from '@/shared/lib/prisma/client'
 
-// import Stripe from 'stripe'
+// Tinkoff API configuration
+const TINKOFF_TERMINAL_KEY = process.env.TINKOFF_TERMINAL_KEY || ''
+const TINKOFF_SECRET_KEY = process.env.TINKOFF_SECRET_KEY || ''
+const TINKOFF_API_URL = 'https://securepay.tinkoff.ru/v2/Init'
 
-// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-//   apiVersion: '2023-10-16',
-// })
+interface TinkoffInitRequest {
+  TerminalKey: string
+  Amount: number
+  OrderId: string
+  Description: string
+  DATA?: string
+  Receipt?: {
+    Email?: string
+    Phone?: string
+    Taxation: string
+    Items: Array<{
+      Name: string
+      Price: number
+      Quantity: number
+      Amount: number
+      Tax: string
+    }>
+  }
+  SuccessURL: string
+  FailURL: string
+  NotificationURL: string
+  Token: string
+}
 
 export async function POST(request: NextRequest) {
-  // Check if user is authenticated
-  const auth = await withRoleCheck(
-    ['photographer', 'studio-admin', 'admin'],
-    request
-  )
-  if (auth instanceof NextResponse) {
-    // For guest checkout, we don't require authentication at this endpoint
-    // since this may be called from the checkout page
-  }
-
   try {
-    const { orderId, amount, currency = 'usd' } = await request.json()
+    const { orderId } = await request.json()
 
     // Validate inputs
     if (
@@ -33,59 +47,113 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (typeof amount !== 'number' || amount <= 0) {
+    // Get order from database
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: {
+            photo: {
+              select: {
+                fileName: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    if (!order) {
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+    }
+
+    // Convert amount to kopecks (Tinkoff uses smallest currency unit)
+    const amountInKopecks = Math.round(Number(order.finalAmount) * 100)
+
+    // Generate token for Tinkoff API
+    const generateToken = (data: Record<string, string | number>): string => {
+      const sortedKeys = Object.keys(data).sort()
+      const tokenString = sortedKeys.map((key) => `${key}${data[key]}`).join('')
+      return crypto
+        .createHash('sha256')
+        .update(tokenString + TINKOFF_SECRET_KEY)
+        .digest('hex')
+    }
+
+    // Prepare receipt for Tinkoff (if required)
+    const receipt = {
+      Email: order.guestEmail,
+      Taxation: 'osn',
+      Items: order.items.map((item) => ({
+        Name: `Фото: ${item.photo.fileName}`,
+        Price: Math.round(Number(item.price) * 100), // Convert to kopecks
+        Quantity: 1,
+        Amount: Math.round(Number(item.price) * 100), // Convert to kopecks
+        Tax: 'none',
+      })),
+    }
+
+    // Prepare request data
+    const requestData: TinkoffInitRequest = {
+      TerminalKey: TINKOFF_TERMINAL_KEY,
+      Amount: amountInKopecks,
+      OrderId: orderId,
+      Description: `Оплата заказа #${orderId.slice(0, 8)}`,
+      Receipt: receipt,
+      SuccessURL: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?orderId=${orderId}`,
+      FailURL: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancelled?orderId=${orderId}`,
+      NotificationURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/notification`,
+      Token: '',
+    }
+
+    // Generate token
+    requestData.Token = generateToken({
+      ...requestData,
+      Receipt: JSON.stringify(receipt),
+    })
+
+    // Make request to Tinkoff API
+    const response = await fetch(TINKOFF_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestData),
+    })
+
+    if (!response.ok) {
+      console.error('Tinkoff API error:', response.status, response.statusText)
       return NextResponse.json(
-        { error: 'Amount must be a positive number' },
+        { error: 'Payment provider error' },
+        { status: 500 }
+      )
+    }
+
+    const tinkoffResponse = await response.json()
+
+    if (tinkoffResponse.ErrorCode !== '0') {
+      console.error('Tinkoff payment error:', tinkoffResponse)
+      return NextResponse.json(
+        {
+          error: tinkoffResponse.Details || 'Failed to create payment session',
+        },
         { status: 400 }
       )
     }
 
-    // Validate currency (only allow USD for now)
-    const validCurrencies = ['usd', 'eur', 'gbp'] // Add more as needed
-    if (!validCurrencies.includes(currency.toLowerCase())) {
-      return NextResponse.json(
-        { error: 'Invalid currency. Only USD, EUR, and GBP are supported.' },
-        { status: 400 }
-      )
-    }
-
-    // Optional: validate amount against order in database for security
-    // This would ensure the amount hasn't been tampered with
-    // For now, we'll implement a basic check
-
-    // Create Stripe checkout session
-    // const session = await stripe.checkout.sessions.create({
-    //   payment_method_types: ['card'],
-    //   line_items: [
-    //     {
-    //       price_data: {
-    //         currency: currency.toLowerCase(),
-    //         product_data: {
-    //           name: `Order #${orderId.slice(0, 8)}`,
-    //           description: 'Photo order payment',
-    //         },
-    //         unit_amount: Math.round(amount * 100), // Convert to cents
-    //       },
-    //       quantity: 1,
-    //     },
-    //   ],
-    //   mode: 'payment',
-    //   success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-    //   cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancelled`,
-    //   metadata: {
-    //     orderId,
-    //   },
-    // })
-
-    // For now, return a mock response
-    const mockSession = {
-      id: `cs_mock_${Date.now()}`,
-      url: `/payment/success?session_id=cs_mock_${Date.now()}`,
-    }
+    // Update order with Tinkoff payment ID
+    await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        tinkoffPaymentId: tinkoffResponse.PaymentId,
+        tinkoffPaymentLink: tinkoffResponse.PaymentURL,
+      },
+    })
 
     return NextResponse.json({
-      sessionId: mockSession.id,
-      url: mockSession.url,
+      sessionId: tinkoffResponse.PaymentId,
+      url: tinkoffResponse.PaymentURL,
+      orderId,
     })
   } catch (error) {
     console.error('Payment session creation error:', error)

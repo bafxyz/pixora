@@ -5,8 +5,12 @@ import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { EmptyState } from '@repo/ui/empty-state'
+import { FormField } from '@repo/ui/form-field'
 import { Input } from '@repo/ui/input'
-import { Label } from '@repo/ui/label'
+import { Modal, ModalContent, ModalFooter, ModalHeader } from '@repo/ui/modal'
+import { PageLayout } from '@repo/ui/page-layout'
+import { Spinner } from '@repo/ui/spinner'
 import {
   Building,
   Camera,
@@ -18,7 +22,6 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { PageLayout } from '@/shared/components/page-layout'
 
 interface Studio {
   id: string
@@ -175,7 +178,7 @@ export default function AdminStudioAdminsPage() {
       >
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <Spinner size="lg" className="mx-auto mb-4" />
             <p className="text-slate-600">
               <Trans>Loading studio admins...</Trans>
             </p>
@@ -211,18 +214,19 @@ export default function AdminStudioAdminsPage() {
 
         {/* Studio Admins Grid */}
         {filteredAdmins.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <ShieldCheck className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500">
-                {searchQuery
-                  ? _(msg`No studio admins found matching your search`)
-                  : _(
-                      msg`No studio admins yet. Create your first studio admin to get started.`
-                    )}
-              </p>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={<ShieldCheck className="w-12 h-12" />}
+            title={
+              searchQuery
+                ? _(msg`No studio admins found`)
+                : _(msg`No studio admins yet`)
+            }
+            description={
+              searchQuery
+                ? _(msg`No studio admins found matching your search`)
+                : _(msg`Create your first studio admin to get started.`)
+            }
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAdmins.map((admin) => (
@@ -292,124 +296,101 @@ export default function AdminStudioAdminsPage() {
       </div>
 
       {/* Create Dialog */}
-      {isCreateDialogOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>
-                <Trans>Create Studio Admin</Trans>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleCreateStudioAdmin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">
-                    <Trans>Name</Trans>
-                  </Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder={_(msg`Enter name`)}
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">
-                    <Trans>Email</Trans>
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder={_(msg`Enter email address`)}
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">
-                    <Trans>Password</Trans>
-                  </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder={_(msg`Enter password (min 6 characters)`)}
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">
-                    <Trans>Phone</Trans> (<Trans>Optional</Trans>)
-                  </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder={_(msg`Enter phone number`)}
-                    value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="studioId">
-                    <Trans>Studio</Trans>
-                  </Label>
-                  <select
-                    id="studioId"
-                    value={formData.studioId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, studioId: e.target.value })
-                    }
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    required
-                  >
-                    <option value="">{_(msg`Select a studio`)}</option>
-                    {studios.map((studio) => (
-                      <option key={studio.id} value={studio.id}>
-                        {studio.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={closeDialog}
-                    className="flex-1"
-                    disabled={isSubmitting}
-                  >
-                    <Trans>Cancel</Trans>
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="flex-1"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <Trans>Creating...</Trans>
-                    ) : (
-                      <Trans>Create</Trans>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <Modal isOpen={isCreateDialogOpen} onClose={closeDialog} size="md">
+        <ModalHeader>
+          <h2 className="text-xl font-semibold">
+            <Trans>Create Studio Admin</Trans>
+          </h2>
+        </ModalHeader>
+        <ModalContent>
+          <form
+            id="studio-admin-form"
+            onSubmit={handleCreateStudioAdmin}
+            className="space-y-4"
+          >
+            <FormField label={_(msg`Name`)} required>
+              <Input
+                type="text"
+                placeholder={_(msg`Enter name`)}
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                required
+              />
+            </FormField>
+            <FormField label={_(msg`Email`)} required>
+              <Input
+                type="email"
+                placeholder={_(msg`Enter email address`)}
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                required
+              />
+            </FormField>
+            <FormField label={_(msg`Password`)} required>
+              <Input
+                type="password"
+                placeholder={_(msg`Enter password (min 6 characters)`)}
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+                required
+                minLength={6}
+              />
+            </FormField>
+            <FormField label={_(msg`Phone`)} description={_(msg`Optional`)}>
+              <Input
+                type="tel"
+                placeholder={_(msg`Enter phone number`)}
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+              />
+            </FormField>
+            <FormField label={_(msg`Studio`)} required>
+              <select
+                value={formData.studioId}
+                onChange={(e) =>
+                  setFormData({ ...formData, studioId: e.target.value })
+                }
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                required
+              >
+                <option value="">{_(msg`Select a studio`)}</option>
+                {studios.map((studio) => (
+                  <option key={studio.id} value={studio.id}>
+                    {studio.name}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+          </form>
+        </ModalContent>
+        <ModalFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={closeDialog}
+            disabled={isSubmitting}
+          >
+            <Trans>Cancel</Trans>
+          </Button>
+          <Button
+            type="submit"
+            form="studio-admin-form"
+            disabled={isSubmitting}
+            className="flex items-center gap-2"
+          >
+            {isSubmitting && <Spinner size="sm" />}
+            {isSubmitting ? <Trans>Creating...</Trans> : <Trans>Create</Trans>}
+          </Button>
+        </ModalFooter>
+      </Modal>
     </PageLayout>
   )
 }

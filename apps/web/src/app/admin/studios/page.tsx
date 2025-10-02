@@ -5,8 +5,12 @@ import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { EmptyState } from '@repo/ui/empty-state'
+import { FormField } from '@repo/ui/form-field'
 import { Input } from '@repo/ui/input'
-import { Label } from '@repo/ui/label'
+import { Modal, ModalContent, ModalFooter, ModalHeader } from '@repo/ui/modal'
+import { PageLayout } from '@repo/ui/page-layout'
+import { Spinner } from '@repo/ui/spinner'
 import {
   Building,
   Camera,
@@ -18,7 +22,6 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { PageLayout } from '@/shared/components/page-layout'
 
 interface Studio {
   id: string
@@ -191,7 +194,7 @@ export default function AdminStudiosPage() {
       >
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <Spinner size="lg" className="mx-auto mb-4" />
             <p className="text-slate-600">
               <Trans>Loading studios...</Trans>
             </p>
@@ -227,18 +230,17 @@ export default function AdminStudiosPage() {
 
         {/* Studios Grid */}
         {filteredStudios.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Building className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500">
-                {searchQuery
-                  ? _(msg`No studios found matching your search`)
-                  : _(
-                      msg`No studios yet. Create your first studio to get started.`
-                    )}
-              </p>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={<Building className="w-12 h-12" />}
+            title={
+              searchQuery ? _(msg`No studios found`) : _(msg`No studios yet`)
+            }
+            description={
+              searchQuery
+                ? _(msg`No studios found matching your search`)
+                : _(msg`Create your first studio to get started.`)
+            }
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredStudios.map((studio) => (
@@ -323,84 +325,76 @@ export default function AdminStudiosPage() {
       </div>
 
       {/* Create/Edit Dialog */}
-      {(isCreateDialogOpen || editingStudio) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>
-                {editingStudio ? (
-                  <Trans>Edit Studio</Trans>
-                ) : (
-                  <Trans>Create New Studio</Trans>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form
-                onSubmit={
-                  editingStudio ? handleUpdateStudio : handleCreateStudio
+      <Modal
+        isOpen={isCreateDialogOpen || !!editingStudio}
+        onClose={closeDialogs}
+        size="md"
+      >
+        <ModalHeader>
+          <h2 className="text-xl font-semibold">
+            {editingStudio ? (
+              <Trans>Edit Studio</Trans>
+            ) : (
+              <Trans>Create New Studio</Trans>
+            )}
+          </h2>
+        </ModalHeader>
+        <ModalContent>
+          <form
+            id="studio-form"
+            onSubmit={editingStudio ? handleUpdateStudio : handleCreateStudio}
+            className="space-y-4"
+          >
+            <FormField label={_(msg`Studio Name`)} required>
+              <Input
+                type="text"
+                placeholder={_(msg`Enter studio name`)}
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
                 }
-                className="space-y-4"
-              >
-                <div className="space-y-2">
-                  <Label htmlFor="name">
-                    <Trans>Studio Name</Trans>
-                  </Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder={_(msg`Enter studio name`)}
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">
-                    <Trans>Email</Trans>
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder={_(msg`Enter email address`)}
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    required={!editingStudio}
-                  />
-                </div>
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={closeDialogs}
-                    className="flex-1"
-                    disabled={isSubmitting}
-                  >
-                    <Trans>Cancel</Trans>
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="flex-1"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <Trans>Saving...</Trans>
-                    ) : editingStudio ? (
-                      <Trans>Update</Trans>
-                    ) : (
-                      <Trans>Create</Trans>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+                required
+              />
+            </FormField>
+            <FormField label={_(msg`Email`)} required={!editingStudio}>
+              <Input
+                type="email"
+                placeholder={_(msg`Enter email address`)}
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                required={!editingStudio}
+              />
+            </FormField>
+          </form>
+        </ModalContent>
+        <ModalFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={closeDialogs}
+            disabled={isSubmitting}
+          >
+            <Trans>Cancel</Trans>
+          </Button>
+          <Button
+            type="submit"
+            form="studio-form"
+            disabled={isSubmitting}
+            className="flex items-center gap-2"
+          >
+            {isSubmitting && <Spinner size="sm" />}
+            {isSubmitting ? (
+              <Trans>Saving...</Trans>
+            ) : editingStudio ? (
+              <Trans>Update</Trans>
+            ) : (
+              <Trans>Create</Trans>
+            )}
+          </Button>
+        </ModalFooter>
+      </Modal>
     </PageLayout>
   )
 }

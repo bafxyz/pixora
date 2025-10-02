@@ -1,19 +1,21 @@
 'use client'
 
+import { Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
-// Dialog component not available
-// import { Dialog } from '@repo/ui/dialog'
+import { EmptyState } from '@repo/ui/empty-state'
+import { FormField } from '@repo/ui/form-field'
 import { Input } from '@repo/ui/input'
-import { Label } from '@repo/ui/label'
+import { Modal, ModalContent, ModalFooter, ModalHeader } from '@repo/ui/modal'
+import { PageLayout } from '@repo/ui/page-layout'
+import { Spinner } from '@repo/ui/spinner'
 import {
   Calendar,
-  CalendarPlus,
   Clock,
   Eye,
   Image,
-  Loader2,
   Pencil,
   Trash2,
   Upload,
@@ -23,7 +25,6 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import QRCode from 'react-qr-code'
 import { toast } from 'sonner'
-import { PageLayout } from '@/shared/components/page-layout'
 import type { QRData } from '@/shared/lib/validations/auth.schemas'
 
 interface PhotoSession {
@@ -43,6 +44,7 @@ interface PhotoSession {
 }
 
 export default function PhotographerSessionsPage() {
+  const { _ } = useLingui()
   const router = useRouter()
   const [sessions, setSessions] = useState<PhotoSession[]>([])
   const [loading, setLoading] = useState(true)
@@ -59,7 +61,7 @@ export default function PhotographerSessionsPage() {
   const [newSession, setNewSession] = useState({
     name: '',
     description: '',
-    scheduledAt: '',
+    scheduledAt: new Date().toISOString().split('T')[0],
   })
   const [editSession, setEditSession] = useState({
     name: '',
@@ -77,18 +79,18 @@ export default function PhotographerSessionsPage() {
           setSessions(data.photoSessions)
         } else {
           console.error('Failed to fetch sessions:', data.error)
-          toast.error('Ошибка при загрузке фотосессий')
+          toast.error(_('Error loading photo sessions'))
         }
       } catch (error) {
         console.error('Error fetching sessions:', error)
-        toast.error('Ошибка при загрузке фотосессий')
+        toast.error(_('Error loading photo sessions'))
       } finally {
         setLoading(false)
       }
     }
 
     fetchSessions()
-  }, [])
+  }, [_])
 
   const handleEditClick = (session: PhotoSession) => {
     setEditingSession(session)
@@ -104,7 +106,7 @@ export default function PhotographerSessionsPage() {
 
   const handleUpdateSession = async () => {
     if (!editingSession || !editSession.name.trim()) {
-      toast.error('Название фотосессии обязательно')
+      toast.error(_('Photo session name is required'))
       return
     }
 
@@ -130,7 +132,7 @@ export default function PhotographerSessionsPage() {
       const data = await response.json()
 
       if (response.ok) {
-        toast.success('Фотосессия обновлена')
+        toast.success(_('Photo session updated'))
         setSessions(
           sessions.map((s) =>
             s.id === editingSession.id ? data.photoSession : s
@@ -139,11 +141,11 @@ export default function PhotographerSessionsPage() {
         setShowEditModal(false)
         setEditingSession(null)
       } else {
-        toast.error(data.error || 'Ошибка при обновлении')
+        toast.error(data.error || _('Error updating session'))
       }
     } catch (error) {
       console.error('Error updating session:', error)
-      toast.error('Ошибка при обновлении')
+      toast.error(_('Error updating session'))
     }
   }
 
@@ -153,7 +155,10 @@ export default function PhotographerSessionsPage() {
   ) => {
     if (
       !confirm(
-        `Вы уверены, что хотите удалить сессию "${sessionName}"? Все фотографии будут удалены.`
+        _(
+          'Are you sure you want to delete session "{name}"? All photos will be deleted.',
+          { name: sessionName }
+        )
       )
     ) {
       return
@@ -165,21 +170,21 @@ export default function PhotographerSessionsPage() {
       })
 
       if (response.ok) {
-        toast.success('Фотосессия удалена')
+        toast.success(_('Photo session deleted'))
         setSessions(sessions.filter((s) => s.id !== sessionId))
       } else {
         const data = await response.json()
-        toast.error(data.error || 'Ошибка при удалении')
+        toast.error(data.error || _('Error deleting session'))
       }
     } catch (error) {
       console.error('Error deleting session:', error)
-      toast.error('Ошибка при удалении')
+      toast.error(_('Error deleting session'))
     }
   }
 
   const handleCreateSession = async () => {
     if (!newSession.name.trim()) {
-      toast.error('Название фотосессии обязательно')
+      toast.error(_('Photo session name is required'))
       return
     }
 
@@ -215,7 +220,7 @@ export default function PhotographerSessionsPage() {
           timestamp: new Date().toISOString(),
         }
 
-        toast.success('Фотосессия создана успешно')
+        toast.success(_('Photo session created successfully'))
         setSessions([session, ...sessions])
         setCreatedSession(session)
         setSessionQRData(qrData)
@@ -223,11 +228,11 @@ export default function PhotographerSessionsPage() {
         setShowCreateModal(false)
         setShowQRModal(true) // Show QR code immediately
       } else {
-        toast.error(data.error || 'Ошибка при создании фотосессии')
+        toast.error(data.error || _('Error creating photo session'))
       }
     } catch (error) {
       console.error('Error creating session:', error)
-      toast.error('Ошибка при создании фотосессии')
+      toast.error(_('Error creating photo session'))
     }
   }
 
@@ -245,7 +250,7 @@ export default function PhotographerSessionsPage() {
   }
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Не запланировано'
+    if (!dateString) return _('Not scheduled')
     return new Date(dateString).toLocaleDateString('ru-RU', {
       year: 'numeric',
       month: 'long',
@@ -256,11 +261,11 @@ export default function PhotographerSessionsPage() {
   if (loading) {
     return (
       <PageLayout
-        title="Мои фотосессии"
-        description="Планирование и управление вашими фотосессиями"
+        title={_('My Photo Sessions')}
+        description={_('Plan and manage your photo sessions')}
       >
         <div className="flex justify-center items-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <Spinner size="lg" />
         </div>
       </PageLayout>
     )
@@ -268,155 +273,153 @@ export default function PhotographerSessionsPage() {
 
   return (
     <PageLayout
-      title="Мои фотосессии"
-      description="Планирование и управление вашими фотосессиями"
+      title={_('My Photo Sessions')}
+      description={_('Plan and manage your photo sessions')}
     >
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Фотосессии</h1>
-          <Button onClick={() => setShowCreateModal(true)}>
-            <CalendarPlus className="w-4 h-4 mr-2" />
-            Создать сессию
-          </Button>
+      <div className="container mx-auto px-4 py-6 sm:py-8">
+        <div className="mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold">
+            <Trans>Photo Sessions</Trans>
+          </h1>
         </div>
 
         {/* Modal for editing session */}
-        {showEditModal && editingSession && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-              <h2 className="text-lg font-semibold mb-4">
-                Редактировать фотосессию
-              </h2>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-name">Название</Label>
-                  <Input
-                    id="edit-name"
-                    value={editSession.name}
-                    onChange={(e) =>
-                      setEditSession({ ...editSession, name: e.target.value })
-                    }
-                    placeholder="Например: Свадебная съемка, Портретная сессия"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-description">Описание</Label>
-                  <Input
-                    id="edit-description"
-                    value={editSession.description}
-                    onChange={(e) =>
-                      setEditSession({
-                        ...editSession,
-                        description: e.target.value,
-                      })
-                    }
-                    placeholder="Краткое описание фотосессии"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-scheduledAt">Дата и время</Label>
-                  <Input
-                    id="edit-scheduledAt"
-                    type="datetime-local"
-                    value={editSession.scheduledAt}
-                    onChange={(e) =>
-                      setEditSession({
-                        ...editSession,
-                        scheduledAt: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end space-x-2 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowEditModal(false)
-                    setEditingSession(null)
-                  }}
-                >
-                  Отмена
-                </Button>
-                <Button onClick={handleUpdateSession}>Сохранить</Button>
-              </div>
+        <Modal
+          isOpen={showEditModal && !!editingSession}
+          onClose={() => {
+            setShowEditModal(false)
+            setEditingSession(null)
+          }}
+          size="md"
+        >
+          <ModalHeader>
+            <h2 className="text-lg font-semibold">
+              <Trans>Edit Photo Session</Trans>
+            </h2>
+          </ModalHeader>
+          <ModalContent>
+            <div className="space-y-4">
+              <FormField label={_('Name')}>
+                <Input
+                  value={editSession.name}
+                  onChange={(e) =>
+                    setEditSession({ ...editSession, name: e.target.value })
+                  }
+                  placeholder={_('e.g., Wedding shoot, Portrait session')}
+                />
+              </FormField>
+              <FormField label={_('Description')}>
+                <Input
+                  value={editSession.description}
+                  onChange={(e) =>
+                    setEditSession({
+                      ...editSession,
+                      description: e.target.value,
+                    })
+                  }
+                  placeholder={_('Brief description of the photo session')}
+                />
+              </FormField>
+              <FormField label={_('Date and Time')}>
+                <Input
+                  type="datetime-local"
+                  value={editSession.scheduledAt}
+                  onChange={(e) =>
+                    setEditSession({
+                      ...editSession,
+                      scheduledAt: e.target.value,
+                    })
+                  }
+                />
+              </FormField>
             </div>
-          </div>
-        )}
+          </ModalContent>
+          <ModalFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowEditModal(false)
+                setEditingSession(null)
+              }}
+            >
+              <Trans>Cancel</Trans>
+            </Button>
+            <Button onClick={handleUpdateSession}>
+              <Trans>Save</Trans>
+            </Button>
+          </ModalFooter>
+        </Modal>
 
         {/* Modal for creating session */}
-        {showCreateModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-              <h2 className="text-lg font-semibold mb-4">
-                Создать новую фотосессию
-              </h2>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Название</Label>
-                  <Input
-                    id="name"
-                    value={newSession.name}
-                    onChange={(e) =>
-                      setNewSession({ ...newSession, name: e.target.value })
-                    }
-                    placeholder="Например: Свадебная съемка, Портретная сессия"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Описание</Label>
-                  <Input
-                    id="description"
-                    value={newSession.description}
-                    onChange={(e) =>
-                      setNewSession({
-                        ...newSession,
-                        description: e.target.value,
-                      })
-                    }
-                    placeholder="Краткое описание фотосессии"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="scheduledAt">Дата и время</Label>
-                  <Input
-                    id="scheduledAt"
-                    type="datetime-local"
-                    value={newSession.scheduledAt}
-                    onChange={(e) =>
-                      setNewSession({
-                        ...newSession,
-                        scheduledAt: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end space-x-2 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowCreateModal(false)}
-                >
-                  Отмена
-                </Button>
-                <Button onClick={handleCreateSession}>Создать</Button>
-              </div>
+        <Modal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          size="md"
+        >
+          <ModalHeader>
+            <h2 className="text-lg font-semibold">
+              <Trans>Create New Photo Session</Trans>
+            </h2>
+          </ModalHeader>
+          <ModalContent>
+            <div className="space-y-4">
+              <FormField label={_('Name')}>
+                <Input
+                  value={newSession.name}
+                  onChange={(e) =>
+                    setNewSession({ ...newSession, name: e.target.value })
+                  }
+                  placeholder={_('e.g., Wedding shoot, Portrait session')}
+                />
+              </FormField>
+              <FormField label={_('Description')}>
+                <Input
+                  value={newSession.description}
+                  onChange={(e) =>
+                    setNewSession({
+                      ...newSession,
+                      description: e.target.value,
+                    })
+                  }
+                  placeholder={_('Brief description of the photo session')}
+                />
+              </FormField>
+              <FormField label={_('Date and Time')}>
+                <Input
+                  type="datetime-local"
+                  value={newSession.scheduledAt}
+                  onChange={(e) =>
+                    setNewSession({
+                      ...newSession,
+                      scheduledAt: e.target.value,
+                    })
+                  }
+                />
+              </FormField>
             </div>
-          </div>
-        )}
+          </ModalContent>
+          <ModalFooter>
+            <Button variant="outline" onClick={() => setShowCreateModal(false)}>
+              <Trans>Cancel</Trans>
+            </Button>
+            <Button onClick={handleCreateSession}>
+              <Trans>Create</Trans>
+            </Button>
+          </ModalFooter>
+        </Modal>
 
         {sessions.length === 0 ? (
-          <div className="text-center py-16">
-            <Calendar className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
-              Нет фотосессий
-            </h3>
-            <p className="text-slate-600 dark:text-slate-400 mb-6">
-              Создайте первую фотосессию, чтобы начать
-            </p>
-          </div>
+          <EmptyState
+            icon={<Calendar className="w-16 h-16" />}
+            title={_('No Photo Sessions')}
+            description={_('Create your first photo session to get started')}
+            action={{
+              label: _('Create Session'),
+              onClick: () => setShowCreateModal(true),
+            }}
+          />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {sessions.map((session) => (
               <Card
                 key={session.id}
@@ -432,13 +435,13 @@ export default function PhotographerSessionsPage() {
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusVariant(session.status) === 'secondary' ? 'bg-gray-100 text-gray-800' : getStatusVariant(session.status) === 'default' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}
                     >
                       {session.status === 'created'
-                        ? 'Создана'
+                        ? _('Created')
                         : session.status === 'active'
-                          ? 'Активна'
+                          ? _('Active')
                           : session.status === 'completed'
-                            ? 'Завершена'
+                            ? _('Completed')
                             : session.status === 'archived'
-                              ? 'Архив'
+                              ? _('Archived')
                               : session.status}
                     </Badge>
                   </CardTitle>
@@ -457,23 +460,25 @@ export default function PhotographerSessionsPage() {
 
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Users className="w-4 h-4 mr-2" />
-                      {session.guestCount} гостей
+                      {session.guestCount}{' '}
+                      {session.guestCount === 1 ? _('guest') : _('guests')}
                     </div>
 
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Image className="w-4 h-4 mr-2" />
-                      {session.photoCount} фото
+                      {session.photoCount}{' '}
+                      {session.photoCount === 1 ? _('photo') : _('photos')}
                     </div>
 
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar className="w-4 h-4 mr-2" />
-                      Создана:{' '}
-                      {new Date(session.createdAt).toLocaleDateString('ru-RU')}
+                      <Trans>Created:</Trans>{' '}
+                      {new Date(session.createdAt).toLocaleDateString()}
                     </div>
                   </div>
 
                   <div className="mt-4 pt-4 border-t space-y-2">
-                    <div className="flex gap-2 justify-center">
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
                       <Button
                         variant="outline"
                         size="sm"
@@ -481,9 +486,15 @@ export default function PhotographerSessionsPage() {
                           e.stopPropagation()
                           router.push(`/photographer/sessions/${session.id}`)
                         }}
+                        className="flex-1 hover:cursor-pointer"
                       >
                         <Eye className="w-4 h-4 mr-1" />
-                        Просмотр
+                        <span className="hidden sm:inline">
+                          <Trans>View</Trans>
+                        </span>
+                        <span className="sm:hidden">
+                          <Trans>View</Trans>
+                        </span>
                       </Button>
                       <Button
                         size="sm"
@@ -493,13 +504,18 @@ export default function PhotographerSessionsPage() {
                             `/photographer/upload?sessionId=${session.id}`
                           )
                         }}
-                        className="bg-green-600 hover:bg-green-700"
+                        className="bg-green-600 hover:bg-green-700 flex-1 hover:cursor-pointer"
                       >
                         <Upload className="w-4 h-4 mr-1" />
-                        Загрузить
+                        <span className="hidden sm:inline">
+                          <Trans>Upload</Trans>
+                        </span>
+                        <span className="sm:hidden">
+                          <Trans>Upload</Trans>
+                        </span>
                       </Button>
                     </div>
-                    <div className="flex gap-2 justify-center">
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
                       <Button
                         variant="outline"
                         size="sm"
@@ -507,9 +523,15 @@ export default function PhotographerSessionsPage() {
                           e.stopPropagation()
                           handleEditClick(session)
                         }}
+                        className="flex-1 hover:cursor-pointer"
                       >
                         <Pencil className="w-4 h-4 mr-1" />
-                        Изменить
+                        <span className="hidden sm:inline">
+                          <Trans>Edit</Trans>
+                        </span>
+                        <span className="sm:hidden">
+                          <Trans>Edit</Trans>
+                        </span>
                       </Button>
                       <Button
                         variant="destructive"
@@ -518,9 +540,15 @@ export default function PhotographerSessionsPage() {
                           e.stopPropagation()
                           handleDeleteSession(session.id, session.name)
                         }}
+                        className="flex-1 hover:cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4 mr-1" />
-                        Удалить
+                        <span className="hidden sm:inline">
+                          <Trans>Delete</Trans>
+                        </span>
+                        <span className="sm:hidden">
+                          <Trans>Del</Trans>
+                        </span>
                       </Button>
                     </div>
                   </div>
@@ -531,76 +559,76 @@ export default function PhotographerSessionsPage() {
         )}
 
         {/* QR Code Modal */}
-        {showQRModal && createdSession && sessionQRData && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-              <h2 className="text-lg font-semibold mb-4">
-                QR код для фотосессии
-              </h2>
-
-              {/* Session Info */}
-              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <h4 className="font-medium text-green-800 mb-2">
-                  Фотосессия создана!
-                </h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Название:</span>
-                    <span className="font-medium">{createdSession.name}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">ID сессии:</span>
-                    <code className="bg-gray-100 px-2 py-1 rounded text-xs">
-                      {createdSession.id}
-                    </code>
+        <Modal
+          isOpen={showQRModal && !!createdSession && !!sessionQRData}
+          onClose={() => setShowQRModal(false)}
+          size="md"
+        >
+          <ModalHeader>
+            <h2 className="text-lg font-semibold">QR Code for Photo Session</h2>
+          </ModalHeader>
+          <ModalContent>
+            {createdSession && sessionQRData && (
+              <>
+                {/* Session Info */}
+                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <h4 className="font-medium text-green-800 mb-2">
+                    Photo Session Created!
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Name:</span>
+                      <span className="font-medium">{createdSession.name}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Session ID:</span>
+                      <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+                        {createdSession.id}
+                      </code>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* QR Code */}
-              <div className="flex justify-center p-4 bg-white rounded-lg border mb-4">
-                <QRCode
-                  value={JSON.stringify(sessionQRData)}
-                  size={200}
-                  style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
-                />
-              </div>
+                {/* QR Code */}
+                <div className="flex justify-center p-4 bg-white rounded-lg border mb-4">
+                  <QRCode
+                    value={JSON.stringify(sessionQRData)}
+                    size={200}
+                    style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+                  />
+                </div>
 
-              {/* Instructions */}
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800 text-center">
-                  <strong>Покажите этот QR код клиентам</strong>
-                  <br />
-                  Они смогут отсканировать его и получить доступ к фотографиям
-                  из этой сессии
-                </p>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-2">
-                <Button
-                  onClick={() =>
-                    router.push(
-                      `/photographer/upload?sessionId=${createdSession.id}`
-                    )
-                  }
-                  className="w-full bg-green-600 hover:bg-green-700"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Загрузить фотографии в сессию
-                </Button>
-
-                <Button
-                  onClick={() => setShowQRModal(false)}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Закрыть
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+                {/* Instructions */}
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800 text-center">
+                    <strong>Show this QR code to clients</strong>
+                    <br />
+                    They will be able to scan it and access photos from this
+                    session
+                  </p>
+                </div>
+              </>
+            )}
+          </ModalContent>
+          <ModalFooter>
+            <Button
+              onClick={() => {
+                if (createdSession) {
+                  router.push(
+                    `/photographer/upload?sessionId=${createdSession.id}`
+                  )
+                }
+              }}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Photos to Session
+            </Button>
+            <Button onClick={() => setShowQRModal(false)} variant="outline">
+              Close
+            </Button>
+          </ModalFooter>
+        </Modal>
       </div>
     </PageLayout>
   )

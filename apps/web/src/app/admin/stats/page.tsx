@@ -4,6 +4,8 @@ import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { LoadingScreen } from '@repo/ui/loading-screen'
+import { PageLayout } from '@repo/ui/page-layout'
 import {
   BarChart3,
   Building,
@@ -14,11 +16,23 @@ import {
   Users,
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import { toast } from 'sonner'
-import { PageLayout } from '@/shared/components/page-layout'
 
 interface PlatformStats {
-  totalClients: number
+  totalStudios: number
+  totalPhotographers: number
   totalGuests: number
   totalPhotos: number
   totalOrders: number
@@ -37,29 +51,45 @@ interface DetailedStats {
   revenueByMonth: { month: string; revenue: number }[]
 }
 
+interface ChartData {
+  revenue: Array<{ period: string; revenue: number; order_count: number }>
+  studios: Array<{ period: string; count: number }>
+  guests: Array<{ period: string; count: number }>
+  photos: Array<{ period: string; count: number }>
+}
+
 export default function AdminStatsPage() {
   const { _ } = useLingui()
   const [stats, setStats] = useState<PlatformStats>({
-    totalClients: 0,
+    totalStudios: 0,
+    totalPhotographers: 0,
     totalGuests: 0,
     totalPhotos: 0,
     totalOrders: 0,
     totalRevenue: 0,
   })
   const [topClients, setTopClients] = useState<DetailedStats['topClients']>([])
+  const [chartData, setChartData] = useState<ChartData>({
+    revenue: [],
+    studios: [],
+    guests: [],
+    photos: [],
+  })
   const [isLoading, setIsLoading] = useState(true)
 
   const loadStats = useCallback(async () => {
     try {
       setIsLoading(true)
-      const [statsResponse, clientsResponse] = await Promise.all([
-        fetch('/api/admin/stats'),
-        fetch('/api/admin/clients'),
-      ])
+      const [statsResponse, clientsResponse, chartsResponse] =
+        await Promise.all([
+          fetch('/api/admin/stats'),
+          fetch('/api/admin/clients'),
+          fetch('/api/admin/charts/revenue?period=monthly'),
+        ])
 
       if (statsResponse.ok) {
         const data = await statsResponse.json()
-        setStats(data.stats || stats)
+        setStats(data.stats)
       }
 
       if (clientsResponse.ok) {
@@ -70,13 +100,18 @@ export default function AdminStatsPage() {
         )
         setTopClients(sorted.slice(0, 5))
       }
+
+      if (chartsResponse.ok) {
+        const data = await chartsResponse.json()
+        setChartData(data)
+      }
     } catch (error) {
       console.error('Error loading stats:', error)
       toast.error(_(msg`Failed to load statistics`))
     } finally {
       setIsLoading(false)
     }
-  }, [_, stats])
+  }, [_])
 
   useEffect(() => {
     loadStats()
@@ -103,21 +138,7 @@ export default function AdminStatsPage() {
   }
 
   if (isLoading) {
-    return (
-      <PageLayout
-        title={_(msg`Platform Statistics`)}
-        description={_(msg`Overall statistics for all studios and users`)}
-      >
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-slate-600">
-              <Trans>Loading statistics...</Trans>
-            </p>
-          </div>
-        </div>
-      </PageLayout>
-    )
+    return <LoadingScreen message={_(msg`Loading statistics...`)} />
   }
 
   return (
@@ -132,7 +153,7 @@ export default function AdminStatsPage() {
     >
       <div className="space-y-6">
         {/* Main Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
@@ -144,7 +165,25 @@ export default function AdminStatsPage() {
                     <Trans>Clients</Trans>
                   </p>
                   <p className="text-2xl font-bold text-slate-800">
-                    {stats.totalClients}
+                    {stats.totalStudios}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center">
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">
+                    <Trans>Photographers</Trans>
+                  </p>
+                  <p className="text-2xl font-bold text-slate-800">
+                    {stats.totalPhotographers}
                   </p>
                 </div>
               </div>
@@ -236,32 +275,32 @@ export default function AdminStatsPage() {
             <CardContent className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-600">
-                  <Trans>Photos per client</Trans>
+                  <Trans>Photos per studio</Trans>
                 </span>
                 <Badge variant="secondary">
-                  {stats.totalClients > 0
-                    ? Math.round(stats.totalPhotos / stats.totalClients)
+                  {stats.totalStudios > 0
+                    ? Math.round(stats.totalPhotos / stats.totalStudios)
                     : 0}
                 </Badge>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-600">
-                  <Trans>Guests per client</Trans>
+                  <Trans>Guests per studio</Trans>
                 </span>
                 <Badge variant="secondary">
-                  {stats.totalClients > 0
-                    ? Math.round(stats.totalGuests / stats.totalClients)
+                  {stats.totalStudios > 0
+                    ? Math.round(stats.totalGuests / stats.totalStudios)
                     : 0}
                 </Badge>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-600">
-                  <Trans>Revenue per client</Trans>
+                  <Trans>Revenue per studio</Trans>
                 </span>
                 <Badge variant="secondary">
                   $
-                  {stats.totalClients > 0
-                    ? Math.round(stats.totalRevenue / stats.totalClients)
+                  {stats.totalStudios > 0
+                    ? Math.round(stats.totalRevenue / stats.totalStudios)
                     : 0}
                 </Badge>
               </div>
@@ -321,9 +360,9 @@ export default function AdminStatsPage() {
             <CardContent className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-600">
-                  <Trans>Active clients</Trans>
+                  <Trans>Active studios</Trans>
                 </span>
-                <Badge variant="secondary">{stats.totalClients}</Badge>
+                <Badge variant="secondary">{stats.totalStudios}</Badge>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-600">
@@ -341,6 +380,190 @@ export default function AdminStatsPage() {
                   <Trans>Healthy</Trans>
                 </Badge>
               </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Revenue Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                <Trans>Revenue Over Time</Trans>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData.revenue}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="period"
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(value) => {
+                      const date = new Date(`${value}-01`)
+                      return date.toLocaleDateString('en-US', {
+                        month: 'short',
+                        year: '2-digit',
+                      })
+                    }}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(value) => `¥${value}`}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => [
+                      `¥${value.toLocaleString()}`,
+                      'Revenue',
+                    ]}
+                    labelFormatter={(label) => {
+                      const date = new Date(`${label}-01`)
+                      return date.toLocaleDateString('en-US', {
+                        month: 'long',
+                        year: 'numeric',
+                      })
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    dot={{ fill: '#10b981', r: 4 }}
+                    name="Revenue"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Growth Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5" />
+                <Trans>Platform Growth</Trans>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartData.studios}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="period"
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(value) => {
+                      const date = new Date(`${value}-01`)
+                      return date.toLocaleDateString('en-US', {
+                        month: 'short',
+                        year: '2-digit',
+                      })
+                    }}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    labelFormatter={(label) => {
+                      const date = new Date(`${label}-01`)
+                      return date.toLocaleDateString('en-US', {
+                        month: 'long',
+                        year: 'numeric',
+                      })
+                    }}
+                  />
+                  <Legend />
+                  <Bar dataKey="count" fill="#3b82f6" name="New Studios" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Guests & Photos Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                <Trans>Guests & Photos Growth</Trans>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData.guests}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="period"
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(value) => {
+                      const date = new Date(`${value}-01`)
+                      return date.toLocaleDateString('en-US', {
+                        month: 'short',
+                        year: '2-digit',
+                      })
+                    }}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    labelFormatter={(label) => {
+                      const date = new Date(`${label}-01`)
+                      return date.toLocaleDateString('en-US', {
+                        month: 'long',
+                        year: 'numeric',
+                      })
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    stroke="#8b5cf6"
+                    strokeWidth={2}
+                    dot={{ fill: '#8b5cf6', r: 4 }}
+                    name="New Guests"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Photos Upload Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileImage className="w-5 h-5" />
+                <Trans>Photos Uploaded</Trans>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartData.photos}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="period"
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(value) => {
+                      const date = new Date(`${value}-01`)
+                      return date.toLocaleDateString('en-US', {
+                        month: 'short',
+                        year: '2-digit',
+                      })
+                    }}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    labelFormatter={(label) => {
+                      const date = new Date(`${label}-01`)
+                      return date.toLocaleDateString('en-US', {
+                        month: 'long',
+                        year: 'numeric',
+                      })
+                    }}
+                  />
+                  <Legend />
+                  <Bar dataKey="count" fill="#f59e0b" name="Photos Uploaded" />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </div>

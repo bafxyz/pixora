@@ -1,11 +1,11 @@
 'use client'
 
-import { msg } from '@lingui/macro'
+import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
-import { Trans } from '@lingui/react/macro'
+import { PageLayout } from '@repo/ui/page-layout'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { PageLayout } from '@/shared/components/page-layout'
 
 interface OrderItem {
   id: string
@@ -37,6 +37,7 @@ interface Order {
 
 export default function OrdersPage() {
   const { _ } = useLingui()
+  const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<string>('')
@@ -120,11 +121,11 @@ export default function OrdersPage() {
 
   return (
     <PageLayout title={_(msg`Orders Management`)}>
-      <div className="mb-6 flex gap-4">
+      <div className="mb-6 flex flex-col sm:flex-row gap-4">
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border rounded-lg"
+          className="px-4 py-2 border rounded-lg w-full sm:w-auto hover:cursor-pointer"
         >
           <option value="">{_(msg`All Statuses`)}</option>
           <option value="pending">{_(msg`Pending`)}</option>
@@ -136,7 +137,7 @@ export default function OrdersPage() {
         <select
           value={paymentFilter}
           onChange={(e) => setPaymentFilter(e.target.value)}
-          className="px-4 py-2 border rounded-lg"
+          className="px-4 py-2 border rounded-lg w-full sm:w-auto hover:cursor-pointer"
         >
           <option value="">{_(msg`All Payments`)}</option>
           <option value="pending">{_(msg`Pending`)}</option>
@@ -144,7 +145,7 @@ export default function OrdersPage() {
           <option value="failed">{_(msg`Failed`)}</option>
         </select>
 
-        <div className="ml-auto text-sm text-gray-600">
+        <div className="sm:ml-auto text-sm text-gray-600">
           <Trans>Total: {orders.length} orders</Trans>
         </div>
       </div>
@@ -156,9 +157,21 @@ export default function OrdersPage() {
           </div>
         ) : (
           orders.map((order) => (
-            <div key={order.id} className="bg-white border rounded-lg p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
+            <div
+              key={order.id}
+              className="bg-white border rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => router.push(`/admin/orders/${order.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  router.push(`/admin/orders/${order.id}`)
+                }
+              }}
+              role="button"
+              tabIndex={0}
+            >
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
+                <div className="flex-1">
                   <h3 className="font-semibold text-lg">
                     {order.session.name}
                   </h3>
@@ -176,14 +189,14 @@ export default function OrdersPage() {
                     {order.status.toUpperCase()}
                   </div>
                   <div
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ml-2 ${getPaymentBadge(order.paymentStatus)}`}
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ml-0 sm:ml-2 ${getPaymentBadge(order.paymentStatus)}`}
                   >
                     {order.paymentStatus.toUpperCase()}
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                   <p className="text-sm text-gray-600">
                     <Trans>Guest</Trans>
@@ -235,12 +248,15 @@ export default function OrdersPage() {
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 {order.status === 'pending' && (
                   <button
                     type="button"
-                    onClick={() => updateOrderStatus(order.id, 'processing')}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      updateOrderStatus(order.id, 'processing')
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:cursor-pointer flex-1"
                   >
                     <Trans>Start Processing</Trans>
                   </button>
@@ -248,8 +264,11 @@ export default function OrdersPage() {
                 {order.status === 'processing' && (
                   <button
                     type="button"
-                    onClick={() => updateOrderStatus(order.id, 'completed')}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      updateOrderStatus(order.id, 'completed')
+                    }}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 hover:cursor-pointer flex-1"
                   >
                     <Trans>Mark as Completed</Trans>
                   </button>
@@ -258,8 +277,11 @@ export default function OrdersPage() {
                   order.status === 'processing') && (
                   <button
                     type="button"
-                    onClick={() => updateOrderStatus(order.id, 'cancelled')}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      updateOrderStatus(order.id, 'cancelled')
+                    }}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 hover:cursor-pointer flex-1"
                   >
                     <Trans>Cancel Order</Trans>
                   </button>

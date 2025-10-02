@@ -16,7 +16,6 @@ export async function GET(request: NextRequest) {
         name: true,
         email: true,
         phone: true,
-        branding: true,
       },
     })
 
@@ -31,11 +30,6 @@ export async function GET(request: NextRequest) {
       name: photographer.name,
       email: photographer.email,
       phone: photographer.phone || '',
-      branding: (photographer.branding as Record<string, unknown>) || {
-        brandColor: '#000000',
-        logoUrl: '',
-        welcomeMessage: `Добро пожаловать в галерею ${photographer.name}!`,
-      },
     }
 
     return NextResponse.json({ photographer: formattedPhotographer })
@@ -56,7 +50,7 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { name, email, phone, branding } = body
+    const { name, email, phone } = body
 
     // Check if photographer exists
     const existingPhotographer = await prisma.photographer.findUnique({
@@ -98,7 +92,6 @@ export async function PATCH(request: NextRequest) {
     if (name) updateData.name = name.trim()
     if (email) updateData.email = email.trim().toLowerCase()
     if (phone !== undefined) updateData.phone = phone?.trim() || null
-    if (branding) updateData.branding = branding
 
     const updatedPhotographer = await prisma.photographer.update({
       where: { id: auth.user.id },
@@ -108,7 +101,6 @@ export async function PATCH(request: NextRequest) {
         name: true,
         email: true,
         phone: true,
-        branding: true,
       },
     })
 
@@ -116,11 +108,6 @@ export async function PATCH(request: NextRequest) {
       name: updatedPhotographer.name,
       email: updatedPhotographer.email,
       phone: updatedPhotographer.phone || '',
-      branding: (updatedPhotographer.branding as Record<string, unknown>) || {
-        brandColor: '#000000',
-        logoUrl: '',
-        welcomeMessage: `Добро пожаловать в галерею ${updatedPhotographer.name}!`,
-      },
     }
 
     return NextResponse.json({

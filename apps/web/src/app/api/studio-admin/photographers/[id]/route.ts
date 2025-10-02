@@ -50,7 +50,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       name: photographer.name,
       email: photographer.email,
       phone: photographer.phone,
-      branding: photographer.branding,
       createdAt: photographer.createdAt,
       photoCount: photographer._count.photos,
       sessionCount: photographer._count.photoSessions,
@@ -76,7 +75,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
     const body = await request.json()
-    const { name, email, phone, branding } = body
+    const { name, email, phone } = body
 
     // Check if photographer exists and user has permission
     const existingPhotographer = await prisma.photographer.findUnique({
@@ -126,7 +125,6 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (name) updateData.name = name.trim()
     if (email) updateData.email = email.trim().toLowerCase()
     if (phone !== undefined) updateData.phone = phone?.trim() || null
-    if (branding) updateData.branding = branding
 
     const updatedPhotographer = await prisma.photographer.update({
       where: { id },
@@ -147,7 +145,6 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       name: updatedPhotographer.name,
       email: updatedPhotographer.email,
       phone: updatedPhotographer.phone,
-      branding: updatedPhotographer.branding,
       createdAt: updatedPhotographer.createdAt,
       photoCount: updatedPhotographer._count.photos,
       sessionCount: updatedPhotographer._count.photoSessions,

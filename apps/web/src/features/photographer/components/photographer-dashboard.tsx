@@ -186,17 +186,14 @@ export function PhotographerDashboard({
     try {
       const accessToken = await getAccessToken()
 
-      const response = await fetch(
-        `${env.supabase.url}/functions/v1/make-server-2e5a4e91/update-branding`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify(settingsForm),
-        }
-      )
+      const response = await fetch('/api/photographer/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(settingsForm),
+      })
 
       if (response.ok) {
         toast.success('Настройки успешно обновлены')

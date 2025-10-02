@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/shared/providers/auth-provider'
 import { LanguageSwitcher } from './language-switcher'
+import { Notifications } from './notifications'
 
 export function Header() {
   const router = useRouter()
@@ -101,6 +102,12 @@ export function Header() {
 
           {/* Right side - Compact */}
           <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Notifications - Show for authenticated users */}
+            {user?.role &&
+              ['admin', 'studio-admin', 'photographer'].includes(user.role) && (
+                <Notifications />
+              )}
+
             {/* Language Switcher - Hidden on small screens */}
             <div className="hidden sm:block">
               <LanguageSwitcher />
