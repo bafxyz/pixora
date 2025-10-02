@@ -31,9 +31,13 @@ msgstr "+1234567890"
 msgid "25 new photos added to gallery"
 msgstr "25 новых фото добавлено в галерею"
 
+#: src/features/photographer/components/photo-upload.tsx:289
+msgid "Accepts: JPG, PNG, HEIC, RAW files"
+msgstr "Поддерживаются: JPG, PNG, HEIC, RAW файлы"
+
 #: src/app/page.tsx:75
-msgid "Access advanced features for managing your photography business and portfolio."
-msgstr "Получите доступ к продвинутым функциям для управления вашим фотобизнесом и портфолио."
+#~ msgid "Access advanced features for managing your photography business and portfolio."
+#~ msgstr "Получите доступ к продвинутым функциям для управления вашим фотобизнесом и портфолио."
 
 #: src/app/admin/stats/page.tsx:328
 #~ msgid "Active clients"
@@ -221,8 +225,8 @@ msgstr "Назад"
 
 #: src/app/studio-admin/photographers/[id]/edit/page.tsx:171
 #: src/app/studio-admin/photographers/[id]/guests/page.tsx:197
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:243
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:220
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:244
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:221
 msgid "Back to details"
 msgstr "Назад к деталям"
 
@@ -232,8 +236,8 @@ msgstr "Назад к галерее"
 
 #: src/app/studio-admin/photographers/[id]/edit/page.tsx:149
 #: src/app/studio-admin/photographers/[id]/guests/page.tsx:164
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:211
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:188
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:212
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:189
 msgid "Back to list"
 msgstr "Назад к списку"
 
@@ -272,10 +276,8 @@ msgstr "Основная информация"
 #~ msgstr "Преимущества"
 
 #: src/app/studio-admin/settings/page.tsx:270
-msgid "Brand Color"
-msgstr "Цвет бренда"
-
-
+#~ msgid "Brand Color"
+#~ msgstr "Цвет бренда"
 
 #: src/app/page.tsx:37
 #~ msgid "Browse Gallery"
@@ -321,7 +323,7 @@ msgid "Cancel Order"
 msgstr "Отменить заказ"
 
 #: src/app/admin/orders/page.tsx:134
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:167
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:168
 msgid "Cancelled"
 msgstr "Отменен"
 
@@ -394,8 +396,6 @@ msgstr "Закрыть"
 msgid "Code Scanned"
 msgstr "Код отсканирован"
 
-
-
 #: src/app/admin/orders/page.tsx:133
 #: src/features/photographer/components/admin-panel.tsx:126
 msgid "Completed"
@@ -448,8 +448,8 @@ msgid "Connect a data visualization library"
 msgstr "Подключить библиотеку визуализации данных"
 
 #: src/app/page.tsx:57
-msgid "Connect with Others"
-msgstr "Связаться с другими"
+#~ msgid "Connect with Others"
+#~ msgstr "Связаться с другими"
 
 #: src/app/studio-admin/page-old.tsx:752
 #~ msgid "Contact Email"
@@ -506,12 +506,12 @@ msgid "Create a photo session first to upload photos"
 msgstr "Сначала создайте фотосессию для загрузки фото"
 
 #: src/features/auth/components/login-page.tsx:437
-msgid "Create account"
-msgstr "Создать аккаунт"
+#~ msgid "Create account"
+#~ msgstr "Создать аккаунт"
 
 #: src/features/auth/components/login-page.tsx:334
-msgid "Create an account for your photo studio"
-msgstr "Создайте аккаунт для вашей фотостудии"
+#~ msgid "Create an account for your photo studio"
+#~ msgstr "Создайте аккаунт для вашей фотостудии"
 
 #: src/app/admin/page.tsx:164
 msgid "Create and manage studio administrator accounts"
@@ -593,8 +593,8 @@ msgstr "Создать администратора студии"
 #~ msgstr "Создайте первого клиента для начала работы"
 
 #: src/app/page.tsx:97
-msgid "Create Your Account"
-msgstr "Создать аккаунт"
+#~ msgid "Create Your Account"
+#~ msgstr "Создать аккаунт"
 
 #: src/app/studio-admin/page-old.tsx:485
 #~ msgid "Create your first guest using a QR code"
@@ -645,7 +645,6 @@ msgid "Creating Session..."
 msgstr "Создание сессии..."
 
 #: src/app/admin/studio-admins/page.tsx:390
-#: src/features/auth/components/login-page.tsx:437
 msgid "Creating..."
 msgstr "Создание..."
 
@@ -665,8 +664,8 @@ msgid "Customer activity"
 msgstr "Активность клиентов"
 
 #: src/features/photographer/components/photographer-dashboard.tsx:422
-msgid "Customize the appearance of galleries for your guests"
-msgstr "Настройте внешний вид галерей для ваших гостей"
+#~ msgid "Customize the appearance of galleries for your guests"
+#~ msgstr "Настройте внешний вид галерей для ваших гостей"
 
 #: src/app/studio-admin/page-old.tsx:192
 #~ msgid "Dashboard"
@@ -707,7 +706,7 @@ msgstr "Удалить фотографа"
 msgid "Delete Studio"
 msgstr "Удалить студию"
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:165
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:166
 msgid "Delivered"
 msgstr "Доставлен"
 
@@ -729,7 +728,7 @@ msgstr "Подробная информация о фотографе и его 
 msgid "Details"
 msgstr "Детали"
 
-#: src/app/studio-admin/settings/page.tsx:306
+#: src/app/studio-admin/settings/page.tsx:260
 msgid "Digital Copy Price ($)"
 msgstr "Цена цифровой копии ($)"
 
@@ -751,16 +750,16 @@ msgid "Discount:"
 msgstr "Скидка:"
 
 #: src/app/page.tsx:21
-msgid "Discover and showcase stunning photography. Connect with photographers, explore galleries, and share your visual stories."
-msgstr "Откройте для себя потрясающую фотографию. Свяжитесь с фотографами, исследуйте галереи и делитесь своими визуальными историями."
+#~ msgid "Discover and showcase stunning photography. Connect with photographers, explore galleries, and share your visual stories."
+#~ msgstr "Откройте для себя потрясающую фотографию. Свяжитесь с фотографами, исследуйте галереи и делитесь своими визуальными историями."
 
 #: src/features/auth/components/login-page.tsx:363
-msgid "Doe"
-msgstr "Иванов"
+#~ msgid "Doe"
+#~ msgstr "Иванов"
 
 #: src/features/auth/components/login-page.tsx:381
-msgid "Doe Studio"
-msgstr "Студия Иванова"
+#~ msgid "Doe Studio"
+#~ msgstr "Студия Иванова"
 
 #: src/app/photographer/sessions/[id]/page.tsx:575
 msgid "Download"
@@ -774,6 +773,10 @@ msgstr "Скачать логи"
 #: src/features/qr/components/qr-generator.tsx:264
 msgid "Download QR Code"
 msgstr "Скачать QR-код"
+
+#: src/features/photographer/components/photo-upload.tsx:282
+msgid "Drag & drop photos here or click to select"
+msgstr "Перетащите фотографии сюда или нажмите для выбора"
 
 #: src/app/studio-admin/settings/page.tsx:170
 msgid "e.g., Photo Studio Pro"
@@ -813,8 +816,7 @@ msgstr "Редактировать студию"
 #: src/app/studio-admin/photographers/page.tsx:278
 #: src/app/studio-admin/photographers/page.tsx:366
 #: src/app/studio-admin/settings/page.tsx:203
-#: src/features/auth/components/login-page.tsx:277
-#: src/features/auth/components/login-page.tsx:394
+#: src/features/auth/components/login-page.tsx:135
 #: src/features/gallery/components/checkout.tsx:184
 msgid "Email"
 msgstr "Электронная почта"
@@ -836,7 +838,7 @@ msgstr "Email обязателен"
 msgid "Email Notifications"
 msgstr "Email уведомления"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:339
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:341
 msgid "Email:"
 msgstr "Email:"
 
@@ -854,8 +856,8 @@ msgid "Enter email address"
 msgstr "Введите email адрес"
 
 #: src/features/auth/components/login-page.tsx:458
-msgid "Enter guest ID (e.g., GUEST123)"
-msgstr "Введите ID гостя (например, GUEST123)"
+#~ msgid "Enter guest ID (e.g., GUEST123)"
+#~ msgstr "Введите ID гостя (например, GUEST123)"
 
 #: src/app/photographer/page.tsx:182
 #: src/features/qr/components/qr-generator.tsx:126
@@ -892,8 +894,8 @@ msgid "Enter studio name"
 msgstr "Введите название студии"
 
 #: src/features/auth/components/login-page.tsx:452
-msgid "Enter your guest ID to view photos"
-msgstr "Введите ID гостя для просмотра фото"
+#~ msgid "Enter your guest ID to view photos"
+#~ msgstr "Введите ID гостя для просмотра фото"
 
 #: src/app/admin/monitoring/page.tsx:334
 msgid "Error"
@@ -931,7 +933,7 @@ msgstr "Ошибка при удалении фотографа"
 msgid "Error deleting studio"
 msgstr "Ошибка удаления студии"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:153
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:154
 msgid "Error downloading photo"
 msgstr "Ошибка при скачивании фото"
 
@@ -940,8 +942,8 @@ msgstr "Ошибка при скачивании фото"
 #~ msgstr "Ошибка загрузки клиентов"
 
 #: src/app/studio-admin/photographers/[id]/guests/page.tsx:82
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:101
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:92
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:102
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:93
 msgid "Error loading data"
 msgstr "Ошибка загрузки данных"
 
@@ -949,17 +951,17 @@ msgstr "Ошибка загрузки данных"
 msgid "Error loading guests"
 msgstr "Ошибка загрузки гостей"
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:97
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:98
 msgid "Error loading orders"
 msgstr "Ошибка загрузки заказов"
 
 #: src/app/studio-admin/photographers/[id]/edit/page.tsx:61
 #: src/app/studio-admin/photographers/[id]/edit/page.tsx:66
 #: src/app/studio-admin/photographers/[id]/guests/page.tsx:62
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:81
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:82
 #: src/app/studio-admin/photographers/[id]/page.tsx:68
 #: src/app/studio-admin/photographers/[id]/page.tsx:73
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:72
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:73
 msgid "Error loading photographer data"
 msgstr "Ошибка загрузки данных фотографа"
 
@@ -968,7 +970,7 @@ msgstr "Ошибка загрузки данных фотографа"
 msgid "Error loading photographers"
 msgstr "Ошибка загрузки фотографов"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:88
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:89
 msgid "Error loading photos"
 msgstr "Ошибка загрузки фото"
 
@@ -1015,8 +1017,8 @@ msgid "Error updating photographer"
 msgstr "Ошибка при обновлении фотографа"
 
 #: src/features/photographer/components/photographer-dashboard.tsx:214
-msgid "Error updating settings"
-msgstr "Ошибка при обновлении настроек"
+#~ msgid "Error updating settings"
+#~ msgstr "Ошибка при обновлении настроек"
 
 #: src/app/admin/studios/page.tsx:145
 msgid "Error updating studio"
@@ -1130,7 +1132,7 @@ msgstr "Не удалось обновить студию"
 #~ msgid "Fast guest identification"
 #~ msgstr "Быстрая идентификация гостей"
 
-#: src/features/auth/components/login-page.tsx:203
+#: src/features/auth/components/login-page.tsx:96
 msgid "Fast upload"
 msgstr "Быстрая загрузка"
 
@@ -1143,8 +1145,8 @@ msgstr "Переключатели функций"
 #~ msgstr "Заполните все поля"
 
 #: src/features/auth/components/login-page.tsx:342
-msgid "First name"
-msgstr "Имя"
+#~ msgid "First name"
+#~ msgstr "Имя"
 
 #: src/features/gallery/components/checkout.tsx:175
 msgid "Full Name"
@@ -1179,8 +1181,8 @@ msgid "Generating..."
 msgstr "Генерация..."
 
 #: src/app/page.tsx:31
-msgid "Get Started"
-msgstr "Начать"
+#~ msgid "Get Started"
+#~ msgstr "Начать"
 
 #: src/app/guest/[id]/page.tsx:165
 #: src/app/photographer/upload/page.tsx:58
@@ -1209,7 +1211,7 @@ msgstr "Перейдите на вкладку Загрузка и исполь�
 
 #: src/app/admin/orders/page.tsx:195
 #: src/features/photographer/components/admin-panel.tsx:427
-#: src/features/photographer/components/photographer-dashboard.tsx:397
+#: src/features/photographer/components/photographer-dashboard.tsx:336
 msgid "Guest"
 msgstr "Гость"
 
@@ -1218,14 +1220,14 @@ msgstr "Гость"
 #~ msgstr "Гость {0} успешно добавлен!"
 
 #: src/features/auth/components/login-page.tsx:449
-msgid "Guest access"
-msgstr "Гостевой доступ"
+#~ msgid "Guest access"
+#~ msgstr "Гостевой доступ"
 
 #: src/app/photographer/page.tsx:185
 #~ msgid "Guest can scan it at the event"
 #~ msgstr "Гость может отсканировать его на мероприятии"
 
-#: src/features/auth/components/login-page.tsx:217
+#: src/features/auth/components/login-page.tsx:110
 msgid "Guest convenience"
 msgstr "Удобство для гостей"
 
@@ -1271,7 +1273,7 @@ msgstr "Регистрация гостей"
 #~ msgid "Guest selected for upload"
 #~ msgstr "Гость выбран для загрузки"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:333
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:335
 msgid "Guest:"
 msgstr "Гость:"
 
@@ -1340,7 +1342,7 @@ msgstr "В корзине"
 msgid "Info"
 msgstr "Информация"
 
-#: src/features/auth/components/login-page.tsx:206
+#: src/features/auth/components/login-page.tsx:99
 msgid "Instant photo sync from mobile device"
 msgstr "Мгновенная синхронизация фото с мобильного устройства"
 
@@ -1353,18 +1355,18 @@ msgstr "Мгновенная синхронизация фото с мобиль
 #~ msgid "Invalid QR code format. Guest code expected."
 #~ msgstr "Неверный формат QR-кода. Ожидается код гостя."
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:364
-#: src/features/photographer/components/photographer-dashboard.tsx:404
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:365
+#: src/features/photographer/components/photographer-dashboard.tsx:343
 msgid "items"
 msgstr "элементов"
 
 #: src/features/auth/components/login-page.tsx:346
-msgid "John"
-msgstr "Иван"
+#~ msgid "John"
+#~ msgstr "Иван"
 
 #: src/app/page.tsx:88
-msgid "Join thousands of photographers already using our platform to showcase their work."
-msgstr "Присоединяйтесь к тысячам фотографов, которые уже используют нашу платформу для демонстрации своей работы."
+#~ msgid "Join thousands of photographers already using our platform to showcase their work."
+#~ msgstr "Присоединяйтесь к тысячам фотографов, которые уже используют нашу платформу для демонстрации своей работы."
 
 #: src/app/studio-admin/photographers/[id]/guests/page.tsx:126
 #: src/shared/components/notifications.tsx:105
@@ -1376,8 +1378,8 @@ msgid "Last Access"
 msgstr "Последний доступ"
 
 #: src/features/auth/components/login-page.tsx:359
-msgid "Last name"
-msgstr "Фамилия"
+#~ msgid "Last name"
+#~ msgstr "Фамилия"
 
 #: src/app/admin/system/page.tsx:459
 msgid "Last Updated"
@@ -1443,10 +1445,10 @@ msgid "Loading..."
 msgstr "Загрузка..."
 
 #: src/features/auth/components/login-page.tsx:253
-msgid "Login"
-msgstr "Вход"
+#~ msgid "Login"
+#~ msgstr "Вход"
 
-#: src/features/auth/components/login-page.tsx:78
+#: src/features/auth/components/login-page.tsx:50
 msgid "Login failed"
 msgstr "Ошибка входа"
 
@@ -1456,8 +1458,8 @@ msgstr "Ошибка входа"
 
 #: src/app/studio-admin/settings/page.tsx:257
 #: src/features/photographer/components/photographer-dashboard.tsx:461
-msgid "Logo URL"
-msgstr "URL логотипа"
+#~ msgid "Logo URL"
+#~ msgstr "URL логотипа"
 
 #: src/app/admin/monitoring/page.tsx:114
 msgid "Logs downloaded successfully"
@@ -1558,7 +1560,7 @@ msgstr "Управление студиями"
 #~ msgid "Manage Team"
 #~ msgstr "Управление командой"
 
-#: src/features/photographer/components/photographer-dashboard.tsx:376
+#: src/features/photographer/components/photographer-dashboard.tsx:315
 msgid "Manage your customer orders"
 msgstr "Управляйте заказами клиентов"
 
@@ -1570,7 +1572,7 @@ msgstr "Управляйте фотосессиями и загрузками"
 msgid "Manage your photography studio"
 msgstr "Управляйте вашей фотостудией"
 
-#: src/shared/components/notifications.tsx:172
+#: src/shared/components/notifications.tsx:187
 msgid "Mark all read"
 msgstr "Отметить все как прочитанные"
 
@@ -1578,6 +1580,14 @@ msgstr "Отметить все как прочитанные"
 #: src/app/admin/orders/page.tsx:266
 msgid "Mark as Completed"
 msgstr "Отметить выполненным"
+
+#: src/features/photographer/components/photo-upload.tsx:295
+msgid "Max files: 100 photos at once"
+msgstr "Макс. файлов: 100 фотографий за раз"
+
+#: src/features/photographer/components/photo-upload.tsx:292
+msgid "Max size: 10MB per file (auto-compressed)"
+msgstr "Макс. размер: 10МБ за файл (авто-сжатие)"
 
 #: src/app/admin/system/page.tsx:399
 msgid "Max Storage per Client (GB)"
@@ -1659,8 +1669,8 @@ msgid "Name:"
 msgstr "Имя:"
 
 #: src/app/page.tsx:60
-msgid "Network with fellow photographers and art enthusiasts in our community."
-msgstr "Общайтесь с коллегами-фотографами и любителями искусства в нашем сообществе."
+#~ msgid "Network with fellow photographers and art enthusiasts in our community."
+#~ msgstr "Общайтесь с коллегами-фотографами и любителями искусства в нашем сообществе."
 
 #: src/app/studio-admin/photographers/[id]/guests/page.tsx:118
 msgid "Never"
@@ -1735,7 +1745,7 @@ msgstr "Гости не найдены по вашему запросу"
 #~ msgid "No guests yet"
 #~ msgstr "Пока нет гостей"
 
-#: src/shared/components/notifications.tsx:196
+#: src/shared/components/notifications.tsx:211
 msgid "No notifications yet"
 msgstr "Уведомлений пока нет"
 
@@ -1743,7 +1753,7 @@ msgstr "Уведомлений пока нет"
 #~ msgid "No orders"
 #~ msgstr "Нет заказов"
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:323
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:324
 msgid "No Orders"
 msgstr "Нет заказов"
 
@@ -1751,15 +1761,15 @@ msgstr "Нет заказов"
 msgid "No orders found"
 msgstr "Заказы не найдены"
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:323
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:324
 msgid "No Orders Found"
 msgstr "Заказы не найдены"
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:326
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:327
 msgid "No orders found matching your search"
 msgstr "Заказы не найдены по вашему запросу"
 
-#: src/features/photographer/components/photographer-dashboard.tsx:384
+#: src/features/photographer/components/photographer-dashboard.tsx:323
 msgid "No orders yet"
 msgstr "Заказов пока нет"
 
@@ -1771,7 +1781,7 @@ msgstr "Нет фотосессий"
 msgid "No Photographers"
 msgstr "Нет фотографов"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:277
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:278
 msgid "No Photos"
 msgstr "Нет фото"
 
@@ -1783,11 +1793,11 @@ msgstr "Фото пока недоступны"
 #~ msgid "No photos available yet."
 #~ msgstr "Фото пока недоступны."
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:277
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:278
 msgid "No Photos Found"
 msgstr "Фото не найдены"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:280
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:281
 msgid "No photos found matching your search"
 msgstr "Фото не найдены по вашему запросу"
 
@@ -1843,7 +1853,7 @@ msgstr "Не указано"
 msgid "Notes"
 msgstr "Заметки"
 
-#: src/shared/components/notifications.tsx:161
+#: src/shared/components/notifications.tsx:176
 msgid "Notifications"
 msgstr "Уведомления"
 
@@ -1887,7 +1897,7 @@ msgid "Optional"
 msgstr "Необязательно"
 
 #: src/features/photographer/components/admin-panel.tsx:420
-#: src/features/photographer/components/photographer-dashboard.tsx:394
+#: src/features/photographer/components/photographer-dashboard.tsx:333
 msgid "Order"
 msgstr "Заказ"
 
@@ -1930,7 +1940,7 @@ msgstr "ID заказа:"
 msgid "Order Items ({0})"
 msgstr "Товары в заказе ({0})"
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:383
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:384
 msgid "Order items:"
 msgstr "Товары в заказе:"
 
@@ -1988,8 +1998,8 @@ msgstr "заказов"
 #: src/app/studio-admin/photographers/[id]/page.tsx:304
 #: src/features/photographer/components/admin-panel.tsx:175
 #: src/features/photographer/components/admin-panel.tsx:225
-#: src/features/photographer/components/photographer-dashboard.tsx:267
-#: src/features/photographer/components/photographer-dashboard.tsx:373
+#: src/features/photographer/components/photographer-dashboard.tsx:206
+#: src/features/photographer/components/photographer-dashboard.tsx:312
 msgid "Orders"
 msgstr "Заказы"
 
@@ -2020,15 +2030,14 @@ msgid "Overview"
 msgstr "Обзор"
 
 #: src/app/admin/orders/page.tsx:144
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:161
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:267
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:162
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:268
 msgid "Paid"
 msgstr "Оплачено"
 
 #: src/app/admin/studio-admins/page.tsx:333
 #: src/app/studio-admin/photographers/page.tsx:304
-#: src/features/auth/components/login-page.tsx:295
-#: src/features/auth/components/login-page.tsx:412
+#: src/features/auth/components/login-page.tsx:153
 msgid "Password"
 msgstr "Пароль"
 
@@ -2037,7 +2046,7 @@ msgstr "Пароль"
 msgid "Password must be at least 6 characters"
 msgstr "Пароль должен быть не менее 6 символов"
 
-#: src/features/auth/components/login-page.tsx:220
+#: src/features/auth/components/login-page.tsx:113
 msgid "Passwordless access to personal galleries"
 msgstr "Доступ к личным галереям без пароля"
 
@@ -2072,8 +2081,8 @@ msgstr "В ожидании"
 msgid "Pending Orders"
 msgstr "Ожидающие заказы"
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:159
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:289
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:160
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:290
 msgid "Pending Payment"
 msgstr "Ожидает оплаты"
 
@@ -2105,7 +2114,7 @@ msgstr "Телефон обязателен"
 msgid "Photo {0} ({1}) x{2}"
 msgstr "Фото {0} ({1}) x{2}"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:150
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:151
 msgid "Photo downloaded"
 msgstr "Фото загружено"
 
@@ -2180,21 +2189,21 @@ msgstr "Имя фотографа"
 #: src/app/studio-admin/photographers/[id]/edit/page.tsx:139
 #: src/app/studio-admin/photographers/[id]/guests/page.tsx:149
 #: src/app/studio-admin/photographers/[id]/guests/page.tsx:154
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:196
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:201
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:197
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:202
 #: src/app/studio-admin/photographers/[id]/page.tsx:141
 #: src/app/studio-admin/photographers/[id]/page.tsx:146
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:173
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:178
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:174
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:179
 msgid "Photographer Not Found"
 msgstr "Фотограф не найден"
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:183
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:184
 msgid "Photographer Orders"
 msgstr "Заказы фотографа"
 
 #. placeholder {0}: photographer.name
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:220
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:221
 msgid "Photographer Orders: {0}"
 msgstr "Заказы фотографа: {0}"
 
@@ -2202,18 +2211,18 @@ msgstr "Заказы фотографа: {0}"
 #~ msgid "Photographer Panel"
 #~ msgstr "Панель фотографа"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:160
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:161
 msgid "Photographer Photos"
 msgstr "Фото фотографа"
 
 #. placeholder {0}: photographer.name
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:197
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:198
 msgid "Photographer Photos: {0}"
 msgstr "Фото фотографа: {0}"
 
 #: src/features/auth/components/login-page.tsx:331
-msgid "Photographer registration"
-msgstr "Регистрация фотографа"
+#~ msgid "Photographer registration"
+#~ msgstr "Регистрация фотографа"
 
 #: src/app/admin/page.tsx:584
 #~ msgid "Photographer scans QR at event"
@@ -2235,8 +2244,8 @@ msgstr "Фотограф: {0}"
 
 #: src/features/auth/components/login-page.tsx:282
 #: src/features/auth/components/login-page.tsx:399
-msgid "photographer@studio.com"
-msgstr "fotograf@studiya.com"
+#~ msgid "photographer@studio.com"
+#~ msgstr "fotograf@studiya.com"
 
 #: src/app/admin/stats/page.tsx:598
 msgid "photographers"
@@ -2320,7 +2329,7 @@ msgstr "Аналитика платформы"
 msgid "Platform Configuration"
 msgstr "Конфигурация платформы"
 
-#: src/features/auth/components/login-page.tsx:192
+#: src/features/auth/components/login-page.tsx:85
 msgid "Platform for digitizing photo services"
 msgstr "Платформа для цифровизации фотоуслуг"
 
@@ -2379,14 +2388,14 @@ msgstr "Пожалуйста, выберите способ оплаты"
 #~ msgstr "Наведите камеру на QR-код гостя и убедитесь, что он полностью виден в кадре"
 
 #: src/features/photographer/components/photographer-dashboard.tsx:503
-msgid "Preview"
-msgstr "Предпросмотр"
+#~ msgid "Preview"
+#~ msgstr "Предпросмотр"
 
 #: src/app/admin/system/page.tsx:183
 msgid "Price per Photo ($)"
 msgstr "Цена за фото ($)"
 
-#: src/app/studio-admin/settings/page.tsx:299
+#: src/app/studio-admin/settings/page.tsx:253
 msgid "Pricing"
 msgstr "Ценообразование"
 
@@ -2395,10 +2404,10 @@ msgid "Pricing Settings"
 msgstr "Настройки ценообразования"
 
 #: src/features/photographer/components/photographer-dashboard.tsx:431
-msgid "Primary Color"
-msgstr "Основной цвет"
+#~ msgid "Primary Color"
+#~ msgstr "Основной цвет"
 
-#: src/app/studio-admin/settings/page.tsx:325
+#: src/app/studio-admin/settings/page.tsx:279
 msgid "Print Copy Price ($)"
 msgstr "Цена печатной копии ($)"
 
@@ -2441,8 +2450,8 @@ msgid "Processing..."
 msgstr "Обработка..."
 
 #: src/app/page.tsx:72
-msgid "Professional Tools"
-msgstr "Профессиональные инструменты"
+#~ msgid "Professional Tools"
+#~ msgstr "Профессиональные инструменты"
 
 #: src/app/photographer/sessions/[id]/page.tsx:311
 msgid "QR code"
@@ -2516,8 +2525,8 @@ msgstr "Быстрые действия"
 #~ msgstr "Готов"
 
 #: src/app/page.tsx:85
-msgid "Ready to Start Your Journey?"
-msgstr "Готовы начать свое путешествие?"
+#~ msgid "Ready to Start Your Journey?"
+#~ msgstr "Готовы начать свое путешествие?"
 
 #: src/app/studio-admin/stats/page.tsx:182
 msgid "Recent Activity"
@@ -2554,20 +2563,20 @@ msgid "Registered:"
 msgstr "Зарегистрирован:"
 
 #: src/features/auth/components/login-page.tsx:259
-msgid "Registration"
-msgstr "Регистрация"
+#~ msgid "Registration"
+#~ msgstr "Регистрация"
 
 #: src/app/studio-admin/photographers/[id]/page.tsx:226
 msgid "Registration Date"
 msgstr "Дата регистрации"
 
 #: src/features/auth/components/login-page.tsx:125
-msgid "Registration failed"
-msgstr "Ошибка регистрации"
+#~ msgid "Registration failed"
+#~ msgstr "Ошибка регистрации"
 
 #: src/features/auth/components/login-page.tsx:133
-msgid "Registration successful! Please check your email to confirm your account, then log in."
-msgstr "Регистрация прошла успешно! Проверьте электронную почту для подтверждения аккаунта, затем войдите."
+#~ msgid "Registration successful! Please check your email to confirm your account, then log in."
+#~ msgstr "Регистрация прошла успешно! Проверьте электронную почту для подтверждения аккаунта, затем войдите."
 
 #: src/app/admin/page.tsx:114
 #: src/app/admin/stats/page.tsx:255
@@ -2609,14 +2618,13 @@ msgid "Save Changes"
 msgstr "Сохранить изменения"
 
 #: src/features/photographer/components/photographer-dashboard.tsx:493
-msgid "Save Settings"
-msgstr "Сохранить настройки"
+#~ msgid "Save Settings"
+#~ msgstr "Сохранить настройки"
 
 #: src/app/admin/studios/page.tsx:391
 #: src/app/admin/system/page.tsx:479
 #: src/app/studio-admin/photographers/[id]/edit/page.tsx:238
 #: src/app/studio-admin/settings/page.tsx:140
-#: src/features/photographer/components/photographer-dashboard.tsx:493
 msgid "Saving..."
 msgstr "Сохранение..."
 
@@ -2668,7 +2676,7 @@ msgstr "Сканировать QR коды"
 msgid "Scheduled Date & Time"
 msgstr "Запланированная дата и время"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:207
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:208
 msgid "Search by filename, guest, or session..."
 msgstr "Поиск по имени файла, гостю или сессии..."
 
@@ -2684,7 +2692,7 @@ msgstr "Поиск по имени, email или студии..."
 msgid "Search by name, email, or phone..."
 msgstr "Поиск по имени, email или телефону..."
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:230
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:231
 msgid "Search by order number, guest, or status..."
 msgstr "Поиск по номеру заказа, гостю или статусу..."
 
@@ -2728,7 +2736,7 @@ msgstr "Сессия не найдена"
 msgid "Session Timeout (minutes)"
 msgstr "Таймаут сессии (минуты)"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:346
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:348
 msgid "Session:"
 msgstr "Сессия:"
 
@@ -2745,7 +2753,7 @@ msgstr "Сессии"
 
 #: src/app/studio-admin/page.tsx:307
 #: src/features/photographer/components/admin-panel.tsx:388
-#: src/features/photographer/components/photographer-dashboard.tsx:276
+#: src/features/photographer/components/photographer-dashboard.tsx:215
 msgid "Settings"
 msgstr "Настройки"
 
@@ -2754,8 +2762,8 @@ msgid "Settings saved successfully"
 msgstr "Настройки успешно сохранены"
 
 #: src/features/photographer/components/photographer-dashboard.tsx:200
-msgid "Settings successfully updated"
-msgstr "Настройки успешно обновлены"
+#~ msgid "Settings successfully updated"
+#~ msgstr "Настройки успешно обновлены"
 
 #: src/features/photographer/components/photographer-dashboard.tsx:198
 #~ msgid "Settings updated successfully"
@@ -2765,7 +2773,7 @@ msgstr "Настройки успешно обновлены"
 msgid "Share this QR code with your clients"
 msgstr "Поделитесь этим QR-кодом с вашими клиентами"
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:163
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:164
 msgid "Shipped"
 msgstr "Отправлен"
 
@@ -2778,24 +2786,28 @@ msgid "Show this QR code to clients"
 msgstr "Покажите этот QR-код клиентам"
 
 #: src/app/page.tsx:42
-msgid "Showcase Your Work"
-msgstr "Покажите свою работу"
+#~ msgid "Showcase Your Work"
+#~ msgstr "Покажите свою работу"
 
-#: src/features/auth/components/login-page.tsx:267
-#: src/features/auth/components/login-page.tsx:320
+#: src/features/auth/components/login-page.tsx:125
+#: src/features/auth/components/login-page.tsx:178
 msgid "Sign in"
 msgstr "Войти"
 
+#: src/features/auth/components/login-page.tsx:128
+msgid "Sign in to your account"
+msgstr ""
+
 #: src/features/auth/components/login-page.tsx:270
-msgid "Sign in to your photographer account"
-msgstr "Войдите в свой аккаунт фотографа"
+#~ msgid "Sign in to your photographer account"
+#~ msgstr "Войдите в свой аккаунт фотографа"
 
 #: src/features/photographer/components/admin-panel.tsx:155
-#: src/features/photographer/components/photographer-dashboard.tsx:242
+#: src/features/photographer/components/photographer-dashboard.tsx:181
 msgid "Sign Out"
 msgstr "Выйти"
 
-#: src/features/auth/components/login-page.tsx:320
+#: src/features/auth/components/login-page.tsx:178
 msgid "Signing in..."
 msgstr "Вход..."
 
@@ -2912,8 +2924,8 @@ msgid "Studio Management"
 msgstr "Управление студиями"
 
 #: src/features/auth/components/login-page.tsx:377
-msgid "Studio name"
-msgstr "Название студии"
+#~ msgid "Studio name"
+#~ msgstr "Название студии"
 
 #: src/app/admin/studios/page.tsx:350
 #: src/app/studio-admin/settings/page.tsx:163
@@ -3011,6 +3023,9 @@ msgstr "Системные настройки успешно сохранены"
 #~ msgid "System will automatically add guest to list"
 #~ msgstr "Система автоматически добавит гостя в список"
 
+#~ msgid "Take Photo"
+#~ msgstr "Сделать фото"
+
 #: src/features/qr/components/qr-scanner.tsx:224
 msgid "Test"
 msgstr "Тест"
@@ -3025,40 +3040,19 @@ msgstr "Фотосессии, которую вы ищете, не сущест�
 
 #: src/app/studio-admin/photographers/[id]/edit/page.tsx:142
 #: src/app/studio-admin/photographers/[id]/guests/page.tsx:157
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:204
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:205
 #: src/app/studio-admin/photographers/[id]/page.tsx:149
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:181
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:182
 msgid "The photographer may have been deleted or you may have entered an incorrect ID"
 msgstr "Фотограф мог быть удален или вы ввели неверный ID"
 
 #: src/app/studio-admin/photographers/[id]/edit/page.tsx:135
 #: src/app/studio-admin/photographers/[id]/guests/page.tsx:150
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:197
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:198
 #: src/app/studio-admin/photographers/[id]/page.tsx:142
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:174
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:175
 msgid "The requested photographer does not exist"
 msgstr "Запрошенный фотограф не существует"
-
-msgid "Take Photo"
-msgstr "Сделать фото"
-
-msgid "Uploading photos..."
-msgstr "Загрузка фотографий..."
-
-msgid "Drag & drop photos here or click to select"
-msgstr "Перетащите фотографии сюда или нажмите для выбора"
-
-msgid "Upload multiple photos at once from your device"
-msgstr "Загружайте множество фотографий одновременно с вашего устройства"
-
-msgid "Accepts: JPG, PNG, HEIC, RAW files"
-msgstr "Поддерживаются: JPG, PNG, HEIC, RAW файлы"
-
-msgid "Max size: 10MB per file (auto-compressed)"
-msgstr "Макс. размер: 10МБ за файл (авто-сжатие)"
-
-msgid "Max files: 100 photos at once"
-msgstr "Макс. файлов: 100 фотографий за раз"
 
 #: src/app/photographer/page.tsx:299
 #: src/app/photographer/qr/page.tsx:120
@@ -3078,11 +3072,11 @@ msgstr "этот месяц"
 msgid "This photographer has no guests yet"
 msgstr "У этого фотографа пока нет гостей"
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:327
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:328
 msgid "This photographer has no orders yet"
 msgstr "У этого фотографа пока нет заказов"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:281
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:282
 msgid "This photographer has no photos yet"
 msgstr "У этого фотографа пока нет фото"
 
@@ -3101,11 +3095,11 @@ msgstr "Топ 5 клиентов по активности"
 
 #: src/app/session/[id]/cart/page.tsx:387
 #: src/app/session/[id]/cart/page.tsx:481
-#: src/features/photographer/components/photographer-dashboard.tsx:403
+#: src/features/photographer/components/photographer-dashboard.tsx:342
 msgid "Total"
 msgstr "Всего"
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:304
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:305
 msgid "Total Amount"
 msgstr "Общая сумма"
 
@@ -3119,14 +3113,14 @@ msgid "Total Guests"
 msgstr "Всего гостей"
 
 #: src/app/admin/monitoring/page.tsx:167
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:254
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:255
 #: src/app/studio-admin/stats/page.tsx:119
 msgid "Total Orders"
 msgstr "Всего заказов"
 
 #: src/app/photographer/page.tsx:121
 #: src/app/studio-admin/photographers/[id]/guests/page.tsx:243
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:231
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:232
 #: src/app/studio-admin/stats/page.tsx:101
 msgid "Total Photos"
 msgstr "Всего фото"
@@ -3139,7 +3133,7 @@ msgstr "Общий доход"
 msgid "Total Sessions"
 msgstr "Всего сессий"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:244
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:245
 msgid "Total Size"
 msgstr "Общий размер"
 
@@ -3163,7 +3157,7 @@ msgstr "Всего: {0} заказов"
 msgid "Track user behavior and metrics"
 msgstr "Отслеживать поведение пользователей и метрики"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:261
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:262
 msgid "Unique Guests"
 msgstr "Уникальные гости"
 
@@ -3188,13 +3182,13 @@ msgstr "Обновить информацию о фотографе"
 #: src/app/photographer/page.tsx:242
 #: src/app/photographer/sessions/page.tsx:559
 #: src/app/photographer/sessions/page.tsx:562
-#: src/features/photographer/components/photographer-dashboard.tsx:258
+#: src/features/photographer/components/photographer-dashboard.tsx:197
 msgid "Upload"
 msgstr "Загрузить"
 
 #: src/app/page.tsx:45
-msgid "Upload and display your photography portfolio with professional presentation."
-msgstr "Загружайте и показывайте свое фотопортфолио с профессиональной подачей."
+#~ msgid "Upload and display your photography portfolio with professional presentation."
+#~ msgstr "Загружайте и показывайте свое фотопортфолио с профессиональной подачей."
 
 #: src/app/photographer/page.tsx:135
 #~ msgid "Upload and organize photos for clients"
@@ -3207,6 +3201,10 @@ msgstr "Загружайте и показывайте свое фотопорт
 #: src/app/photographer/page.tsx:265
 #~ msgid "Upload for Guest"
 #~ msgstr "Загрузить для гостя"
+
+#: src/features/photographer/components/photo-upload.tsx:285
+msgid "Upload multiple photos at once from your device"
+msgstr "Загружайте множество фотографий одновременно с вашего устройства"
 
 #: src/app/photographer/page.tsx:245
 #: src/app/photographer/sessions/[id]/page.tsx:320
@@ -3233,13 +3231,17 @@ msgstr "Загрузка фото для гостей и организация 
 msgid "Uploaded all time"
 msgstr "Загружено за все время"
 
+#: src/features/photographer/components/photo-upload.tsx:405
+msgid "Uploading photos..."
+msgstr "Загрузка фотографий..."
+
 #: src/features/photographer/components/admin-panel.tsx:474
 msgid "Uptime:"
 msgstr "Время работы:"
 
 #: src/features/auth/components/login-page.tsx:117
-msgid "User already exists. Please switch to the Login tab."
-msgstr "Пользователь уже существует. Пожалуйста, перейдите на вкладку Вход."
+#~ msgid "User already exists. Please switch to the Login tab."
+#~ msgstr "Пользователь уже существует. Пожалуйста, перейдите на вкладку Вход."
 
 #: src/features/photographer/components/admin-panel.tsx:511
 msgid "User Management"
@@ -3292,11 +3294,11 @@ msgstr "Просмотр и управление заказами, обновл�
 msgid "View and manage photographer guests"
 msgstr "Просмотр и управление гостями фотографа"
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:221
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:222
 msgid "View and manage photographer orders"
 msgstr "Просмотр и управление заказами фотографа"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:198
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:199
 msgid "View and manage photographer photos"
 msgstr "Просмотр и управление фото фотографа"
 
@@ -3367,17 +3369,17 @@ msgstr "Посмотреть фотографа"
 msgid "View photographer guests"
 msgstr "Просмотр гостей фотографа"
 
-#: src/app/studio-admin/photographers/[id]/orders/page.tsx:184
+#: src/app/studio-admin/photographers/[id]/orders/page.tsx:185
 msgid "View photographer orders"
 msgstr "Просмотр заказов фотографа"
 
-#: src/app/studio-admin/photographers/[id]/photos/page.tsx:161
+#: src/app/studio-admin/photographers/[id]/photos/page.tsx:162
 msgid "View photographer photos"
 msgstr "Просмотр фото фотографа"
 
 #: src/features/auth/components/login-page.tsx:468
-msgid "View photos"
-msgstr "Посмотреть фото"
+#~ msgid "View photos"
+#~ msgstr "Посмотреть фото"
 
 #: src/app/studio-admin/photographers/[id]/page.tsx:344
 msgid "View Photos"
@@ -3405,17 +3407,16 @@ msgstr "Предупреждение"
 #~ msgstr "Веб-сайт"
 
 #: src/app/studio-admin/settings/page.tsx:176
-#: src/features/photographer/components/photographer-dashboard.tsx:478
 msgid "Welcome Message"
 msgstr "Приветственное сообщение"
 
 #: src/features/photographer/components/photographer-dashboard.tsx:482
-msgid "Welcome to our studio!"
-msgstr "Добро пожаловать в нашу студию!"
+#~ msgid "Welcome to our studio!"
+#~ msgstr "Добро пожаловать в нашу студию!"
 
 #: src/app/page.tsx:18
-msgid "Welcome to Photography Gallery"
-msgstr "Добро пожаловать в фотогалерею"
+#~ msgid "Welcome to Photography Gallery"
+#~ msgstr "Добро пожаловать в фотогалерею"
 
 #: src/app/photographer/page.tsx:170
 #~ msgid "Why do we need QR codes?"
@@ -3450,6 +3451,7 @@ msgstr "Ваши фото появятся здесь, когда фотогра
 
 #: src/app/session/[id]/cart/page.tsx:267
 #: src/app/studio-admin/settings/page.tsx:211
+#: src/features/auth/components/login-page.tsx:140
 msgid "your@email.com"
 msgstr "ваш@email.com"
 
