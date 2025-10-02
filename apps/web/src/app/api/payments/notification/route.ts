@@ -1,7 +1,7 @@
+import crypto from 'node:crypto'
 import { type NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/shared/lib/prisma/client'
 import { notifyPaymentReceived } from '@/lib/services/notification.service'
-import crypto from 'crypto'
+import { prisma } from '@/shared/lib/prisma/client'
 
 const TINKOFF_SECRET_KEY = process.env.TINKOFF_SECRET_KEY || ''
 
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const notification: TinkoffNotification = body
 
     // Verify token
-    const generateToken = (data: Record<string, any>): string => {
+    const generateToken = (data: Record<string, string | number>): string => {
       const sortedKeys = Object.keys(data).sort()
       const tokenString = sortedKeys.map((key) => `${key}${data[key]}`).join('')
       return crypto

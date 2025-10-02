@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client'
 import { type NextRequest, NextResponse } from 'next/server'
 import { withRoleCheck } from '@/shared/lib/auth/role-guard'
 import { prisma } from '@/shared/lib/prisma/client'
@@ -19,7 +20,7 @@ export async function GET(
     const { id } = await params
 
     // Build where clause based on user role
-    let whereClause: any = { id }
+    let whereClause: Prisma.OrderWhereUniqueInput = { id }
 
     if (auth.user.role === 'photographer') {
       // Photographers can only see orders from their sessions

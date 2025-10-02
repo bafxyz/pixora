@@ -1,24 +1,22 @@
 'use client'
 
-import { msg } from '@lingui/macro'
+import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
-import { Trans } from '@lingui/macro'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
 import { PageLayout } from '@repo/ui/page-layout'
 import {
   ArrowLeft,
-  Download,
-  FileImage,
-  Mail,
-  Phone,
-  User,
   Calendar,
   CreditCard,
-  Package,
+  Download,
   Edit,
-  Trash2,
+  FileImage,
+  Mail,
+  Package,
+  Phone,
+  User,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
@@ -266,17 +264,17 @@ export default function OrderDetailPage({
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <span className="text-sm font-medium text-gray-600 block">
                     <Trans>Name</Trans>
-                  </label>
+                  </span>
                   <p className="text-gray-900">
                     {order.guestName || _(msg`Not provided`)}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <span className="text-sm font-medium text-gray-600 block">
                     <Trans>Email</Trans>
-                  </label>
+                  </span>
                   <p className="text-gray-900 flex items-center gap-2">
                     <Mail className="w-4 h-4" />
                     {order.guestEmail}
@@ -284,9 +282,9 @@ export default function OrderDetailPage({
                 </div>
                 {order.guestPhone && (
                   <div>
-                    <label className="text-sm font-medium text-gray-600">
+                    <span className="text-sm font-medium text-gray-600 block">
                       <Trans>Phone</Trans>
-                    </label>
+                    </span>
                     <p className="text-gray-900 flex items-center gap-2">
                       <Phone className="w-4 h-4" />
                       {order.guestPhone}
@@ -367,9 +365,9 @@ export default function OrderDetailPage({
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <span className="text-sm font-medium text-gray-600 block">
                     <Trans>Session</Trans>
-                  </label>
+                  </span>
                   <p className="text-gray-900">{order.session.name}</p>
                   {order.session.scheduledAt && (
                     <p className="text-sm text-gray-500">
@@ -378,9 +376,9 @@ export default function OrderDetailPage({
                   )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <span className="text-sm font-medium text-gray-600 block">
                     <Trans>Photographer</Trans>
-                  </label>
+                  </span>
                   <p className="text-gray-900">
                     {order.photographer.name || order.photographer.email}
                   </p>
@@ -389,15 +387,15 @@ export default function OrderDetailPage({
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <span className="text-sm font-medium text-gray-600 block">
                     <Trans>Studio</Trans>
-                  </label>
+                  </span>
                   <p className="text-gray-900">{order.studio.name}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <span className="text-sm font-medium text-gray-600 block">
                     <Trans>Payment Method</Trans>
-                  </label>
+                  </span>
                   <p className="text-gray-900 flex items-center gap-2">
                     <CreditCard className="w-4 h-4" />
                     {order.paymentMethod.toUpperCase()}
@@ -407,9 +405,9 @@ export default function OrderDetailPage({
 
               {order.notes && (
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <span className="text-sm font-medium text-gray-600 block">
                     <Trans>Notes</Trans>
-                  </label>
+                  </span>
                   <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">
                     {order.notes}
                   </p>

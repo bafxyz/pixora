@@ -6,12 +6,12 @@ import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
 import { FormField } from '@repo/ui/form-field'
 import { Input } from '@repo/ui/input'
+import { PageLayout } from '@repo/ui/page-layout'
 import { Spinner } from '@repo/ui/spinner'
 import { ArrowLeft, Save } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { PageLayout } from '@repo/ui/page-layout'
 
 interface PhotographerDetails {
   id: string

@@ -1,7 +1,7 @@
 'use client'
 
-import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Button } from '@repo/ui/button'
 import {
   Card,

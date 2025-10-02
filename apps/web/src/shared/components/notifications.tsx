@@ -1,13 +1,12 @@
 'use client'
 
-import { msg } from '@lingui/macro'
+import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
-import { Trans } from '@lingui/macro'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent } from '@repo/ui/card'
-import { Bell, Check, Package, CreditCard, X, Loader2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Bell, Check, CreditCard, Loader2, Package, X } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 interface Notification {
@@ -27,7 +26,7 @@ export function Notifications() {
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch('/api/notifications')
@@ -46,7 +45,7 @@ export function Notifications() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const markAsRead = async (notificationId: string) => {
     try {
@@ -116,7 +115,7 @@ export function Notifications() {
     // Poll for new notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchNotifications])
 
   return (
     <div className="relative">
@@ -145,6 +144,12 @@ export function Notifications() {
           <div
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setIsOpen(false)
+            }}
+            role="button"
+            tabIndex={-1}
+            aria-label="Close notifications"
           />
 
           {/* Dropdown Content */}
@@ -204,6 +209,16 @@ export function Notifications() {
                             markAsRead(notification.id)
                           }
                         }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            if (!notification.isRead) {
+                              markAsRead(notification.id)
+                            }
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
                       >
                         <div className="flex items-start gap-3">
                           <div className="mt-1">

@@ -1,7 +1,7 @@
 'use client'
 
-import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
@@ -104,7 +104,7 @@ export default function SessionDetailsPage({
     } finally {
       setLoading(false)
     }
-  }, [sessionId])
+  }, [sessionId, _])
 
   useEffect(() => {
     fetchSessionDetails()

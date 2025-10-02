@@ -15,19 +15,19 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import {
-  BarChart,
   Bar,
-  LineChart,
+  BarChart,
+  CartesianGrid,
+  Legend,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from 'recharts'
-import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 interface PlatformStats {
@@ -402,7 +402,7 @@ export default function AdminStatsPage() {
                     dataKey="period"
                     tick={{ fontSize: 12 }}
                     tickFormatter={(value) => {
-                      const date = new Date(value + '-01')
+                      const date = new Date(`${value}-01`)
                       return date.toLocaleDateString('en-US', {
                         month: 'short',
                         year: '2-digit',
@@ -419,7 +419,7 @@ export default function AdminStatsPage() {
                       'Revenue',
                     ]}
                     labelFormatter={(label) => {
-                      const date = new Date(label + '-01')
+                      const date = new Date(`${label}-01`)
                       return date.toLocaleDateString('en-US', {
                         month: 'long',
                         year: 'numeric',
@@ -456,7 +456,7 @@ export default function AdminStatsPage() {
                     dataKey="period"
                     tick={{ fontSize: 12 }}
                     tickFormatter={(value) => {
-                      const date = new Date(value + '-01')
+                      const date = new Date(`${value}-01`)
                       return date.toLocaleDateString('en-US', {
                         month: 'short',
                         year: '2-digit',
@@ -466,7 +466,7 @@ export default function AdminStatsPage() {
                   <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip
                     labelFormatter={(label) => {
-                      const date = new Date(label + '-01')
+                      const date = new Date(`${label}-01`)
                       return date.toLocaleDateString('en-US', {
                         month: 'long',
                         year: 'numeric',
@@ -496,7 +496,7 @@ export default function AdminStatsPage() {
                     dataKey="period"
                     tick={{ fontSize: 12 }}
                     tickFormatter={(value) => {
-                      const date = new Date(value + '-01')
+                      const date = new Date(`${value}-01`)
                       return date.toLocaleDateString('en-US', {
                         month: 'short',
                         year: '2-digit',
@@ -506,7 +506,7 @@ export default function AdminStatsPage() {
                   <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip
                     labelFormatter={(label) => {
-                      const date = new Date(label + '-01')
+                      const date = new Date(`${label}-01`)
                       return date.toLocaleDateString('en-US', {
                         month: 'long',
                         year: 'numeric',
@@ -543,7 +543,7 @@ export default function AdminStatsPage() {
                     dataKey="period"
                     tick={{ fontSize: 12 }}
                     tickFormatter={(value) => {
-                      const date = new Date(value + '-01')
+                      const date = new Date(`${value}-01`)
                       return date.toLocaleDateString('en-US', {
                         month: 'short',
                         year: '2-digit',
@@ -553,7 +553,7 @@ export default function AdminStatsPage() {
                   <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip
                     labelFormatter={(label) => {
-                      const date = new Date(label + '-01')
+                      const date = new Date(`${label}-01`)
                       return date.toLocaleDateString('en-US', {
                         month: 'long',
                         year: 'numeric',

@@ -1,7 +1,8 @@
+import type { Prisma } from '@prisma/client'
 import { type NextRequest, NextResponse } from 'next/server'
+import { createNotification } from '@/lib/services/notification.service'
 import { withRoleCheck } from '@/shared/lib/auth/role-guard'
 import { prisma } from '@/shared/lib/prisma/client'
-import { createNotification } from '@/lib/services/notification.service'
 
 export async function PATCH(
   request: NextRequest,
@@ -29,7 +30,7 @@ export async function PATCH(
     }
 
     // Build where clause based on user role
-    let whereClause: any = { id }
+    let whereClause: Prisma.OrderWhereUniqueInput = { id }
 
     if (auth.user.role === 'photographer') {
       // Photographers can only update orders from their sessions
@@ -59,7 +60,7 @@ export async function PATCH(
     }
 
     // Prepare update data based on status
-    let updateData: any = { status }
+    const updateData: Prisma.OrderUpdateInput = { status }
 
     if (status === 'processing') {
       updateData.processedAt = new Date()
@@ -124,6 +125,9 @@ export async function PATCH(
         case 'cancelled':
           title = 'Order Cancelled'
           message = `Your order ${order.id.slice(0, 8)}... has been cancelled. Please contact us if you have any questions.`
+          break
+        default:
+          // No notification for pending or unknown statuses
           break
       }
 

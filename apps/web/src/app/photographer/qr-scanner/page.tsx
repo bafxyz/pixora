@@ -1,17 +1,11 @@
 'use client'
 
-import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Button } from '@repo/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@repo/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
 import { Spinner } from '@repo/ui/spinner'
-import { ArrowLeft, User as UserIcon, Clock, ShoppingCart } from 'lucide-react'
+import { ArrowLeft, Clock, ShoppingCart, User as UserIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { QRScanner } from '@/features/qr/components/qr-scanner'
@@ -159,35 +153,35 @@ export default function QRScannerPage() {
                   {/* Guest Details */}
                   <div className="space-y-3">
                     <div>
-                      <label className="text-sm font-medium text-slate-600">
+                      <span className="text-sm font-medium text-slate-600 block">
                         <Trans>Name</Trans>
-                      </label>
+                      </span>
                       <p className="text-slate-800">
                         {scannedGuest.name || _('Not specified')}
                       </p>
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-slate-600">
+                      <span className="text-sm font-medium text-slate-600 block">
                         <Trans>Email</Trans>
-                      </label>
+                      </span>
                       <p className="text-slate-800">{scannedGuest.email}</p>
                     </div>
 
                     {scannedGuest.phone && (
                       <div>
-                        <label className="text-sm font-medium text-slate-600">
+                        <span className="text-sm font-medium text-slate-600 block">
                           <Trans>Phone</Trans>
-                        </label>
+                        </span>
                         <p className="text-slate-800">{scannedGuest.phone}</p>
                       </div>
                     )}
 
                     {scannedGuest.session && (
                       <div>
-                        <label className="text-sm font-medium text-slate-600">
+                        <span className="text-sm font-medium text-slate-600 block">
                           <Trans>Current Session</Trans>
-                        </label>
+                        </span>
                         <p className="text-slate-800">
                           {scannedGuest.session.name}
                         </p>
@@ -196,9 +190,9 @@ export default function QRScannerPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-sm font-medium text-slate-600">
+                        <span className="text-sm font-medium text-slate-600 block">
                           <Trans>Last Access</Trans>
-                        </label>
+                        </span>
                         <p className="text-slate-800 text-sm">
                           {scannedGuest.lastAccessAt
                             ? new Date(
@@ -209,9 +203,9 @@ export default function QRScannerPage() {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-slate-600">
+                        <span className="text-sm font-medium text-slate-600 block">
                           <Trans>Registered</Trans>
-                        </label>
+                        </span>
                         <p className="text-slate-800 text-sm">
                           {new Date(
                             scannedGuest.createdAt
@@ -262,7 +256,7 @@ export default function QRScannerPage() {
                       <Button
                         onClick={() =>
                           router.push(
-                            `/photographer/sessions/${scannedGuest.session!.id}`
+                            `/photographer/sessions/${scannedGuest.session?.id}`
                           )
                         }
                         className="flex-1"

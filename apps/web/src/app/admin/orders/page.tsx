@@ -1,8 +1,7 @@
 'use client'
 
-import { msg } from '@lingui/macro'
+import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
-import { Trans } from '@lingui/macro'
 import { PageLayout } from '@repo/ui/page-layout'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
@@ -162,6 +161,14 @@ export default function OrdersPage() {
               key={order.id}
               className="bg-white border rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer"
               onClick={() => router.push(`/admin/orders/${order.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  router.push(`/admin/orders/${order.id}`)
+                }
+              }}
+              role="button"
+              tabIndex={0}
             >
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
                 <div className="flex-1">

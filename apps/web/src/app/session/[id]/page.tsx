@@ -89,9 +89,7 @@ export default function SessionPage() {
   }
 
   if (loading) {
-    return (
-      <LoadingScreen message={_(msg`Loading your photo session...`)} />
-    )
+    return <LoadingScreen message={_(msg`Loading your photo session...`)} />
   }
 
   if (error || !session) {

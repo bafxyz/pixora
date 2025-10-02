@@ -4,9 +4,10 @@ import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { Card, CardContent } from '@repo/ui/card'
 import { EmptyState } from '@repo/ui/empty-state'
 import { Input } from '@repo/ui/input'
+import { PageLayout } from '@repo/ui/page-layout'
 import { Spinner } from '@repo/ui/spinner'
 import {
   ArrowLeft,
@@ -20,7 +21,6 @@ import {
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { PageLayout } from '@repo/ui/page-layout'
 
 interface Photo {
   id: string
@@ -111,8 +111,7 @@ export default function PhotographerPhotosPage() {
             photo.filename.toLowerCase().includes(query) ||
             photo.guestName.toLowerCase().includes(query) ||
             photo.guestEmail.toLowerCase().includes(query) ||
-            (photo.sessionName &&
-              photo.sessionName.toLowerCase().includes(query))
+            photo.sessionName?.toLowerCase().includes(query)
         )
       )
     }

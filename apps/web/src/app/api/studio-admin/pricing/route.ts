@@ -1,7 +1,7 @@
-import { createClient } from '@/shared/lib/supabase/client'
-import { prisma } from '@/shared/lib/prisma/client'
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { prisma } from '@/shared/lib/prisma/client'
+import { createClient } from '@/shared/lib/supabase/client'
 
 const pricingSchema = z.object({
   pricePerPhoto: z.number().min(0),
@@ -11,7 +11,7 @@ const pricingSchema = z.object({
 })
 
 // GET /api/studio-admin/pricing - Get current pricing
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const supabase = await createClient()
     const {

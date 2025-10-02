@@ -1,7 +1,7 @@
 'use client'
 
-import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
@@ -13,7 +13,6 @@ import { PageLayout } from '@repo/ui/page-layout'
 import { Spinner } from '@repo/ui/spinner'
 import {
   Calendar,
-  CalendarPlus,
   Clock,
   Eye,
   Image,
@@ -91,7 +90,7 @@ export default function PhotographerSessionsPage() {
     }
 
     fetchSessions()
-  }, [])
+  }, [_])
 
   const handleEditClick = (session: PhotoSession) => {
     setEditingSession(session)
@@ -604,7 +603,8 @@ export default function PhotographerSessionsPage() {
                   <p className="text-sm text-blue-800 text-center">
                     <strong>Show this QR code to clients</strong>
                     <br />
-                    They will be able to scan it and access photos from this session
+                    They will be able to scan it and access photos from this
+                    session
                   </p>
                 </div>
               </>

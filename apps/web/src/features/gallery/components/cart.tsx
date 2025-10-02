@@ -1,5 +1,5 @@
-import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Button } from '@repo/ui/button'
 import { ShoppingCart, Trash2, X } from 'lucide-react'
 import React from 'react'

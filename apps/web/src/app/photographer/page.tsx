@@ -1,7 +1,7 @@
 'use client'
 
-import { useLingui } from '@lingui/react'
 import { msg, Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Button } from '@repo/ui/button'
 import {
   Card,
@@ -11,14 +11,7 @@ import {
   CardTitle,
 } from '@repo/ui/card'
 import { LoadingScreen } from '@repo/ui/loading-screen'
-import {
-  Camera,
-  Clock,
-  Image as ImageIcon,
-  QrCode,
-  ShoppingCart,
-  Upload,
-} from 'lucide-react'
+import { Camera, Clock, Image as ImageIcon, QrCode, Upload } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 

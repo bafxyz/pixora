@@ -1,7 +1,7 @@
 'use client'
 
-import { useLingui } from '@lingui/react'
 import { msg } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { LoadingScreen } from '@repo/ui/loading-screen'
 import { Check, X } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'

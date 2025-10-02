@@ -1,7 +1,7 @@
 'use client'
 
-import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
@@ -67,10 +67,7 @@ export default function PhotographerUploadPage() {
     }
   }, [searchParams, fetchSessions])
 
-  const handleUploadComplete = (
-    _uploadedUrls: string[],
-    sessionId: string
-  ) => {
+  const handleUploadComplete = (_uploadedUrls: string[], sessionId: string) => {
     toast.success(`Photos uploaded successfully to session!`)
     // Redirect to the session page to see the uploaded photos
     router.push(`/photographer/sessions/${sessionId}`)

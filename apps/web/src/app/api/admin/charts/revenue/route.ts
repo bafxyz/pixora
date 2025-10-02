@@ -25,7 +25,6 @@ export async function GET(request: NextRequest) {
         dateFormat = '%Y-%u'
         groupBy = 'week'
         break
-      case 'monthly':
       default:
         dateFormat = '%Y-%m'
         groupBy = 'month'

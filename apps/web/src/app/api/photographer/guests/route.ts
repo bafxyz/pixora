@@ -1,7 +1,7 @@
-import { createClient } from '@/shared/lib/supabase/client'
-import { prisma } from '@/shared/lib/prisma/client'
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { prisma } from '@/shared/lib/prisma/client'
+import { createClient } from '@/shared/lib/supabase/client'
 
 const createGuestSchema = z.object({
   email: z.string().email(),

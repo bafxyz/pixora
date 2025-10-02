@@ -12,7 +12,19 @@ interface ModalProps {
 }
 
 const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
-  ({ isOpen, onClose, children, size = 'md', className, closeOnEscape = true, closeOnBackdrop = true, ...props }, ref) => {
+  (
+    {
+      isOpen,
+      onClose,
+      children,
+      size = 'md',
+      className,
+      closeOnEscape = true,
+      closeOnBackdrop = true,
+      ...props
+    },
+    _ref
+  ) => {
     const modalRef = React.useRef<HTMLDivElement>(null)
 
     // Scroll lock effect
@@ -24,7 +36,8 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
       const originalPaddingRight = document.body.style.paddingRight
 
       // Calculate scrollbar width to prevent layout shift
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+      const scrollbarWidth =
+        window.innerWidth - document.documentElement.clientWidth
 
       // Apply scroll lock
       document.body.style.overflow = 'hidden'
@@ -116,10 +129,20 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
       }
     }
 
+    const handleBackdropKeyDown = (
+      event: React.KeyboardEvent<HTMLDivElement>
+    ) => {
+      if (closeOnBackdrop && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault()
+        onClose()
+      }
+    }
+
     return (
       <div
         className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         onClick={handleBackdropClick}
+        onKeyDown={handleBackdropKeyDown}
         role="dialog"
         aria-modal="true"
       >

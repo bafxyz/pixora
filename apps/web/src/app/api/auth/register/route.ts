@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/shared/lib/prisma/client'
+import { createClient } from '@/shared/lib/supabase/client'
 import { authRateLimiter } from '@/shared/lib/utils/rate-limit'
 import { validateRequestBody } from '@/shared/lib/utils/validation'
 import { registerSchema } from '@/shared/lib/validations/auth.schemas'
-import { createClient } from '@/shared/lib/supabase/client'
-import { prisma } from '@/shared/lib/prisma/client'
 
 export async function POST(request: NextRequest) {
   try {

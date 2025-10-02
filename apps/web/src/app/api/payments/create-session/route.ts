@@ -1,7 +1,6 @@
+import crypto from 'node:crypto'
 import { type NextRequest, NextResponse } from 'next/server'
-import { withRoleCheck } from '@/shared/lib/auth/role-guard'
 import { prisma } from '@/shared/lib/prisma/client'
-import crypto from 'crypto'
 
 // Tinkoff API configuration
 const TINKOFF_TERMINAL_KEY = process.env.TINKOFF_TERMINAL_KEY || ''
@@ -72,7 +71,7 @@ export async function POST(request: NextRequest) {
     const amountInKopecks = Math.round(Number(order.finalAmount) * 100)
 
     // Generate token for Tinkoff API
-    const generateToken = (data: Record<string, any>): string => {
+    const generateToken = (data: Record<string, string | number>): string => {
       const sortedKeys = Object.keys(data).sort()
       const tokenString = sortedKeys.map((key) => `${key}${data[key]}`).join('')
       return crypto

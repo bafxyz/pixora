@@ -103,8 +103,7 @@ export function Header() {
           {/* Right side - Compact */}
           <div className="flex items-center space-x-2 sm:space-x-3">
             {/* Notifications - Show for authenticated users */}
-            {user &&
-              user.role &&
+            {user?.role &&
               ['admin', 'studio-admin', 'photographer'].includes(user.role) && (
                 <Notifications />
               )}

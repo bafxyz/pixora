@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       photographers: formattedPhotographers,
-      currentUserEmail: auth.user.email
+      currentUserEmail: auth.user.email,
     })
   } catch (error) {
     console.error('Photographers fetch error:', error)

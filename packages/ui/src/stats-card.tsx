@@ -1,7 +1,7 @@
+import type { LucideIcon } from 'lucide-react'
 import * as React from 'react'
 import { Card, CardContent } from './card'
 import { cn } from './utils'
-import type { LucideIcon } from 'lucide-react'
 
 interface StatsCardProps {
   title: string
