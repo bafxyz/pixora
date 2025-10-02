@@ -1,5 +1,6 @@
 'use client'
 
+import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
@@ -88,7 +89,7 @@ export function PhotographerDashboard({
   const [isLoading, setIsLoading] = useState(false)
   const [orders, setOrders] = useState<Order[]>([])
 
-  // Форма настроек
+  // Settings form
   const [settingsForm, setSettingsForm] = useState({
     brandColor: '#3B82F6',
     logoUrl: '',
@@ -118,7 +119,7 @@ export function PhotographerDashboard({
     return session?.access_token
   }, [])
 
-  // Загрузка профиля
+  // Profile loading
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -139,7 +140,7 @@ export function PhotographerDashboard({
             logoUrl: profileData.settings?.logoUrl || '',
             welcomeMessage:
               profileData.settings?.welcomeMessage ||
-              `Добро пожаловать в ${profileData.studioName}!`,
+              `Welcome to ${profileData.studioName}!`,
           })
         }
       } catch (error) {
@@ -150,7 +151,7 @@ export function PhotographerDashboard({
     loadProfile()
   }, [user.id])
 
-  // Загрузка заказов
+  // Orders loading
   const loadOrders = useCallback(async () => {
     try {
       const accessToken = await getAccessToken()
@@ -178,7 +179,7 @@ export function PhotographerDashboard({
     }
   }, [activeTab, loadOrders])
 
-  // Обновление настроек брендинга
+  // Brand settings update
   const handleSettingsUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -196,8 +197,8 @@ export function PhotographerDashboard({
       })
 
       if (response.ok) {
-        toast.success('Настройки успешно обновлены')
-        // Перезагружаем профиль
+        toast.success(_(msg`Settings successfully updated`))
+        // Reload profile
         if (profile) {
           setProfile({
             ...profile,
@@ -210,7 +211,7 @@ export function PhotographerDashboard({
       }
     } catch (error) {
       console.error('Settings update error:', error)
-      toast.error('Ошибка при обновлении настроек')
+      toast.error(_(msg`Error updating settings`))
     } finally {
       setIsLoading(false)
     }
@@ -238,7 +239,7 @@ export function PhotographerDashboard({
             </div>
             <Button variant="outline" onClick={() => signOut()}>
               <LogOut className="w-4 h-4 mr-2" />
-              Выйти
+              <Trans>Sign Out</Trans>
             </Button>
           </div>
         </div>
@@ -253,21 +254,27 @@ export function PhotographerDashboard({
               className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white hover:bg-primary/10 transition-all duration-200"
             >
               <Upload className="w-5 h-5 flex-shrink-0" />
-              <span className="text-sm font-medium">Загрузка</span>
+              <span className="text-sm font-medium">
+                <Trans>Upload</Trans>
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="orders"
               className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary data-[state=active]:to-pink-600 data-[state=active]:text-white hover:bg-secondary/10 transition-all duration-200"
             >
               <ShoppingCart className="w-5 h-5 flex-shrink-0" />
-              <span className="text-sm font-medium">Заказы</span>
+              <span className="text-sm font-medium">
+                <Trans>Orders</Trans>
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="settings"
               className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent data-[state=active]:to-amber-600 data-[state=active]:text-white hover:bg-accent/10 transition-all duration-200"
             >
               <Settings className="w-5 h-5 flex-shrink-0" />
-              <span className="text-sm font-medium">Настройки</span>
+              <span className="text-sm font-medium">
+                <Trans>Settings</Trans>
+              </span>
             </TabsTrigger>
           </TabsList>
 
@@ -362,16 +369,20 @@ export function PhotographerDashboard({
           <TabsContent value="orders" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Заказы</CardTitle>
+                <CardTitle>
+                  <Trans>Orders</Trans>
+                </CardTitle>
                 <CardDescription>
-                  Управление заказами ваших клиентов
+                  <Trans>Manage your customer orders</Trans>
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {orders.length === 0 ? (
                   <div className="text-center py-8">
                     <ShoppingCart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">Пока нет заказов</p>
+                    <p className="text-gray-600">
+                      <Trans>No orders yet</Trans>
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -379,16 +390,18 @@ export function PhotographerDashboard({
                       <div key={order.id} className="p-4 border rounded-lg">
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <p className="font-semibold">Заказ #{order.id}</p>
+                            <p className="font-semibold">
+                              <Trans>Order</Trans> #{order.id}
+                            </p>
                             <p className="text-sm text-gray-600">
-                              Гость: {order.guestId}
+                              <Trans>Guest</Trans>: {order.guestId}
                             </p>
                           </div>
                           <Badge variant="outline">{order.status}</Badge>
                         </div>
                         <p className="text-sm text-gray-600">
-                          Сумма: {order.totalAmount}₽ • {order.items.length}{' '}
-                          товаров
+                          <Trans>Total</Trans>: {order.totalAmount}₽ •{' '}
+                          {order.items.length} <Trans>items</Trans>
                         </p>
                       </div>
                     ))}
@@ -403,16 +416,20 @@ export function PhotographerDashboard({
               <CardHeader>
                 <CardTitle>
                   <Palette className="w-5 h-5 inline mr-2" />
-                  Настройки брендинга
+                  <Trans>Branding Settings</Trans>
                 </CardTitle>
                 <CardDescription>
-                  Настройте внешний вид галерей для ваших гостей
+                  <Trans>
+                    Customize the appearance of galleries for your guests
+                  </Trans>
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSettingsUpdate} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="brandColor">Основной цвет</Label>
+                    <Label htmlFor="brandColor">
+                      <Trans>Primary Color</Trans>
+                    </Label>
                     <div className="flex gap-2">
                       <Input
                         id="brandColor"
@@ -440,7 +457,9 @@ export function PhotographerDashboard({
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="logoUrl">URL логотипа</Label>
+                    <Label htmlFor="logoUrl">
+                      <Trans>Logo URL</Trans>
+                    </Label>
                     <Input
                       id="logoUrl"
                       type="url"
@@ -456,11 +475,11 @@ export function PhotographerDashboard({
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="welcomeMessage">
-                      Приветственное сообщение
+                      <Trans>Welcome Message</Trans>
                     </Label>
                     <Input
                       id="welcomeMessage"
-                      placeholder="Добро пожаловать в нашу студию!"
+                      placeholder={_(msg`Welcome to our studio!`)}
                       value={settingsForm.welcomeMessage}
                       onChange={(e) =>
                         setSettingsForm((prev) => ({
@@ -471,16 +490,18 @@ export function PhotographerDashboard({
                     />
                   </div>
                   <Button type="submit" disabled={isLoading}>
-                    {isLoading ? 'Сохранение...' : 'Сохранить настройки'}
+                    {isLoading ? _(msg`Saving...`) : _(msg`Save Settings`)}
                   </Button>
                 </form>
               </CardContent>
             </Card>
 
-            {/* Предварительный просмотр */}
+            {/* Preview */}
             <Card>
               <CardHeader>
-                <CardTitle>Предварительный просмотр</CardTitle>
+                <CardTitle>
+                  <Trans>Preview</Trans>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div

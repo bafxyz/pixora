@@ -1,5 +1,7 @@
 'use client'
 
+import { msg, Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
 import { PageLayout } from '@repo/ui/page-layout'
 import {
@@ -20,9 +22,12 @@ interface StudioStats {
   totalPhotos: number
   totalOrders: number
   revenue: number
+  photographersCount: number
+  sessionsCount: number
 }
 
 export default function StudioAdminStatsPage() {
+  const { _ } = useLingui()
   const [stats, setStats] = useState<StudioStats | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -30,30 +35,32 @@ export default function StudioAdminStatsPage() {
     const fetchStats = async () => {
       try {
         const response = await fetch('/api/studio-admin/stats')
-        const data = await response.json()
 
-        if (response.ok) {
-          setStats(data.stats)
-        } else {
-          console.error('Failed to fetch stats:', data.error)
-          toast.error('Ошибка при загрузке статистики')
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('Failed to fetch stats:', response.status, errorText)
+          toast.error(_(msg`Error loading statistics`))
+          return
         }
+
+        const data = await response.json()
+        setStats(data.stats)
       } catch (error) {
         console.error('Error fetching stats:', error)
-        toast.error('Ошибка при загрузке статистики')
+        toast.error(_(msg`Error loading statistics`))
       } finally {
         setLoading(false)
       }
     }
 
     fetchStats()
-  }, [])
+  }, [_])
 
   if (loading) {
     return (
       <PageLayout
-        title="Статистика студии"
-        description="Аналитика и метрики работы студии"
+        title={_(msg`Studio Statistics`)}
+        description={_(msg`Analytics and metrics for your studio`)}
       >
         <div className="flex justify-center items-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -64,8 +71,8 @@ export default function StudioAdminStatsPage() {
 
   return (
     <PageLayout
-      title="Статистика студии"
-      description="Аналитика и метрики работы студии"
+      title={_(msg`Studio Statistics`)}
+      description={_(msg`Analytics and metrics for your studio`)}
     >
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -73,7 +80,7 @@ export default function StudioAdminStatsPage() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Всего гостей
+                <Trans>Total Guests</Trans>
               </CardTitle>
               <Users className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
@@ -82,7 +89,7 @@ export default function StudioAdminStatsPage() {
                 {stats?.totalGuests || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                Уникальных посетителей
+                <Trans>Unique visitors</Trans>
               </p>
             </CardContent>
           </Card>
@@ -91,7 +98,7 @@ export default function StudioAdminStatsPage() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Photos
+                <Trans>Total Photos</Trans>
               </CardTitle>
               <Image className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
@@ -100,7 +107,7 @@ export default function StudioAdminStatsPage() {
                 {stats?.totalPhotos || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                Загружено за всё время
+                <Trans>Uploaded all time</Trans>
               </p>
             </CardContent>
           </Card>
@@ -109,7 +116,7 @@ export default function StudioAdminStatsPage() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Всего заказов
+                <Trans>Total Orders</Trans>
               </CardTitle>
               <ShoppingCart className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
@@ -118,7 +125,7 @@ export default function StudioAdminStatsPage() {
                 {stats?.totalOrders || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                Обработано заказов
+                <Trans>Orders processed</Trans>
               </p>
             </CardContent>
           </Card>
@@ -126,14 +133,18 @@ export default function StudioAdminStatsPage() {
           {/* Revenue Card */}
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Доход</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                <Trans>Revenue</Trans>
+              </CardTitle>
               <DollarSign className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
                 ${stats?.revenue ? stats.revenue.toFixed(2) : '0.00'}
               </div>
-              <p className="text-xs text-muted-foreground">Общий заработок</p>
+              <p className="text-xs text-muted-foreground">
+                <Trans>Total earnings</Trans>
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -144,7 +155,7 @@ export default function StudioAdminStatsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5" />
-                Аналитика по заказам
+                <Trans>Order Analytics</Trans>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -152,9 +163,11 @@ export default function StudioAdminStatsPage() {
                 {/* Placeholder for chart - in a real implementation, you would use a charting library like recharts */}
                 <div className="text-center">
                   <BarChart3 className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-                  <p className="text-sm">График заказов за последние 30 дней</p>
+                  <p className="text-sm">
+                    <Trans>Orders chart for the last 30 days</Trans>
+                  </p>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Подключите библиотеку для визуализации данных
+                    <Trans>Connect a data visualization library</Trans>
                   </p>
                 </div>
               </div>
@@ -166,7 +179,7 @@ export default function StudioAdminStatsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="w-5 h-5" />
-                Последние события
+                <Trans>Recent Activity</Trans>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -174,36 +187,44 @@ export default function StudioAdminStatsPage() {
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
                   <div>
-                    <p className="text-sm font-medium">Новый заказ</p>
+                    <p className="text-sm font-medium">
+                      <Trans>New Order</Trans>
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      Заказ #12345 оформлен клиентом
+                      <Trans>Order #12345 placed by customer</Trans>
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
                   <div>
-                    <p className="text-sm font-medium">Фото загружено</p>
+                    <p className="text-sm font-medium">
+                      <Trans>Photos Uploaded</Trans>
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      25 новых фото добавлено в галерею
+                      <Trans>25 new photos added to gallery</Trans>
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
                   <div>
-                    <p className="text-sm font-medium">Гость зарегистрирован</p>
+                    <p className="text-sm font-medium">
+                      <Trans>Guest Registered</Trans>
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      Новый гость добавлен в систему
+                      <Trans>New guest added to system</Trans>
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>
                   <div>
-                    <p className="text-sm font-medium">Заказ завершен</p>
+                    <p className="text-sm font-medium">
+                      <Trans>Order Completed</Trans>
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      Заказ #12344 успешно выполнен
+                      <Trans>Order #12344 successfully completed</Trans>
                     </p>
                   </div>
                 </div>
@@ -221,7 +242,9 @@ export default function StudioAdminStatsPage() {
                   ? (stats.totalPhotos / stats.totalOrders).toFixed(1)
                   : '0.0'}
               </div>
-              <p className="text-sm text-muted-foreground">Фото на заказ</p>
+              <p className="text-sm text-muted-foreground">
+                <Trans>Photos per Order</Trans>
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -231,7 +254,9 @@ export default function StudioAdminStatsPage() {
                   ? (stats.revenue / stats.totalOrders).toFixed(2)
                   : '0.00'}
               </div>
-              <p className="text-sm text-muted-foreground">Средний чек ($)</p>
+              <p className="text-sm text-muted-foreground">
+                <Trans>Average Order ($)</Trans>
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -242,7 +267,9 @@ export default function StudioAdminStatsPage() {
                   : '0.0'}
                 %
               </div>
-              <p className="text-sm text-muted-foreground">Конверсия (%)</p>
+              <p className="text-sm text-muted-foreground">
+                <Trans>Conversion (%)</Trans>
+              </p>
             </CardContent>
           </Card>
         </div>

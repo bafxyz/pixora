@@ -68,7 +68,7 @@ export async function multiTenantMiddleware(request: NextRequest) {
 
   // Note: This block is redundant since we already handled the !user case above
 
-  // Получаем client_id пользователя из его профиля или из JWT
+  // Get client_id from user profile or JWT
   const clientId = user.user_metadata?.client_id || user.id
 
   if (!clientId) {
@@ -86,11 +86,11 @@ export async function multiTenantMiddleware(request: NextRequest) {
     })
   }
 
-  // Добавляем client_id в заголовки запроса для использования в API
+  // Add client_id to request headers for API usage
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-client-id', clientId)
 
-  // Создаем новый response с обновленными заголовками
+  // Create new response with updated headers
   response = NextResponse.next({
     request: {
       headers: requestHeaders,
@@ -100,12 +100,12 @@ export async function multiTenantMiddleware(request: NextRequest) {
   return response
 }
 
-// Функция для получения client_id из заголовков
+// Function to get client_id from headers
 export function getClientIdFromRequest(request: NextRequest): string | null {
   return request.headers.get('x-client-id')
 }
 
-// Функция для получения client_id из контекста
+// Function to get client_id from context
 export function getClientIdFromContext(context: {
   req?: { headers?: Record<string, string | string[]> }
 }): string | null {

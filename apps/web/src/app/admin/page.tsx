@@ -84,7 +84,7 @@ export default function AdminPage() {
         description={<Trans>Platform management and monitoring</Trans>}
       />
 
-      {/* Статистика */}
+      {/* Statistics */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 mb-8">
         <StatsCard
           title={_(msg`Studios`)}

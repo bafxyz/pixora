@@ -1,6 +1,6 @@
 'use client'
 
-import { Trans } from '@lingui/macro'
+import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
@@ -44,15 +44,15 @@ export default function PhotographerUploadPage() {
         setSessions(data.photoSessions)
       } else {
         console.error('Failed to fetch sessions:', data.error)
-        toast.error('Ошибка при загрузке фотосессий')
+        toast.error(_('Error loading photo sessions'))
       }
     } catch (error) {
       console.error('Error fetching sessions:', error)
-      toast.error('Ошибка при загрузке фотосессий')
+      toast.error(_('Error loading photo sessions'))
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [_])
 
   // Handle URL parameters
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function PhotographerUploadPage() {
   }, [searchParams, fetchSessions])
 
   const handleUploadComplete = (_uploadedUrls: string[], sessionId: string) => {
-    toast.success(`Photos uploaded successfully to session!`)
+    toast.success(_('Photos uploaded successfully to session!'))
     // Redirect to the session page to see the uploaded photos
     router.push(`/photographer/sessions/${sessionId}`)
   }
@@ -91,8 +91,8 @@ export default function PhotographerUploadPage() {
   }
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Не запланировано'
-    return new Date(dateString).toLocaleDateString('ru-RU', {
+    if (!dateString) return _('Not scheduled')
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -157,13 +157,13 @@ export default function PhotographerUploadPage() {
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusVariant(session.status) === 'secondary' ? 'bg-gray-100 text-gray-800' : getStatusVariant(session.status) === 'default' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}
                       >
                         {session.status === 'created'
-                          ? 'Создана'
+                          ? _('Created')
                           : session.status === 'active'
-                            ? 'Активна'
+                            ? _('Active')
                             : session.status === 'completed'
-                              ? 'Завершена'
+                              ? _('Completed')
                               : session.status === 'archived'
-                                ? 'Архив'
+                                ? _('Archived')
                                 : session.status}
                       </Badge>
                     </CardTitle>
@@ -182,19 +182,19 @@ export default function PhotographerUploadPage() {
 
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Users className="w-4 h-4 mr-2" />
-                        {session.guestCount} гостей
+                        {session.guestCount} {_(msg`guests`)}
                       </div>
 
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Image className="w-4 h-4 mr-2" />
-                        {session.photoCount} фото
+                        {session.photoCount} {_(msg`photos`)}
                       </div>
 
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Calendar className="w-4 h-4 mr-2" />
-                        Создана:{' '}
+                        <Trans>Created:</Trans>{' '}
                         {new Date(session.createdAt).toLocaleDateString(
-                          'ru-RU'
+                          'en-US'
                         )}
                       </div>
                     </div>

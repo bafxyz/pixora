@@ -1,3 +1,5 @@
+import { msg, Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import {
@@ -38,6 +40,7 @@ interface AdminPanelProps {
 }
 
 export function AdminPanel(_props: AdminPanelProps) {
+  const { _ } = useLingui()
   const { signOut } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
   const [stats, _setStats] = useState({
@@ -50,8 +53,8 @@ export function AdminPanel(_props: AdminPanelProps) {
   const [recentPhotographers] = useState([
     {
       id: '1',
-      name: 'Анна Петрова',
-      studioName: 'Студия Петровой',
+      name: 'Anna Petrova',
+      studioName: 'Petrova Studio',
       email: 'anna@studio.com',
       joinDate: '2024-01-15',
       photosCount: 120,
@@ -59,8 +62,8 @@ export function AdminPanel(_props: AdminPanelProps) {
     },
     {
       id: '2',
-      name: 'Михаил Иванов',
-      studioName: 'Фото-Магия',
+      name: 'Mikhail Ivanov',
+      studioName: 'Photo-Magic',
       email: 'mikhail@photo.com',
       joinDate: '2024-02-20',
       photosCount: 89,
@@ -68,8 +71,8 @@ export function AdminPanel(_props: AdminPanelProps) {
     },
     {
       id: '3',
-      name: 'Елена Сидорова',
-      studioName: 'Момент',
+      name: 'Elena Sidorova',
+      studioName: 'Moment',
       email: 'elena@moment.ru',
       joinDate: '2024-03-01',
       photosCount: 156,
@@ -80,7 +83,7 @@ export function AdminPanel(_props: AdminPanelProps) {
   const [recentOrders] = useState([
     {
       id: 'ORDER001',
-      photographerName: 'Анна Петрова',
+      photographerName: 'Anna Petrova',
       guestId: 'GUEST123',
       amount: 2500,
       status: 'completed',
@@ -88,7 +91,7 @@ export function AdminPanel(_props: AdminPanelProps) {
     },
     {
       id: 'ORDER002',
-      photographerName: 'Михаил Иванов',
+      photographerName: 'Mikhail Ivanov',
       guestId: 'GUEST456',
       amount: 1800,
       status: 'processing',
@@ -96,7 +99,7 @@ export function AdminPanel(_props: AdminPanelProps) {
     },
     {
       id: 'ORDER003',
-      photographerName: 'Елена Сидорова',
+      photographerName: 'Elena Sidorova',
       guestId: 'GUEST789',
       amount: 3200,
       status: 'pending',
@@ -120,11 +123,11 @@ export function AdminPanel(_props: AdminPanelProps) {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'Выполнен'
+        return _(msg`Completed`)
       case 'processing':
-        return 'В обработке'
+        return _(msg`Processing`)
       case 'pending':
-        return 'Ожидание'
+        return _(msg`Pending`)
       default:
         return status
     }
@@ -142,12 +145,14 @@ export function AdminPanel(_props: AdminPanelProps) {
                 <h1 className="text-2xl font-bold text-gray-900">
                   Pixora Admin
                 </h1>
-                <p className="text-gray-600">Панель администратора</p>
+                <p className="text-gray-600">
+                  <Trans>Admin Panel</Trans>
+                </p>
               </div>
             </div>
             <Button variant="outline" onClick={() => signOut()}>
               <LogOut className="w-4 h-4 mr-2" />
-              Выйти
+              <Trans>Sign Out</Trans>
             </Button>
           </div>
         </div>
@@ -159,19 +164,19 @@ export function AdminPanel(_props: AdminPanelProps) {
           <TabsList className="mb-6">
             <TabsTrigger value="overview">
               <BarChart3 className="w-4 h-4 mr-2" />
-              Обзор
+              <Trans>Overview</Trans>
             </TabsTrigger>
             <TabsTrigger value="photographers">
               <Users className="w-4 h-4 mr-2" />
-              Фотографы
+              <Trans>Photographers</Trans>
             </TabsTrigger>
             <TabsTrigger value="orders">
               <ShoppingCart className="w-4 h-4 mr-2" />
-              Заказы
+              <Trans>Orders</Trans>
             </TabsTrigger>
             <TabsTrigger value="system">
               <Settings className="w-4 h-4 mr-2" />
-              Система
+              <Trans>System</Trans>
             </TabsTrigger>
           </TabsList>
 
@@ -181,7 +186,7 @@ export function AdminPanel(_props: AdminPanelProps) {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Фотографы
+                    <Trans>Photographers</Trans>
                   </CardTitle>
                   <Users className="w-4 h-4 text-muted-foreground" />
                 </CardHeader>
@@ -190,7 +195,8 @@ export function AdminPanel(_props: AdminPanelProps) {
                     {stats.totalPhotographers}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+12%</span> за месяц
+                    <span className="text-green-600">+12%</span>{' '}
+                    <Trans>this month</Trans>
                   </p>
                 </CardContent>
               </Card>
@@ -198,7 +204,7 @@ export function AdminPanel(_props: AdminPanelProps) {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Фотографии
+                    <Trans>Photos</Trans>
                   </CardTitle>
                   <Camera className="w-4 h-4 text-muted-foreground" />
                 </CardHeader>
@@ -207,27 +213,33 @@ export function AdminPanel(_props: AdminPanelProps) {
                     {stats.totalPhotos.toLocaleString()}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+234</span> за неделю
+                    <span className="text-green-600">+234</span>{' '}
+                    <Trans>this week</Trans>
                   </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Заказы</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    <Trans>Orders</Trans>
+                  </CardTitle>
                   <ShoppingCart className="w-4 h-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.totalOrders}</div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+5</span> за день
+                    <span className="text-green-600">+5</span>{' '}
+                    <Trans>today</Trans>
                   </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Выручка</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    <Trans>Revenue</Trans>
+                  </CardTitle>
                   <TrendingUp className="w-4 h-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -235,7 +247,8 @@ export function AdminPanel(_props: AdminPanelProps) {
                     {stats.revenue.toLocaleString()}₽
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">+18%</span> за месяц
+                    <span className="text-green-600">+18%</span>{' '}
+                    <Trans>this month</Trans>
                   </p>
                 </CardContent>
               </Card>
@@ -245,8 +258,12 @@ export function AdminPanel(_props: AdminPanelProps) {
             <div className="grid lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Новые фотографы</CardTitle>
-                  <CardDescription>Последние регистрации</CardDescription>
+                  <CardTitle>
+                    <Trans>New Photographers</Trans>
+                  </CardTitle>
+                  <CardDescription>
+                    <Trans>Recent registrations</Trans>
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -267,7 +284,7 @@ export function AdminPanel(_props: AdminPanelProps) {
                           </div>
                         </div>
                         <Badge variant="outline">
-                          {photographer.photosCount} фото
+                          {photographer.photosCount} <Trans>photos</Trans>
                         </Badge>
                       </div>
                     ))}
@@ -277,8 +294,12 @@ export function AdminPanel(_props: AdminPanelProps) {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Последние заказы</CardTitle>
-                  <CardDescription>Активность клиентов</CardDescription>
+                  <CardTitle>
+                    <Trans>Recent Orders</Trans>
+                  </CardTitle>
+                  <CardDescription>
+                    <Trans>Customer activity</Trans>
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -315,9 +336,13 @@ export function AdminPanel(_props: AdminPanelProps) {
           <TabsContent value="photographers" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Управление фотографами</CardTitle>
+                <CardTitle>
+                  <Trans>Manage Photographers</Trans>
+                </CardTitle>
                 <CardDescription>
-                  Список всех зарегистрированных фотографов в системе
+                  <Trans>
+                    List of all registered photographers in the system
+                  </Trans>
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -344,19 +369,23 @@ export function AdminPanel(_props: AdminPanelProps) {
                             </p>
                             <div className="flex gap-4 mt-2 text-sm text-gray-600">
                               <span>📅 {photographer.joinDate}</span>
-                              <span>📸 {photographer.photosCount} фото</span>
-                              <span>🛒 {photographer.ordersCount} заказов</span>
+                              <span>
+                                📸 {photographer.photosCount} {_(msg`photos`)}
+                              </span>
+                              <span>
+                                🛒 {photographer.ordersCount} {_(msg`orders`)}
+                              </span>
                             </div>
                           </div>
                         </div>
                         <div className="flex gap-2">
                           <Button size="sm" variant="outline">
                             <Eye className="w-4 h-4 mr-1" />
-                            Просмотр
+                            <Trans>View</Trans>
                           </Button>
                           <Button size="sm" variant="outline">
                             <Settings className="w-4 h-4 mr-1" />
-                            Настройки
+                            <Trans>Settings</Trans>
                           </Button>
                         </div>
                       </div>
@@ -370,9 +399,11 @@ export function AdminPanel(_props: AdminPanelProps) {
           <TabsContent value="orders" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Управление заказами</CardTitle>
+                <CardTitle>
+                  <Trans>Manage Orders</Trans>
+                </CardTitle>
                 <CardDescription>
-                  Все заказы в системе с возможностью отслеживания статуса
+                  <Trans>All orders in the system with status tracking</Trans>
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -385,12 +416,15 @@ export function AdminPanel(_props: AdminPanelProps) {
                             <Package className="w-6 h-6 text-green-600" />
                           </div>
                           <div>
-                            <h3 className="font-semibold">Заказ #{order.id}</h3>
+                            <h3 className="font-semibold">
+                              <Trans>Order</Trans> #{order.id}
+                            </h3>
                             <p className="text-sm text-gray-600 mb-1">
-                              Фотограф: {order.photographerName}
+                              <Trans>Photographer</Trans>:{' '}
+                              {order.photographerName}
                             </p>
                             <p className="text-sm text-gray-600 mb-1">
-                              Гость: {order.guestId}
+                              <Trans>Guest</Trans>: {order.guestId}
                             </p>
                             <div className="flex gap-4 mt-2 text-sm text-gray-600">
                               <span>📅 {order.date}</span>
@@ -405,7 +439,7 @@ export function AdminPanel(_props: AdminPanelProps) {
                           <div className="flex gap-2">
                             <Button size="sm" variant="outline">
                               <Eye className="w-4 h-4 mr-1" />
-                              Детали
+                              <Trans>Details</Trans>
                             </Button>
                           </div>
                         </div>
@@ -421,58 +455,68 @@ export function AdminPanel(_props: AdminPanelProps) {
             <div className="grid lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Системная информация</CardTitle>
+                  <CardTitle>
+                    <Trans>System Information</Trans>
+                  </CardTitle>
                   <CardDescription>
-                    Основные параметры платформы
+                    <Trans>Main platform parameters</Trans>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">
-                      Версия платформы:
+                      <Trans>Platform version:</Trans>
                     </span>
                     <span className="text-sm font-medium">1.2.0</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Время работы:</span>
-                    <span className="text-sm font-medium">15 дней 8 часов</span>
+                    <span className="text-sm text-gray-600">
+                      <Trans>Uptime:</Trans>
+                    </span>
+                    <span className="text-sm font-medium">15 days 8 hours</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">
-                      Использование хранилища:
+                      <Trans>Storage usage:</Trans>
                     </span>
-                    <span className="text-sm font-medium">2.3 ГБ / 100 ГБ</span>
+                    <span className="text-sm font-medium">2.3 GB / 100 GB</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">
-                      Активные пользователи:
+                      <Trans>Active users:</Trans>
                     </span>
-                    <span className="text-sm font-medium">42 сегодня</span>
+                    <span className="text-sm font-medium">
+                      42 <Trans>today</Trans>
+                    </span>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Быстрые действия</CardTitle>
-                  <CardDescription>Управление системой</CardDescription>
+                  <CardTitle>
+                    <Trans>Quick Actions</Trans>
+                  </CardTitle>
+                  <CardDescription>
+                    <Trans>System management</Trans>
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button variant="outline" className="w-full justify-start">
                     <Settings className="w-4 h-4 mr-2" />
-                    Настройки платформы
+                    <Trans>Platform Settings</Trans>
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
                     <Users className="w-4 h-4 mr-2" />
-                    Управление пользователями
+                    <Trans>User Management</Trans>
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
                     <BarChart3 className="w-4 h-4 mr-2" />
-                    Экспорт отчётов
+                    <Trans>Export Reports</Trans>
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
                     <Package className="w-4 h-4 mr-2" />
-                    Резервное копирование
+                    <Trans>Backup</Trans>
                   </Button>
                 </CardContent>
               </Card>
@@ -480,8 +524,12 @@ export function AdminPanel(_props: AdminPanelProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle>Логи системы</CardTitle>
-                <CardDescription>Последние события в системе</CardDescription>
+                <CardTitle>
+                  <Trans>System Logs</Trans>
+                </CardTitle>
+                <CardDescription>
+                  <Trans>Recent system events</Trans>
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 font-mono text-sm max-h-64 overflow-y-auto bg-gray-50 p-4 rounded">

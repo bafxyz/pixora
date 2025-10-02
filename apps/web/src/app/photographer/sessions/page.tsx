@@ -5,8 +5,8 @@ import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { useConfirmation } from '@repo/ui/confirmation-dialog'
 import { EmptyState } from '@repo/ui/empty-state'
-import { FormField } from '@repo/ui/form-field'
 import { Input } from '@repo/ui/input'
 import { Modal, ModalContent, ModalFooter, ModalHeader } from '@repo/ui/modal'
 import { PageLayout } from '@repo/ui/page-layout'
@@ -46,6 +46,7 @@ interface PhotoSession {
 export default function PhotographerSessionsPage() {
   const { _ } = useLingui()
   const router = useRouter()
+  const { confirm, dialog } = useConfirmation()
   const [sessions, setSessions] = useState<PhotoSession[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -153,14 +154,18 @@ export default function PhotographerSessionsPage() {
     sessionId: string,
     sessionName: string
   ) => {
-    if (
-      !confirm(
-        _(
-          'Are you sure you want to delete session "{name}"? All photos will be deleted.',
-          { name: sessionName }
-        )
-      )
-    ) {
+    const confirmed = await confirm({
+      title: _('Delete Photo Session'),
+      description: _(
+        'Are you sure you want to delete session "{name}"? All photos will be deleted.',
+        { name: sessionName }
+      ),
+      confirmText: _('Delete'),
+      cancelText: _('Cancel'),
+      variant: 'danger',
+    })
+
+    if (!confirmed) {
       return
     }
 
@@ -276,6 +281,7 @@ export default function PhotographerSessionsPage() {
       title={_('My Photo Sessions')}
       description={_('Plan and manage your photo sessions')}
     >
+      {dialog}
       <div className="container mx-auto px-4 py-6 sm:py-8">
         <div className="mb-6">
           <h1 className="text-xl sm:text-2xl font-bold">
@@ -299,17 +305,31 @@ export default function PhotographerSessionsPage() {
           </ModalHeader>
           <ModalContent>
             <div className="space-y-4">
-              <FormField label={_('Name')}>
+              <div>
+                <label
+                  htmlFor="edit-name"
+                  className="block text-sm font-medium mb-1"
+                >
+                  <Trans>Name</Trans>
+                </label>
                 <Input
+                  id="edit-name"
                   value={editSession.name}
                   onChange={(e) =>
                     setEditSession({ ...editSession, name: e.target.value })
                   }
                   placeholder={_('e.g., Wedding shoot, Portrait session')}
                 />
-              </FormField>
-              <FormField label={_('Description')}>
+              </div>
+              <div>
+                <label
+                  htmlFor="edit-description"
+                  className="block text-sm font-medium mb-1"
+                >
+                  <Trans>Description</Trans>
+                </label>
                 <Input
+                  id="edit-description"
                   value={editSession.description}
                   onChange={(e) =>
                     setEditSession({
@@ -319,9 +339,16 @@ export default function PhotographerSessionsPage() {
                   }
                   placeholder={_('Brief description of the photo session')}
                 />
-              </FormField>
-              <FormField label={_('Date and Time')}>
+              </div>
+              <div>
+                <label
+                  htmlFor="edit-datetime"
+                  className="block text-sm font-medium mb-1"
+                >
+                  <Trans>Date and Time</Trans>
+                </label>
                 <Input
+                  id="edit-datetime"
                   type="datetime-local"
                   value={editSession.scheduledAt}
                   onChange={(e) =>
@@ -331,7 +358,7 @@ export default function PhotographerSessionsPage() {
                     })
                   }
                 />
-              </FormField>
+              </div>
             </div>
           </ModalContent>
           <ModalFooter>
@@ -363,17 +390,31 @@ export default function PhotographerSessionsPage() {
           </ModalHeader>
           <ModalContent>
             <div className="space-y-4">
-              <FormField label={_('Name')}>
+              <div>
+                <label
+                  htmlFor="new-name"
+                  className="block text-sm font-medium mb-1"
+                >
+                  <Trans>Name</Trans>
+                </label>
                 <Input
+                  id="new-name"
                   value={newSession.name}
                   onChange={(e) =>
                     setNewSession({ ...newSession, name: e.target.value })
                   }
                   placeholder={_('e.g., Wedding shoot, Portrait session')}
                 />
-              </FormField>
-              <FormField label={_('Description')}>
+              </div>
+              <div>
+                <label
+                  htmlFor="new-description"
+                  className="block text-sm font-medium mb-1"
+                >
+                  <Trans>Description</Trans>
+                </label>
                 <Input
+                  id="new-description"
                   value={newSession.description}
                   onChange={(e) =>
                     setNewSession({
@@ -383,9 +424,16 @@ export default function PhotographerSessionsPage() {
                   }
                   placeholder={_('Brief description of the photo session')}
                 />
-              </FormField>
-              <FormField label={_('Date and Time')}>
+              </div>
+              <div>
+                <label
+                  htmlFor="new-datetime"
+                  className="block text-sm font-medium mb-1"
+                >
+                  <Trans>Date and Time</Trans>
+                </label>
                 <Input
+                  id="new-datetime"
                   type="datetime-local"
                   value={newSession.scheduledAt}
                   onChange={(e) =>
@@ -395,7 +443,7 @@ export default function PhotographerSessionsPage() {
                     })
                   }
                 />
-              </FormField>
+              </div>
             </div>
           </ModalContent>
           <ModalFooter>

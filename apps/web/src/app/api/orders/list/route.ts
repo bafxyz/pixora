@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
       status?: OrderStatus
       paymentStatus?: PaymentStatus
       photographerId?: string | { in: string[] }
+      studioId?: string
     }
 
     const whereClause: WhereClause = {
@@ -51,22 +52,15 @@ export async function GET(request: NextRequest) {
 
       whereClause.photographerId = photographer.id
     } else if (userRole === 'studio-admin') {
-      // Studio admin sees orders from their client's photographers
-      const photographer = await prisma.photographer.findUnique({
+      // Studio admin sees orders from their studio
+      const studio = await prisma.studio.findUnique({
         where: { email: user.email },
-        select: { studioId: true },
+        select: { id: true },
       })
 
-      if (photographer) {
-        // Get all photographers from this client
-        const clientPhotographers = await prisma.photographer.findMany({
-          where: { studioId: photographer.studioId },
-          select: { id: true },
-        })
-
-        whereClause.photographerId = {
-          in: clientPhotographers.map((p) => p.id),
-        }
+      if (studio) {
+        // Add studio filter instead of photographer filter
+        whereClause.studioId = studio.id
       }
     }
     // Admin sees all orders (no filter)

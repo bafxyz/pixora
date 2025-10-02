@@ -46,7 +46,22 @@ export async function withRoleCheck(
   // For studio-admins and photographers, get their studio_id
   let studioId: string | undefined
 
-  if (userRole === 'studio-admin' || userRole === 'photographer') {
+  if (userRole === 'studio-admin') {
+    // For studio-admin, look up by Studio email
+    const studio = await prisma.studio.findUnique({
+      where: { email: user.email || '' },
+      select: { id: true },
+    })
+
+    if (studio) {
+      studioId = studio.id
+    } else {
+      throw ApiErrors.internalError(
+        'Studio admin user has no associated studio'
+      )
+    }
+  } else if (userRole === 'photographer') {
+    // For photographer, look up by Photographer email
     const photographer = await prisma.photographer.findFirst({
       where: { email: user.email || '' },
       select: { studioId: true },
@@ -54,10 +69,6 @@ export async function withRoleCheck(
 
     if (photographer) {
       studioId = photographer.studioId
-    } else if (userRole === 'studio-admin') {
-      throw ApiErrors.internalError(
-        'Studio admin user has no associated studio'
-      )
     }
   }
 

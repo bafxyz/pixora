@@ -157,18 +157,11 @@ export default function OrdersPage() {
           </div>
         ) : (
           orders.map((order) => (
-            <div
+            <button
               key={order.id}
-              className="bg-white border rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer"
+              type="button"
+              className="bg-white border rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer text-left w-full"
               onClick={() => router.push(`/admin/orders/${order.id}`)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  router.push(`/admin/orders/${order.id}`)
-                }
-              }}
-              role="button"
-              tabIndex={0}
             >
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
                 <div className="flex-1">
@@ -287,7 +280,7 @@ export default function OrdersPage() {
                   </button>
                 )}
               </div>
-            </div>
+            </button>
           ))
         )}
       </div>

@@ -5,6 +5,7 @@ import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { useConfirmation } from '@repo/ui/confirmation-dialog'
 import { PageLayout } from '@repo/ui/page-layout'
 import {
   ArrowLeft,
@@ -55,6 +56,7 @@ export default function SessionDetailsPage({
   params: Promise<{ id: string }>
 }) {
   const { _ } = useLingui()
+  const { confirm, dialog } = useConfirmation()
   const router = useRouter()
   const { id: sessionId } = use(params)
 
@@ -160,7 +162,15 @@ export default function SessionDetailsPage({
   }
 
   const deletePhoto = async (photoId: string) => {
-    if (!confirm(_('Are you sure you want to delete this photo?'))) {
+    const confirmed = await confirm({
+      title: _('Delete Photo'),
+      description: _('Are you sure you want to delete this photo?'),
+      confirmText: _('Delete'),
+      cancelText: _('Cancel'),
+      variant: 'danger',
+    })
+
+    if (!confirmed) {
       return
     }
 
@@ -266,6 +276,7 @@ export default function SessionDetailsPage({
       title={session.name}
       description={_('Photo session details and photo management')}
     >
+      {dialog}
       <div>
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -469,7 +480,7 @@ export default function SessionDetailsPage({
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
               <h2 className="text-lg font-semibold mb-4">
-                QR код для фотосессии
+                <Trans>QR code for photo session</Trans>
               </h2>
 
               <div
@@ -485,9 +496,13 @@ export default function SessionDetailsPage({
 
               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800 text-center">
-                  <strong>Show this QR code to clients</strong>
+                  <strong>
+                    <Trans>Show this QR code to clients</Trans>
+                  </strong>
                   <br />
-                  Они смогут получить доступ к фотографиям из этой сессии
+                  <Trans>
+                    They will be able to access photos from this session
+                  </Trans>
                 </p>
               </div>
 
@@ -496,7 +511,7 @@ export default function SessionDetailsPage({
                   htmlFor="session-link"
                   className="text-sm font-medium mb-2 block"
                 >
-                  Ссылка на фотосессию:
+                  <Trans>Photo session link:</Trans>
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -509,7 +524,7 @@ export default function SessionDetailsPage({
                   <Button
                     onClick={() => {
                       navigator.clipboard.writeText(sessionLink)
-                      toast.success('Ссылка скопирована')
+                      toast.success(_('Link copied'))
                     }}
                     variant="outline"
                     size="sm"
@@ -518,8 +533,9 @@ export default function SessionDetailsPage({
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Отправьте эту ссылку клиентам через WhatsApp, Telegram или
-                  email
+                  <Trans>
+                    Send this link to clients via WhatsApp, Telegram, or email
+                  </Trans>
                 </p>
               </div>
 
@@ -548,15 +564,15 @@ export default function SessionDetailsPage({
                       downloadLink.click()
                       document.body.removeChild(downloadLink)
                       URL.revokeObjectURL(svgUrl)
-                      toast.success('QR код скачан')
+                      toast.success(_('QR code downloaded'))
                     } else {
-                      toast.error('Не удалось найти QR код')
+                      toast.error(_('Failed to find QR code'))
                     }
                   }}
                   className="flex-1 hover:cursor-pointer"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  <Trans>Скачать</Trans>
+                  <Trans>Download</Trans>
                 </Button>
               </div>
             </div>

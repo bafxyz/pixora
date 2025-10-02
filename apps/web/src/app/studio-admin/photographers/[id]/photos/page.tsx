@@ -69,7 +69,7 @@ export default function PhotographerPhotosPage() {
             'Failed to fetch photographer details:',
             photographerData.error
           )
-          toast.error(_(msg`Ошибка при загрузке данных фотографа`))
+          toast.error(_(msg`Error loading photographer data`))
           router.push('/studio-admin/photographers')
           return
         }
@@ -85,11 +85,11 @@ export default function PhotographerPhotosPage() {
           setFilteredPhotos(photosData.photos || [])
         } else {
           console.error('Failed to fetch photos:', photosData.error)
-          toast.error(_(msg`Ошибка при загрузке фотографий`))
+          toast.error(_(msg`Error loading photos`))
         }
       } catch (error) {
         console.error('Error fetching data:', error)
-        toast.error(_(msg`Ошибка при загрузке данных`))
+        toast.error(_(msg`Error loading data`))
       } finally {
         setLoading(false)
       }
@@ -147,18 +147,18 @@ export default function PhotographerPhotosPage() {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
-      toast.success(_(msg`Фотография загружена`))
+      toast.success(_(msg`Photo downloaded`))
     } catch (error) {
       console.error('Error downloading photo:', error)
-      toast.error(_(msg`Ошибка при загрузке фотографии`))
+      toast.error(_(msg`Error downloading photo`))
     }
   }
 
   if (loading) {
     return (
       <PageLayout
-        title={_(msg`Фотографии фотографа`)}
-        description={_(msg`Просмотр фотографий фотографа`)}
+        title={_(msg`Photographer Photos`)}
+        description={_(msg`View photographer photos`)}
       >
         <div className="flex justify-center items-center py-12">
           <Spinner size="lg" />
@@ -170,16 +170,17 @@ export default function PhotographerPhotosPage() {
   if (!photographer) {
     return (
       <PageLayout
-        title={_(msg`Фотограф не найден`)}
-        description={_(msg`Запрашиваемый фотограф не существует`)}
+        title={_(msg`Photographer Not Found`)}
+        description={_(msg`The requested photographer does not exist`)}
       >
         <div className="text-center py-16">
           <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
-            <Trans>Фотограф не найден</Trans>
+            <Trans>Photographer Not Found</Trans>
           </h3>
           <p className="text-slate-600 dark:text-slate-400 mb-6">
             <Trans>
-              Возможно, фотограф был удален или вы указали неверный ID
+              The photographer may have been deleted or you may have entered an
+              incorrect ID
             </Trans>
           </p>
           <Button onClick={() => router.push('/studio-admin/photographers')}>
@@ -193,8 +194,8 @@ export default function PhotographerPhotosPage() {
 
   return (
     <PageLayout
-      title={_(msg`Фотографии фотографа: ${photographer.name}`)}
-      description={_(msg`Просмотр и управление фотографиями фотографа`)}
+      title={_(msg`Photographer Photos: ${photographer.name}`)}
+      description={_(msg`View and manage photographer photos`)}
     >
       <div className="space-y-6">
         {/* Actions Bar */}
@@ -203,7 +204,7 @@ export default function PhotographerPhotosPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
             <Input
               type="text"
-              placeholder={_(msg`Поиск по имени файла, гостю или сессии...`)}
+              placeholder={_(msg`Search by filename, guest, or session...`)}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -240,7 +241,7 @@ export default function PhotographerPhotosPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-slate-600">
-                    <Trans>Общий размер</Trans>
+                    <Trans>Total Size</Trans>
                   </p>
                   <p className="text-2xl font-bold">
                     {formatFileSize(
@@ -257,7 +258,7 @@ export default function PhotographerPhotosPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-slate-600">
-                    <Trans>Уникальные гости</Trans>
+                    <Trans>Unique Guests</Trans>
                   </p>
                   <p className="text-2xl font-bold">
                     {new Set(photos.map((p) => p.guestEmail)).size}
@@ -273,15 +274,11 @@ export default function PhotographerPhotosPage() {
         {filteredPhotos.length === 0 ? (
           <EmptyState
             icon={<Image className="w-12 h-12" />}
-            title={
-              searchQuery
-                ? _(msg`Фотографии не найдены`)
-                : _(msg`Нет фотографий`)
-            }
+            title={searchQuery ? _(msg`No Photos Found`) : _(msg`No Photos`)}
             description={
               searchQuery
-                ? _(msg`Фотографии не найдены по вашему запросу`)
-                : _(msg`У этого фотографа пока нет фотографий`)
+                ? _(msg`No photos found matching your search`)
+                : _(msg`This photographer has no photos yet`)
             }
           />
         ) : (
@@ -346,7 +343,7 @@ export default function PhotographerPhotosPage() {
                       {photo.sessionName && (
                         <div className="flex items-center gap-1">
                           <span className="font-medium">
-                            <Trans>Сессия:</Trans>
+                            <Trans>Session:</Trans>
                           </span>
                           <span className="truncate">{photo.sessionName}</span>
                         </div>

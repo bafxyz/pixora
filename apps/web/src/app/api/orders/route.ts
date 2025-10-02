@@ -1,22 +1,6 @@
-import crypto from 'node:crypto'
 import { type NextRequest, NextResponse } from 'next/server'
 import { notifyNewOrder } from '@/lib/services/notification.service'
 import { prisma } from '@/shared/lib/prisma/client'
-
-// Robokassa configuration
-const ROBOKASSA_LOGIN = process.env.ROBOKASSA_LOGIN || ''
-const ROBOKASSA_PASSWORD_1 = process.env.ROBOKASSA_PASSWORD_1 || ''
-const ROBOKASSA_TEST_MODE = process.env.ROBOKASSA_TEST_MODE === 'true'
-
-function generateRobokassaSignature(
-  login: string,
-  outSum: string,
-  invId: string,
-  password: string
-): string {
-  const signatureString = `${login}:${outSum}:${invId}:${password}`
-  return crypto.createHash('md5').update(signatureString).digest('hex')
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,7 +28,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!['cash', 'robokassa'].includes(paymentMethod)) {
+    if (!['cash', 'tinkoff'].includes(paymentMethod)) {
       return NextResponse.json(
         { error: 'Invalid payment method' },
         { status: 400 }
@@ -131,55 +115,14 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // If Robokassa payment, generate payment link
-    if (paymentMethod === 'robokassa') {
-      const invId = order.id
-      const outSum = finalAmount.toFixed(2)
-      const description = `Order ${order.id.substring(0, 8)} - ${photoCount} photos`
-
-      const signature = generateRobokassaSignature(
-        ROBOKASSA_LOGIN,
-        outSum,
-        invId,
-        ROBOKASSA_PASSWORD_1
+    // If Tinkoff payment, generate payment link
+    if (paymentMethod === 'tinkoff') {
+      // TODO: Implement Tinkoff payment integration
+      // For now, return error as not implemented
+      return NextResponse.json(
+        { error: 'Tinkoff payment not implemented yet' },
+        { status: 501 }
       )
-
-      const paymentUrl = ROBOKASSA_TEST_MODE
-        ? 'https://auth.robokassa.ru/Merchant/Index.aspx'
-        : 'https://auth.robokassa.ru/Merchant/Index.aspx'
-
-      const paymentParams = new URLSearchParams({
-        MerchantLogin: ROBOKASSA_LOGIN,
-        OutSum: outSum,
-        InvId: invId,
-        Description: description,
-        SignatureValue: signature,
-        Email: guestEmail,
-        Culture: 'en',
-        Encoding: 'utf-8',
-        IsTest: ROBOKASSA_TEST_MODE ? '1' : '0',
-      })
-
-      const paymentLink = `${paymentUrl}?${paymentParams.toString()}`
-
-      // Update order with Tinkoff data
-      await prisma.order.update({
-        where: { id: order.id },
-        data: {
-          tinkoffPaymentId: invId,
-          tinkoffPaymentLink: paymentLink,
-        },
-      })
-
-      return NextResponse.json({
-        success: true,
-        order: {
-          id: order.id,
-          finalAmount: order.finalAmount,
-          paymentMethod: order.paymentMethod,
-          paymentLink,
-        },
-      })
     }
 
     // Send notification for new order

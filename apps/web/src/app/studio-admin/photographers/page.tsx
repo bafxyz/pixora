@@ -1,7 +1,10 @@
 'use client'
 
+import { msg, Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { useConfirmation } from '@repo/ui/confirmation-dialog'
 import { FormField } from '@repo/ui/form-field'
 import { Input } from '@repo/ui/input'
 import { Modal, ModalContent, ModalFooter, ModalHeader } from '@repo/ui/modal'
@@ -47,6 +50,7 @@ interface EditPhotographer {
 }
 
 export default function StudioAdminPhotographersPage() {
+  const { _ } = useLingui()
   const [photographers, setPhotographers] = useState<Photographer[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -61,6 +65,7 @@ export default function StudioAdminPhotographersPage() {
   const [editPhotographer, setEditPhotographer] =
     useState<EditPhotographer | null>(null)
   const router = useRouter()
+  const { confirm } = useConfirmation()
 
   useEffect(() => {
     const fetchPhotographers = async () => {
@@ -73,27 +78,27 @@ export default function StudioAdminPhotographersPage() {
           setCurrentUserEmail(data.currentUserEmail)
         } else {
           console.error('Failed to fetch photographers:', data.error)
-          toast.error('Ошибка при загрузке фотографов')
+          toast.error(_(msg`Error loading photographers`))
         }
       } catch (error) {
         console.error('Error fetching photographers:', error)
-        toast.error('Ошибка при загрузке фотографов')
+        toast.error(_(msg`Error loading photographers`))
       } finally {
         setLoading(false)
       }
     }
 
     fetchPhotographers()
-  }, [])
+  }, [_])
 
   const handleCreatePhotographer = async () => {
     if (!newPhotographer.name.trim() || !newPhotographer.email.trim()) {
-      toast.error('Название и email обязательны')
+      toast.error(_(msg`Name and email are required`))
       return
     }
 
     if (newPhotographer.password && newPhotographer.password.length < 6) {
-      toast.error('Пароль должен содержать минимум 6 символов')
+      toast.error(_(msg`Password must be at least 6 characters`))
       return
     }
 
@@ -109,16 +114,16 @@ export default function StudioAdminPhotographersPage() {
       const data = await response.json()
 
       if (response.ok) {
-        toast.success('Фотограф создан успешно')
+        toast.success(_(msg`Photographer created successfully`))
         setPhotographers([data.photographer, ...photographers])
         setNewPhotographer({ name: '', email: '', phone: '', password: '' })
         setShowCreateModal(false)
       } else {
-        toast.error(data.error || 'Ошибка при создании фотографа')
+        toast.error(data.error || _(msg`Error creating photographer`))
       }
     } catch (error) {
       console.error('Error creating photographer:', error)
-      toast.error('Ошибка при создании фотографа')
+      toast.error(_(msg`Error creating photographer`))
     }
   }
 
@@ -138,7 +143,7 @@ export default function StudioAdminPhotographersPage() {
       !editPhotographer.name.trim() ||
       !editPhotographer.email.trim()
     ) {
-      toast.error('Название и email обязательны')
+      toast.error(_(msg`Name and email are required`))
       return
     }
 
@@ -161,7 +166,7 @@ export default function StudioAdminPhotographersPage() {
       const data = await response.json()
 
       if (response.ok) {
-        toast.success('Фотограф обновлен успешно')
+        toast.success(_(msg`Photographer updated successfully`))
         setPhotographers(
           photographers.map((p) =>
             p.id === editPhotographer.id ? data.photographer : p
@@ -170,18 +175,22 @@ export default function StudioAdminPhotographersPage() {
         setEditPhotographer(null)
         setShowEditModal(false)
       } else {
-        toast.error(data.error || 'Ошибка при обновлении фотографа')
+        toast.error(data.error || _(msg`Error updating photographer`))
       }
     } catch (error) {
       console.error('Error updating photographer:', error)
-      toast.error('Ошибка при обновлении фотографа')
+      toast.error(_(msg`Error updating photographer`))
     }
   }
 
   const handleDeletePhotographer = async (photographerId: string) => {
-    if (!confirm('Вы уверены, что хотите удалить этого фотографа?')) {
-      return
-    }
+    const confirmed = await confirm({
+      title: _(msg`Delete Photographer`),
+      description: _(msg`Are you sure you want to delete this photographer?`),
+      variant: 'danger',
+    })
+
+    if (!confirmed) return
 
     try {
       const response = await fetch(
@@ -192,15 +201,15 @@ export default function StudioAdminPhotographersPage() {
       )
 
       if (response.ok) {
-        toast.success('Фотограф удален успешно')
+        toast.success(_(msg`Photographer deleted successfully`))
         setPhotographers(photographers.filter((p) => p.id !== photographerId))
       } else {
         const data = await response.json()
-        toast.error(data.error || 'Ошибка при удалении фотографа')
+        toast.error(data.error || _(msg`Error deleting photographer`))
       }
     } catch (error) {
       console.error('Error deleting photographer:', error)
-      toast.error('Ошибка при удалении фотографа')
+      toast.error(_(msg`Error deleting photographer`))
     }
   }
 
@@ -215,8 +224,8 @@ export default function StudioAdminPhotographersPage() {
   if (loading) {
     return (
       <PageLayout
-        title="Управление фотографами"
-        description="Добавление, редактирование и управление фотографами"
+        title={_(msg`Photographer Management`)}
+        description={_(msg`Add, edit and manage photographers`)}
       >
         <div className="flex justify-center items-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -227,17 +236,17 @@ export default function StudioAdminPhotographersPage() {
 
   return (
     <PageLayout
-      title="Управление фотографами"
-      description="Добавление, редактирование и управление фотографами"
+      title={_(msg`Photographer Management`)}
+      description={_(msg`Add, edit and manage photographers`)}
     >
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">
-            Фотографы ({photographers.length})
+            <Trans>Photographers</Trans> ({photographers.length})
           </h1>
           <Button onClick={() => setShowCreateModal(true)}>
             <UserPlus className="w-4 h-4 mr-2" />
-            Добавить фотографа
+            <Trans>Add Photographer</Trans>
           </Button>
         </div>
 
@@ -248,11 +257,13 @@ export default function StudioAdminPhotographersPage() {
           size="md"
         >
           <ModalHeader>
-            <h2 className="text-lg font-semibold">Добавить нового фотографа</h2>
+            <h2 className="text-lg font-semibold">
+              <Trans>Add New Photographer</Trans>
+            </h2>
           </ModalHeader>
           <ModalContent>
             <div className="space-y-4">
-              <FormField label="Имя">
+              <FormField label={_(msg`Name`)}>
                 <Input
                   value={newPhotographer.name}
                   onChange={(e) =>
@@ -261,10 +272,10 @@ export default function StudioAdminPhotographersPage() {
                       name: e.target.value,
                     })
                   }
-                  placeholder="Имя фотографа"
+                  placeholder={_(msg`Photographer name`)}
                 />
               </FormField>
-              <FormField label="Email">
+              <FormField label={_(msg`Email`)}>
                 <Input
                   type="email"
                   value={newPhotographer.email}
@@ -277,7 +288,7 @@ export default function StudioAdminPhotographersPage() {
                   placeholder="email@example.com"
                 />
               </FormField>
-              <FormField label="Телефон">
+              <FormField label={_(msg`Phone`)}>
                 <Input
                   value={newPhotographer.phone}
                   onChange={(e) =>
@@ -290,8 +301,10 @@ export default function StudioAdminPhotographersPage() {
                 />
               </FormField>
               <FormField
-                label="Пароль"
-                description="Если указан пароль, для фотографа будет создан аккаунт для входа"
+                label={_(msg`Password`)}
+                description={_(
+                  msg`If password is provided, a login account will be created for the photographer`
+                )}
               >
                 <Input
                   type="password"
@@ -302,7 +315,7 @@ export default function StudioAdminPhotographersPage() {
                       password: e.target.value,
                     })
                   }
-                  placeholder="Минимум 6 символов"
+                  placeholder={_(msg`Minimum 6 characters`)}
                   minLength={6}
                 />
               </FormField>
@@ -310,9 +323,11 @@ export default function StudioAdminPhotographersPage() {
           </ModalContent>
           <ModalFooter>
             <Button variant="outline" onClick={() => setShowCreateModal(false)}>
-              Отмена
+              <Trans>Cancel</Trans>
             </Button>
-            <Button onClick={handleCreatePhotographer}>Создать</Button>
+            <Button onClick={handleCreatePhotographer}>
+              <Trans>Create</Trans>
+            </Button>
           </ModalFooter>
         </Modal>
 
@@ -326,11 +341,13 @@ export default function StudioAdminPhotographersPage() {
           size="md"
         >
           <ModalHeader>
-            <h2 className="text-lg font-semibold">Редактировать фотографа</h2>
+            <h2 className="text-lg font-semibold">
+              <Trans>Edit Photographer</Trans>
+            </h2>
           </ModalHeader>
           <ModalContent>
             <div className="space-y-4">
-              <FormField label="Имя">
+              <FormField label={_(msg`Name`)}>
                 <Input
                   value={editPhotographer?.name || ''}
                   onChange={(e) =>
@@ -343,10 +360,10 @@ export default function StudioAdminPhotographersPage() {
                         : null
                     )
                   }
-                  placeholder="Имя фотографа"
+                  placeholder={_(msg`Photographer name`)}
                 />
               </FormField>
-              <FormField label="Email">
+              <FormField label={_(msg`Email`)}>
                 <Input
                   type="email"
                   value={editPhotographer?.email || ''}
@@ -363,7 +380,7 @@ export default function StudioAdminPhotographersPage() {
                   placeholder="email@example.com"
                 />
               </FormField>
-              <FormField label="Телефон">
+              <FormField label={_(msg`Phone`)}>
                 <Input
                   value={editPhotographer?.phone || ''}
                   onChange={(e) =>
@@ -389,9 +406,11 @@ export default function StudioAdminPhotographersPage() {
                 setEditPhotographer(null)
               }}
             >
-              Отмена
+              <Trans>Cancel</Trans>
             </Button>
-            <Button onClick={handleUpdatePhotographer}>Сохранить</Button>
+            <Button onClick={handleUpdatePhotographer}>
+              <Trans>Save</Trans>
+            </Button>
           </ModalFooter>
         </Modal>
 
@@ -399,10 +418,10 @@ export default function StudioAdminPhotographersPage() {
           <div className="text-center py-16">
             <Users className="w-16 h-16 text-slate-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
-              Нет фотографов
+              <Trans>No Photographers</Trans>
             </h3>
             <p className="text-slate-600 dark:text-slate-400 mb-6">
-              Добавьте первого фотографа, чтобы начать
+              <Trans>Add your first photographer to get started</Trans>
             </p>
           </div>
         ) : (
@@ -451,16 +470,17 @@ export default function StudioAdminPhotographersPage() {
 
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Users className="w-4 h-4 mr-2" />
-                      {photographer.guestCount} гостей
+                      {photographer.guestCount} <Trans>guests</Trans>
                     </div>
 
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Camera className="w-4 h-4 mr-2" />
-                      {photographer.photoCount} фото
+                      {photographer.photoCount} <Trans>photos</Trans>
                     </div>
 
                     <div className="text-sm text-muted-foreground">
-                      Зарегистрирован: {formatDate(photographer.createdAt)}
+                      <Trans>Registered:</Trans>{' '}
+                      {formatDate(photographer.createdAt)}
                     </div>
                   </div>
 
@@ -475,7 +495,7 @@ export default function StudioAdminPhotographersPage() {
                       }
                     >
                       <Eye className="w-4 h-4 mr-2" />
-                      Подробнее
+                      <Trans>View Details</Trans>
                     </Button>
                   </div>
                 </CardContent>

@@ -1,8 +1,11 @@
 'use client'
 
+import { msg, Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { useConfirmation } from '@repo/ui/confirmation-dialog'
 import { PageLayout } from '@repo/ui/page-layout'
 import {
   ArrowLeft,
@@ -39,6 +42,7 @@ interface RecentActivity {
 }
 
 export default function PhotographerDetailsPage() {
+  const { _ } = useLingui()
   const [photographer, setPhotographer] = useState<PhotographerDetails | null>(
     null
   )
@@ -47,6 +51,7 @@ export default function PhotographerDetailsPage() {
   const router = useRouter()
   const params = useParams()
   const photographerId = params.id as string
+  const { confirm } = useConfirmation()
 
   useEffect(() => {
     const fetchPhotographerDetails = async () => {
@@ -60,12 +65,12 @@ export default function PhotographerDetailsPage() {
           setPhotographer(data.photographer)
         } else {
           console.error('Failed to fetch photographer details:', data.error)
-          toast.error('Ошибка при загрузке данных фотографа')
+          toast.error(_(msg`Error loading photographer data`))
           router.push('/studio-admin/photographers')
         }
       } catch (error) {
         console.error('Error fetching photographer details:', error)
-        toast.error('Ошибка при загрузке данных фотографа')
+        toast.error(_(msg`Error loading photographer data`))
         router.push('/studio-admin/photographers')
       } finally {
         setLoading(false)
@@ -75,7 +80,7 @@ export default function PhotographerDetailsPage() {
     if (photographerId) {
       fetchPhotographerDetails()
     }
-  }, [photographerId, router])
+  }, [photographerId, router, _])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ru-RU', {
@@ -86,12 +91,15 @@ export default function PhotographerDetailsPage() {
   }
 
   const handleDelete = async () => {
-    if (
-      !photographer ||
-      !confirm('Вы уверены, что хотите удалить этого фотографа?')
-    ) {
-      return
-    }
+    if (!photographer) return
+
+    const confirmed = await confirm({
+      title: _(msg`Delete Photographer`),
+      description: _(msg`Are you sure you want to delete this photographer?`),
+      variant: 'danger',
+    })
+
+    if (!confirmed) return
 
     try {
       const response = await fetch(
@@ -102,23 +110,23 @@ export default function PhotographerDetailsPage() {
       )
 
       if (response.ok) {
-        toast.success('Фотограф удален успешно')
+        toast.success(_(msg`Photographer deleted successfully`))
         router.push('/studio-admin/photographers')
       } else {
         const data = await response.json()
-        toast.error(data.error || 'Ошибка при удалении фотографа')
+        toast.error(data.error || _(msg`Error deleting photographer`))
       }
     } catch (error) {
       console.error('Error deleting photographer:', error)
-      toast.error('Ошибка при удалении фотографа')
+      toast.error(_(msg`Error deleting photographer`))
     }
   }
 
   if (loading) {
     return (
       <PageLayout
-        title="Детали фотографа"
-        description="Просмотр подробной информации о фотографе"
+        title={_(msg`Photographer Details`)}
+        description={_(msg`View detailed information about the photographer`)}
       >
         <div className="flex justify-center items-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -130,19 +138,22 @@ export default function PhotographerDetailsPage() {
   if (!photographer) {
     return (
       <PageLayout
-        title="Фотограф не найден"
-        description="Запрашиваемый фотограф не существует"
+        title={_(msg`Photographer Not Found`)}
+        description={_(msg`The requested photographer does not exist`)}
       >
         <div className="text-center py-16">
           <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
-            Фотограф не найден
+            <Trans>Photographer Not Found</Trans>
           </h3>
           <p className="text-slate-600 dark:text-slate-400 mb-6">
-            Возможно, фотограф был удален или вы указали неверный ID
+            <Trans>
+              The photographer may have been deleted or you may have entered an
+              incorrect ID
+            </Trans>
           </p>
           <Button onClick={() => router.push('/studio-admin/photographers')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Вернуться к списку
+            <Trans>Back to List</Trans>
           </Button>
         </div>
       </PageLayout>
@@ -151,8 +162,10 @@ export default function PhotographerDetailsPage() {
 
   return (
     <PageLayout
-      title={`Фотограф: ${photographer.name}`}
-      description="Подробная информация о фотографе и его деятельности"
+      title={_(msg`Photographer: ${photographer.name}`)}
+      description={_(
+        msg`Detailed information about the photographer and their activities`
+      )}
     >
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -162,7 +175,7 @@ export default function PhotographerDetailsPage() {
             className="w-full sm:w-auto"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Назад к списку
+            <Trans>Back to List</Trans>
           </Button>
 
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -176,7 +189,7 @@ export default function PhotographerDetailsPage() {
               className="w-full sm:w-auto"
             >
               <Edit className="w-4 h-4 mr-2" />
-              Редактировать
+              <Trans>Edit</Trans>
             </Button>
             <Button
               variant="outline"
@@ -184,7 +197,7 @@ export default function PhotographerDetailsPage() {
               className="text-red-600 hover:text-red-700 w-full sm:w-auto"
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Удалить
+              <Trans>Delete</Trans>
             </Button>
           </div>
         </div>
@@ -194,13 +207,15 @@ export default function PhotographerDetailsPage() {
           <div className="xl:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Основная информация</CardTitle>
+                <CardTitle>
+                  <Trans>Basic Information</Trans>
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <span className="text-sm font-medium text-muted-foreground">
-                      Имя
+                      <Trans>Name</Trans>
                     </span>
                     <p className="text-lg font-semibold break-words">
                       {photographer.name}
@@ -208,7 +223,7 @@ export default function PhotographerDetailsPage() {
                   </div>
                   <div>
                     <span className="text-sm font-medium text-muted-foreground">
-                      Дата регистрации
+                      <Trans>Registration Date</Trans>
                     </span>
                     <p className="flex items-center">
                       <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
@@ -222,7 +237,7 @@ export default function PhotographerDetailsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <span className="text-sm font-medium text-muted-foreground">
-                      Email
+                      <Trans>Email</Trans>
                     </span>
                     <p className="flex items-center">
                       <Mail className="w-4 h-4 mr-2 flex-shrink-0" />
@@ -234,7 +249,7 @@ export default function PhotographerDetailsPage() {
                   {photographer.phone && (
                     <div>
                       <span className="text-sm font-medium text-muted-foreground">
-                        Телефон
+                        <Trans>Phone</Trans>
                       </span>
                       <p className="flex items-center">
                         <Phone className="w-4 h-4 mr-2 flex-shrink-0" />
@@ -253,13 +268,17 @@ export default function PhotographerDetailsPage() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Статистика</CardTitle>
+                <CardTitle>
+                  <Trans>Statistics</Trans>
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-muted/30 rounded">
                   <div className="flex items-center min-w-0">
                     <Users className="w-5 h-5 mr-2 text-blue-600 flex-shrink-0" />
-                    <span className="font-medium truncate">Гости</span>
+                    <span className="font-medium truncate">
+                      <Trans>Guests</Trans>
+                    </span>
                   </div>
                   <Badge variant="secondary" className="flex-shrink-0">
                     {photographer.guestCount}
@@ -269,7 +288,9 @@ export default function PhotographerDetailsPage() {
                 <div className="flex items-center justify-between p-3 bg-muted/30 rounded">
                   <div className="flex items-center min-w-0">
                     <Camera className="w-5 h-5 mr-2 text-green-600 flex-shrink-0" />
-                    <span className="font-medium truncate">Фотографии</span>
+                    <span className="font-medium truncate">
+                      <Trans>Photos</Trans>
+                    </span>
                   </div>
                   <Badge variant="secondary" className="flex-shrink-0">
                     {photographer.photoCount}
@@ -279,7 +300,9 @@ export default function PhotographerDetailsPage() {
                 <div className="flex items-center justify-between p-3 bg-muted/30 rounded">
                   <div className="flex items-center min-w-0">
                     <ShoppingBag className="w-5 h-5 mr-2 text-purple-600 flex-shrink-0" />
-                    <span className="font-medium truncate">Заказы</span>
+                    <span className="font-medium truncate">
+                      <Trans>Orders</Trans>
+                    </span>
                   </div>
                   <Badge variant="secondary" className="flex-shrink-0">
                     {photographer.orderCount}
@@ -291,7 +314,9 @@ export default function PhotographerDetailsPage() {
             {/* Quick Actions */}
             <Card>
               <CardHeader>
-                <CardTitle>Быстрые действия</CardTitle>
+                <CardTitle>
+                  <Trans>Quick Actions</Trans>
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button
@@ -304,7 +329,7 @@ export default function PhotographerDetailsPage() {
                   }
                 >
                   <Users className="w-4 h-4 mr-2" />
-                  Просмотреть гостей
+                  <Trans>View Guests</Trans>
                 </Button>
                 <Button
                   variant="outline"
@@ -316,7 +341,7 @@ export default function PhotographerDetailsPage() {
                   }
                 >
                   <Camera className="w-4 h-4 mr-2" />
-                  Просмотреть фото
+                  <Trans>View Photos</Trans>
                 </Button>
                 <Button
                   variant="outline"
@@ -328,7 +353,7 @@ export default function PhotographerDetailsPage() {
                   }
                 >
                   <ShoppingBag className="w-4 h-4 mr-2" />
-                  Просмотреть заказы
+                  <Trans>View Orders</Trans>
                 </Button>
               </CardContent>
             </Card>

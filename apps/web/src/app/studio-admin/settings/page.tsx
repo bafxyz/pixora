@@ -1,5 +1,7 @@
 'use client'
 
+import { msg, Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
 import { Input } from '@repo/ui/input'
@@ -26,6 +28,7 @@ interface StudioSettings {
 }
 
 export default function StudioAdminSettingsPage() {
+  const { _ } = useLingui()
   const [settings, setSettings] = useState<StudioSettings>({
     studioName: '',
     contactEmail: '',
@@ -52,18 +55,18 @@ export default function StudioAdminSettingsPage() {
           setSettings(data.settings || data)
         } else {
           console.error('Failed to fetch settings:', data.error)
-          toast.error('Ошибка при загрузке настроек')
+          toast.error(_(msg`Error loading settings`))
         }
       } catch (error) {
         console.error('Error fetching settings:', error)
-        toast.error('Ошибка при загрузке настроек')
+        toast.error(_(msg`Error loading settings`))
       } finally {
         setLoading(false)
       }
     }
 
     fetchSettings()
-  }, [])
+  }, [_])
 
   const handleSave = async () => {
     setSaving(true)
@@ -80,13 +83,13 @@ export default function StudioAdminSettingsPage() {
       const data = await response.json()
 
       if (response.ok) {
-        toast.success('Настройки сохранены успешно')
+        toast.success(_(msg`Settings saved successfully`))
       } else {
-        toast.error(data.error || 'Ошибка при сохранении настроек')
+        toast.error(data.error || _(msg`Error saving settings`))
       }
     } catch (error) {
       console.error('Error saving settings:', error)
-      toast.error('Ошибка при сохранении настроек')
+      toast.error(_(msg`Error saving settings`))
     } finally {
       setSaving(false)
     }
@@ -113,8 +116,8 @@ export default function StudioAdminSettingsPage() {
   if (loading) {
     return (
       <PageLayout
-        title="Настройки студии"
-        description="Настройка брендинга, цен и общих параметров"
+        title={_(msg`Studio Settings`)}
+        description={_(msg`Configure branding, pricing and general settings`)}
       >
         <div className="flex justify-center items-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -125,8 +128,8 @@ export default function StudioAdminSettingsPage() {
 
   return (
     <PageLayout
-      title="Настройки студии"
-      description="Настройка брендинга, цен и общих параметров"
+      title={_(msg`Studio Settings`)}
+      description={_(msg`Configure branding, pricing and general settings`)}
     >
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex justify-end mb-6">
@@ -134,12 +137,12 @@ export default function StudioAdminSettingsPage() {
             {saving ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                Сохранение...
+                <Trans>Saving...</Trans>
               </>
             ) : (
               <>
                 <Save className="w-4 h-4 mr-2" />
-                Сохранить
+                <Trans>Save</Trans>
               </>
             )}
           </Button>
@@ -151,29 +154,33 @@ export default function StudioAdminSettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Camera className="w-5 h-5" />
-                Информация о студии
+                <Trans>Studio Information</Trans>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="studioName">Название студии</Label>
+                <Label htmlFor="studioName">
+                  <Trans>Studio Name</Trans>
+                </Label>
                 <Input
                   id="studioName"
                   name="studioName"
                   value={settings.studioName}
                   onChange={handleInputChange}
-                  placeholder="Например: Photo Studio Pro"
+                  placeholder={_(msg`e.g., Photo Studio Pro`)}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="welcomeMessage">Приветственное сообщение</Label>
+                <Label htmlFor="welcomeMessage">
+                  <Trans>Welcome Message</Trans>
+                </Label>
                 <Input
                   id="welcomeMessage"
                   name="welcomeMessage"
                   value={settings.welcomeMessage}
                   onChange={handleInputChange}
-                  placeholder="Сообщение для отображения на странице галереи"
+                  placeholder={_(msg`Message to display on gallery page`)}
                 />
               </div>
             </CardContent>
@@ -186,43 +193,49 @@ export default function StudioAdminSettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Mail className="w-5 h-5" />
-                Контактная информация
+                <Trans>Contact Information</Trans>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="contactEmail">Email</Label>
+                  <Label htmlFor="contactEmail">
+                    <Trans>Email</Trans>
+                  </Label>
                   <Input
                     id="contactEmail"
                     name="contactEmail"
                     type="email"
                     value={settings.contactEmail}
                     onChange={handleInputChange}
-                    placeholder="your@email.com"
+                    placeholder={_(msg`your@email.com`)}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="contactPhone">Телефон</Label>
+                  <Label htmlFor="contactPhone">
+                    <Trans>Phone</Trans>
+                  </Label>
                   <Input
                     id="contactPhone"
                     name="contactPhone"
                     value={settings.contactPhone}
                     onChange={handleInputChange}
-                    placeholder="+7 (XXX) XXX-XXXX"
+                    placeholder={_(msg`+1 (XXX) XXX-XXXX`)}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="contactAddress">Адрес</Label>
+                <Label htmlFor="contactAddress">
+                  <Trans>Address</Trans>
+                </Label>
                 <Input
                   id="contactAddress"
                   name="contactAddress"
                   value={settings.contactAddress}
                   onChange={handleInputChange}
-                  placeholder="Город, улица, номер дома"
+                  placeholder={_(msg`City, street, building number`)}
                 />
               </div>
             </CardContent>
@@ -235,12 +248,14 @@ export default function StudioAdminSettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="w-5 h-5" />
-                Брендинг
+                <Trans>Branding</Trans>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="logoUrl">URL логотипа</Label>
+                <Label htmlFor="logoUrl">
+                  <Trans>Logo URL</Trans>
+                </Label>
                 <Input
                   id="logoUrl"
                   name="logoUrl"
@@ -251,7 +266,9 @@ export default function StudioAdminSettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Цвет бренда</Label>
+                <Label>
+                  <Trans>Brand Color</Trans>
+                </Label>
                 <div className="flex items-center gap-4">
                   <input
                     type="color"
@@ -279,14 +296,14 @@ export default function StudioAdminSettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5" />
-                Цены
+                <Trans>Pricing</Trans>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="digitalPrice">
-                    Цена за цифровую копию ($)
+                    <Trans>Digital Copy Price ($)</Trans>
                   </Label>
                   <Input
                     id="digitalPrice"
@@ -304,7 +321,9 @@ export default function StudioAdminSettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="printPrice">Цена за печатную копию ($)</Label>
+                  <Label htmlFor="printPrice">
+                    <Trans>Print Copy Price ($)</Trans>
+                  </Label>
                   <Input
                     id="printPrice"
                     type="number"

@@ -45,7 +45,7 @@ export default function CartPage() {
   const [showCheckout, setShowCheckout] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
-    'cash' | 'robokassa' | null
+    'cash' | 'tinkoff' | null
   >(null)
 
   // Guest information
@@ -149,8 +149,8 @@ export default function CartPage() {
         // Clear cart
         localStorage.removeItem(`cart_${sessionId}`)
 
-        if (selectedPaymentMethod === 'robokassa' && data.order.paymentLink) {
-          // Redirect to Robokassa payment page
+        if (selectedPaymentMethod === 'tinkoff' && data.order.paymentLink) {
+          // Redirect to Tinkoff payment page
           window.location.href = data.order.paymentLink
         } else {
           // Cash payment - show success message
@@ -308,9 +308,9 @@ export default function CartPage() {
                   <div className="grid gap-4">
                     <button
                       type="button"
-                      onClick={() => setSelectedPaymentMethod('robokassa')}
+                      onClick={() => setSelectedPaymentMethod('tinkoff')}
                       className={`p-4 border-2 rounded-lg transition-all ${
-                        selectedPaymentMethod === 'robokassa'
+                        selectedPaymentMethod === 'tinkoff'
                           ? 'border-blue-500 bg-blue-50'
                           : 'border-slate-200 hover:border-slate-300'
                       }`}
@@ -319,7 +319,7 @@ export default function CartPage() {
                         <CreditCard className="w-6 h-6 text-blue-600" />
                         <div className="flex-1 text-left">
                           <p className="font-semibold">
-                            <Trans>Online Payment (Robokassa)</Trans>
+                            <Trans>Online Payment (Tinkoff)</Trans>
                           </p>
                           <p className="text-sm text-slate-600">
                             <Trans>
@@ -327,7 +327,7 @@ export default function CartPage() {
                             </Trans>
                           </p>
                         </div>
-                        {selectedPaymentMethod === 'robokassa' && (
+                        {selectedPaymentMethod === 'tinkoff' && (
                           <CheckCircle className="w-6 h-6 text-blue-600" />
                         )}
                       </div>

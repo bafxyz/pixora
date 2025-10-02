@@ -29,24 +29,36 @@ export async function GET(request: NextRequest) {
     }
 
     // Get statistics for studio
-    const [totalPhotographers, totalPhotoSessions, totalPhotos] =
-      await Promise.all([
-        prisma.photographer.count({ where: { studioId } }),
-        prisma.photoSession.count({ where: { studioId } }),
-        prisma.photo.count({ where: { studioId } }),
-      ])
-
-    // Orders not implemented yet
-    const totalOrders = 0
-    const revenue = 0
+    const [
+      totalPhotographers,
+      totalPhotoSessions,
+      totalPhotos,
+      totalOrders,
+      totalRevenue,
+      uniqueGuests,
+    ] = await Promise.all([
+      prisma.photographer.count({ where: { studioId } }),
+      prisma.photoSession.count({ where: { studioId } }),
+      prisma.photo.count({ where: { studioId } }),
+      prisma.order.count({ where: { studioId } }),
+      prisma.order.aggregate({
+        _sum: { finalAmount: true },
+        where: { studioId, paymentStatus: 'paid' },
+      }),
+      prisma.order.groupBy({
+        by: ['guestEmail'],
+        where: { studioId },
+      }),
+    ])
 
     return NextResponse.json({
       stats: {
-        totalPhotographers,
-        totalPhotoSessions,
+        photographersCount: totalPhotographers,
+        sessionsCount: totalPhotoSessions,
         totalPhotos,
         totalOrders,
-        revenue,
+        revenue: Number(totalRevenue._sum.finalAmount || 0),
+        totalGuests: uniqueGuests.length,
       },
       studioId,
     })

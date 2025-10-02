@@ -1,6 +1,6 @@
 'use client'
 
-import { Trans } from '@lingui/macro'
+import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
@@ -78,7 +78,7 @@ export default function PhotographerOrdersPage() {
             'Failed to fetch photographer details:',
             photographerData.error
           )
-          toast.error(_(`Ошибка при загрузке данных фотографа`))
+          toast.error(_(msg`Error loading photographer data`))
           router.push('/studio-admin/photographers')
           return
         }
@@ -94,11 +94,11 @@ export default function PhotographerOrdersPage() {
           setFilteredOrders(ordersData.orders || [])
         } else {
           console.error('Failed to fetch orders:', ordersData.error)
-          toast.error(_(`Ошибка при загрузке заказов`))
+          toast.error(_(msg`Error loading orders`))
         }
       } catch (error) {
         console.error('Error fetching data:', error)
-        toast.error(_(`Ошибка при загрузке данных`))
+        toast.error(_(msg`Error loading data`))
       } finally {
         setLoading(false)
       }
@@ -156,15 +156,15 @@ export default function PhotographerOrdersPage() {
   const getStatusText = (status: string) => {
     switch (status.toLowerCase()) {
       case 'pending':
-        return _(`Ожидает оплаты`)
+        return _(msg`Pending Payment`)
       case 'paid':
-        return _(`Оплачен`)
+        return _(msg`Paid`)
       case 'shipped':
-        return _(`Отправлен`)
+        return _(msg`Shipped`)
       case 'delivered':
-        return _(`Доставлен`)
+        return _(msg`Delivered`)
       case 'cancelled':
-        return _(`Отменен`)
+        return _(msg`Cancelled`)
       default:
         return status
     }
@@ -180,8 +180,8 @@ export default function PhotographerOrdersPage() {
   if (loading) {
     return (
       <PageLayout
-        title={_(`Заказы фотографа`)}
-        description={_(`Просмотр заказов фотографа`)}
+        title={_(msg`Photographer Orders`)}
+        description={_(msg`View photographer orders`)}
       >
         <div className="flex justify-center items-center py-12">
           <Spinner size="lg" />
@@ -193,16 +193,17 @@ export default function PhotographerOrdersPage() {
   if (!photographer) {
     return (
       <PageLayout
-        title={_(`Фотограф не найден`)}
-        description={_(`Запрашиваемый фотограф не существует`)}
+        title={_(msg`Photographer Not Found`)}
+        description={_(msg`The requested photographer does not exist`)}
       >
         <div className="text-center py-16">
           <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
-            <Trans>Фотограф не найден</Trans>
+            <Trans>Photographer Not Found</Trans>
           </h3>
           <p className="text-slate-600 dark:text-slate-400 mb-6">
             <Trans>
-              Возможно, фотограф был удален или вы указали неверный ID
+              The photographer may have been deleted or you may have entered an
+              incorrect ID
             </Trans>
           </p>
           <Button onClick={() => router.push('/studio-admin/photographers')}>
@@ -216,8 +217,8 @@ export default function PhotographerOrdersPage() {
 
   return (
     <PageLayout
-      title={_(`Заказы фотографа: ${photographer.name}`)}
-      description={_(`Просмотр и управление заказами фотографа`)}
+      title={_(msg`Photographer Orders: ${photographer.name}`)}
+      description={_(msg`View and manage photographer orders`)}
     >
       <div className="space-y-6">
         {/* Actions Bar */}
@@ -226,7 +227,7 @@ export default function PhotographerOrdersPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
             <Input
               type="text"
-              placeholder={_(`Поиск по номеру заказа, гостю или статусу...`)}
+              placeholder={_(msg`Search by order number, guest, or status...`)}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -263,7 +264,7 @@ export default function PhotographerOrdersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-slate-600">
-                    <Trans>Оплачено</Trans>
+                    <Trans>Paid</Trans>
                   </p>
                   <p className="text-2xl font-bold">
                     {
@@ -285,7 +286,7 @@ export default function PhotographerOrdersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-slate-600">
-                    <Trans>Ожидает оплаты</Trans>
+                    <Trans>Pending Payment</Trans>
                   </p>
                   <p className="text-2xl font-bold">
                     {orders.filter((o) => o.status === 'pending').length}
@@ -300,7 +301,7 @@ export default function PhotographerOrdersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-slate-600">
-                    <Trans>Общая сумма</Trans>
+                    <Trans>Total Amount</Trans>
                   </p>
                   <p className="text-2xl font-bold">
                     {formatCurrency(
@@ -319,11 +320,11 @@ export default function PhotographerOrdersPage() {
         {filteredOrders.length === 0 ? (
           <EmptyState
             icon={<ShoppingBag className="w-12 h-12" />}
-            title={searchQuery ? _(`Заказы не найдены`) : _(`Нет заказов`)}
+            title={searchQuery ? _(msg`No Orders Found`) : _(msg`No Orders`)}
             description={
               searchQuery
-                ? _(`Заказы не найдены по вашему запросу`)
-                : _(`У этого фотографа пока нет заказов`)
+                ? _(msg`No orders found matching your search`)
+                : _(msg`This photographer has no orders yet`)
             }
           />
         ) : (
@@ -360,7 +361,7 @@ export default function PhotographerOrdersPage() {
                           <div className="flex items-center gap-2">
                             <ShoppingBag className="w-4 h-4" />
                             <span>
-                              {order.itemCount} {_(`товаров`)}
+                              {order.itemCount} <Trans>items</Trans>
                             </span>
                           </div>
                         </div>

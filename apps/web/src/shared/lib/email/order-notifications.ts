@@ -47,17 +47,17 @@ export async function sendOrderStatusNotification(data: OrderNotificationData) {
 function getEmailSubject(status: string): string {
   switch (status.toLowerCase()) {
     case 'confirmed':
-      return 'Ваш заказ подтвержден'
+      return 'Your order has been confirmed'
     case 'processing':
-      return 'Ваш заказ обрабатывается'
+      return 'Your order is being processed'
     case 'ready':
-      return 'Ваш заказ готов'
+      return 'Your order is ready'
     case 'delivered':
-      return 'Ваш заказ доставлен'
+      return 'Your order has been delivered'
     case 'cancelled':
-      return 'Ваш заказ отменен'
+      return 'Your order has been cancelled'
     default:
-      return 'Обновление статуса заказа'
+      return 'Order status update'
   }
 }
 
@@ -71,7 +71,7 @@ function getEmailContent(data: OrderNotificationData): string {
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Обновление заказа</title>
+        <title>Order Update</title>
         <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -87,27 +87,27 @@ function getEmailContent(data: OrderNotificationData): string {
         <div class="container">
             <div class="header">
                 <h1>📸 ${data.studioName}</h1>
-                <p>Обновление статуса вашего заказа</p>
+                 <p>Your order status has been updated</p>
             </div>
 
             <div class="content">
-                <h2>Здравствуйте, ${data.guestName}!</h2>
+                 <h2>Hello, ${data.guestName}!</h2>
 
-                <p>Статус вашего заказа изменился:</p>
+                 <p>Your order status has changed:</p>
 
                 <div class="order-details">
-                    <h3>Детали заказа</h3>
-                    <p><strong>Номер заказа:</strong> ${data.orderId}</p>
-                    <p><strong>Статус:</strong> <span class="status-badge">${statusMessage}</span></p>
-                    <p><strong>Фотограф:</strong> ${data.photographerName}</p>
-                    ${data.orderSummary ? `<p><strong>Описание:</strong> ${data.orderSummary}</p>` : ''}
+                     <h3>Order Details</h3>
+                     <p><strong>Order Number:</strong> ${data.orderId}</p>
+                     <p><strong>Status:</strong> <span class="status-badge">${statusMessage}</span></p>
+                     <p><strong>Photographer:</strong> ${data.photographerName}</p>
+                     ${data.orderSummary ? `<p><strong>Description:</strong> ${data.orderSummary}</p>` : ''}
                 </div>
 
                 ${getStatusSpecificContent(data.newStatus)}
 
                 <div class="footer">
-                    <p>Спасибо за выбор ${data.studioName}!</p>
-                    <p>По вопросам обращайтесь к вашему фотографу: ${data.photographerName}</p>
+                     <p>Thank you for choosing ${data.studioName}!</p>
+                     <p>For questions, contact your photographer: ${data.photographerName}</p>
                 </div>
             </div>
         </div>
@@ -119,15 +119,15 @@ function getEmailContent(data: OrderNotificationData): string {
 function getStatusMessage(status: string): string {
   switch (status.toLowerCase()) {
     case 'confirmed':
-      return 'Подтвержден'
+      return 'Confirmed'
     case 'processing':
-      return 'Обрабатывается'
+      return 'Processing'
     case 'ready':
-      return 'Готов'
+      return 'Ready'
     case 'delivered':
-      return 'Доставлен'
+      return 'Delivered'
     case 'cancelled':
-      return 'Отменен'
+      return 'Cancelled'
     default:
       return status
   }
@@ -154,28 +154,28 @@ function getStatusSpecificContent(status: string): string {
   switch (status.toLowerCase()) {
     case 'confirmed':
       return `
-        <p>Ваш заказ успешно подтвержден и передан в обработку. Мы приступили к подготовке ваших фотографий.</p>
+        <p>Your order has been successfully confirmed and is now being processed. We have started preparing your photos.</p>
       `
     case 'processing':
       return `
-        <p>Ваши фотографии обрабатываются. Скоро они будут готовы для загрузки или печати.</p>
+        <p>Your photos are being processed. They will soon be ready for download or printing.</p>
       `
     case 'ready':
       return `
-        <p>🎉 Отличные новости! Ваш заказ готов. Вы можете забрать его или загрузить фотографии.</p>
+        <p>🎉 Great news! Your order is ready. You can pick it up or download your photos.</p>
       `
     case 'delivered':
       return `
-        <p>✅ Ваш заказ успешно доставлен. Надеемся, вам понравились ваши фотографии!</p>
-        <p>Будем рады видеть вас снова!</p>
+        <p>✅ Your order has been successfully delivered. We hope you enjoyed your photos!</p>
+        <p>We look forward to seeing you again!</p>
       `
     case 'cancelled':
       return `
-        <p>К сожалению, ваш заказ был отменен. Если у вас есть вопросы, пожалуйста, свяжитесь с нами.</p>
+        <p>Unfortunately, your order has been cancelled. If you have any questions, please contact us.</p>
       `
     default:
       return `
-        <p>Статус вашего заказа обновлен. За дополнительной информацией обращайтесь к фотографу.</p>
+        <p>Your order status has been updated. For additional information, contact your photographer.</p>
       `
   }
 }

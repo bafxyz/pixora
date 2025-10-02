@@ -59,7 +59,7 @@ export default function PhotographerGuestsPage() {
             'Failed to fetch photographer details:',
             photographerData.error
           )
-          toast.error(_(msg`Ошибка при загрузке данных фотографа`))
+          toast.error(_(msg`Error loading photographer data`))
           router.push('/studio-admin/photographers')
           return
         }
@@ -75,11 +75,11 @@ export default function PhotographerGuestsPage() {
           setFilteredGuests(guestsData.guests || [])
         } else {
           console.error('Failed to fetch guests:', guestsData.error)
-          toast.error(_(msg`Ошибка при загрузке гостей`))
+          toast.error(_(msg`Error loading guests`))
         }
       } catch (error) {
         console.error('Error fetching data:', error)
-        toast.error(_(msg`Ошибка при загрузке данных`))
+        toast.error(_(msg`Error loading data`))
       } finally {
         setLoading(false)
       }
@@ -115,7 +115,7 @@ export default function PhotographerGuestsPage() {
   }
 
   const formatLastActive = (dateString: string | null) => {
-    if (!dateString) return _(msg`Никогда`)
+    if (!dateString) return _(msg`Never`)
 
     const date = new Date(dateString)
     const now = new Date()
@@ -123,18 +123,18 @@ export default function PhotographerGuestsPage() {
       (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     )
 
-    if (diffInHours < 1) return _(msg`Только что`)
-    if (diffInHours < 24) return `${diffInHours} ${_(msg`ч.`)} назад`
+    if (diffInHours < 1) return _(msg`Just now`)
+    if (diffInHours < 24) return `${diffInHours} ${_(msg`hrs`)} ago`
     if (diffInHours < 24 * 7)
-      return `${Math.floor(diffInHours / 24)} ${_(msg`д.`)} назад`
+      return `${Math.floor(diffInHours / 24)} ${_(msg`days`)} ago`
     return formatDate(dateString)
   }
 
   if (loading) {
     return (
       <PageLayout
-        title={_(msg`Гости фотографа`)}
-        description={_(msg`Просмотр гостей фотографа`)}
+        title={_(msg`Photographer Guests`)}
+        description={_(msg`View photographer guests`)}
       >
         <div className="flex justify-center items-center py-12">
           <Spinner size="lg" />
@@ -146,16 +146,17 @@ export default function PhotographerGuestsPage() {
   if (!photographer) {
     return (
       <PageLayout
-        title={_(msg`Фотограф не найден`)}
-        description={_(msg`Запрашиваемый фотограф не существует`)}
+        title={_(msg`Photographer Not Found`)}
+        description={_(msg`The requested photographer does not exist`)}
       >
         <div className="text-center py-16">
           <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
-            <Trans>Фотограф не найден</Trans>
+            <Trans>Photographer Not Found</Trans>
           </h3>
           <p className="text-slate-600 dark:text-slate-400 mb-6">
             <Trans>
-              Возможно, фотограф был удален или вы указали неверный ID
+              The photographer may have been deleted or you may have entered an
+              incorrect ID
             </Trans>
           </p>
           <Button onClick={() => router.push('/studio-admin/photographers')}>
@@ -169,8 +170,8 @@ export default function PhotographerGuestsPage() {
 
   return (
     <PageLayout
-      title={_(msg`Гости фотографа: ${photographer.name}`)}
-      description={_(msg`Просмотр и управление гостями фотографа`)}
+      title={_(msg`Photographer Guests: ${photographer.name}`)}
+      description={_(msg`View and manage photographer guests`)}
     >
       <div className="space-y-6">
         {/* Actions Bar */}
@@ -179,7 +180,7 @@ export default function PhotographerGuestsPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
             <Input
               type="text"
-              placeholder={_(msg`Поиск по имени, email или телефону...`)}
+              placeholder={_(msg`Search by name, email, or phone...`)}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 w-full"
@@ -255,11 +256,11 @@ export default function PhotographerGuestsPage() {
         {filteredGuests.length === 0 ? (
           <EmptyState
             icon={<Users className="w-12 h-12" />}
-            title={searchQuery ? _(msg`Гости не найдены`) : _(msg`Нет гостей`)}
+            title={searchQuery ? _(msg`No Guests Found`) : _(msg`No Guests`)}
             description={
               searchQuery
-                ? _(msg`Гости не найдены по вашему запросу`)
-                : _(msg`У этого фотографа пока нет гостей`)
+                ? _(msg`No guests found matching your search`)
+                : _(msg`This photographer has no guests yet`)
             }
           />
         ) : (
@@ -315,7 +316,7 @@ export default function PhotographerGuestsPage() {
                       </span>
                     </div>
                     <div className="pt-2 border-t text-xs text-slate-500">
-                      <Trans>Регистрация:</Trans> {formatDate(guest.createdAt)}
+                      <Trans>Registered:</Trans> {formatDate(guest.createdAt)}
                     </div>
                   </div>
                 </CardContent>

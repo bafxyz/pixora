@@ -1,9 +1,9 @@
 import type { UserRole } from './role-guard'
 
 /**
- * Возвращает путь для перенаправления в зависимости от роли пользователя
- * @param role Роль пользователя
- * @returns Путь для перенаправления
+ * Returns redirect path based on user role
+ * @param role User role
+ * @returns Redirect path
  */
 export function getRoleRedirectPath(role: UserRole): string {
   switch (role) {
@@ -21,25 +21,25 @@ export function getRoleRedirectPath(role: UserRole): string {
 }
 
 /**
- * Проверяет, может ли пользователь с данной ролью получить доступ к указанному пути
- * @param userRole Роль пользователя
- * @param path Путь для проверки
- * @returns true, если доступ разрешен
+ * Checks if user with given role can access specified path
+ * @param userRole User role
+ * @param Path to check
+ * @returns true if access is allowed
  */
 export function canAccessPath(userRole: UserRole, path: string): boolean {
-  // Админ имеет доступ ко всем путям
+  // Admin has access to all paths
   if (userRole === 'admin') {
     return true
   }
 
-  // Публичные пути доступны всем
+  // Public paths are accessible to everyone
   const publicPaths = ['/', '/login', '/session', '/payment']
 
   if (publicPaths.some((publicPath) => path.startsWith(publicPath))) {
     return true
   }
 
-  // Проверка доступа к специфичным путям по ролям
+  // Check access to specific paths by roles
   switch (userRole) {
     case 'studio-admin':
       return (
@@ -55,21 +55,21 @@ export function canAccessPath(userRole: UserRole, path: string): boolean {
 }
 
 /**
- * Возвращает название роли для отображения пользователю
- * @param role Роль пользователя
- * @returns Локализованное название роли
+ * Returns role display name for user
+ * @param role User role
+ * @returns Localized role name
  */
 export function getRoleDisplayName(role: UserRole): string {
   switch (role) {
     case 'admin':
-      return 'Администратор платформы'
+      return 'Platform Administrator'
     case 'studio-admin':
-      return 'Администратор студии'
+      return 'Studio Administrator'
     case 'photographer':
-      return 'Фотограф'
+      return 'Photographer'
     case 'guest':
-      return 'Гость'
+      return 'Guest'
     default:
-      return 'Пользователь'
+      return 'User'
   }
 }

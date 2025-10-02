@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       Email: order.guestEmail,
       Taxation: 'osn',
       Items: order.items.map((item) => ({
-        Name: `Фото: ${item.photo.fileName}`,
+        Name: `Photo: ${item.photo.fileName}`,
         Price: Math.round(Number(item.price) * 100), // Convert to kopecks
         Quantity: 1,
         Amount: Math.round(Number(item.price) * 100), // Convert to kopecks
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       TerminalKey: TINKOFF_TERMINAL_KEY,
       Amount: amountInKopecks,
       OrderId: orderId,
-      Description: `Оплата заказа #${orderId.slice(0, 8)}`,
+      Description: `Payment for order #${orderId.slice(0, 8)}`,
       Receipt: receipt,
       SuccessURL: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?orderId=${orderId}`,
       FailURL: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancelled?orderId=${orderId}`,

@@ -5,6 +5,7 @@ import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
+import { useConfirmation } from '@repo/ui/confirmation-dialog'
 import { EmptyState } from '@repo/ui/empty-state'
 import { FormField } from '@repo/ui/form-field'
 import { Input } from '@repo/ui/input'
@@ -43,6 +44,7 @@ export default function AdminStudiosPage() {
   const [editingStudio, setEditingStudio] = useState<Studio | null>(null)
   const [formData, setFormData] = useState({ name: '', email: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { confirm } = useConfirmation()
 
   const loadStudios = useCallback(async () => {
     try {
@@ -147,15 +149,15 @@ export default function AdminStudiosPage() {
   }
 
   const handleDeleteStudio = async (studio: Studio) => {
-    if (
-      !confirm(
-        _(
-          msg`Are you sure you want to delete "${studio.name}"? This action cannot be undone.`
-        )
-      )
-    ) {
-      return
-    }
+    const confirmed = await confirm({
+      title: _(msg`Delete Studio`),
+      description: _(
+        msg`Are you sure you want to delete "${studio.name}"? This action cannot be undone.`
+      ),
+      variant: 'danger',
+    })
+
+    if (!confirmed) return
 
     try {
       const response = await fetch(`/api/admin/studios/${studio.id}`, {

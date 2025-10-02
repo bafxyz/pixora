@@ -1,6 +1,6 @@
 'use client'
 
-import { Trans } from '@lingui/macro'
+import { msg, Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
@@ -58,12 +58,12 @@ export default function EditPhotographerPage() {
           })
         } else {
           console.error('Failed to fetch photographer details:', data.error)
-          toast.error(_('Ошибка при загрузке данных фотографа'))
+          toast.error(_(msg`Error loading photographer data`))
           router.push('/studio-admin/photographers')
         }
       } catch (error) {
         console.error('Error fetching photographer details:', error)
-        toast.error(_('Ошибка при загрузке данных фотографа'))
+        toast.error(_(msg`Error loading photographer data`))
         router.push('/studio-admin/photographers')
       } finally {
         setLoading(false)
@@ -79,7 +79,7 @@ export default function EditPhotographerPage() {
     e.preventDefault()
 
     if (!formData.name.trim() || !formData.email.trim()) {
-      toast.error(_('Имя и email обязательны'))
+      toast.error(_(msg`Name and email are required`))
       return
     }
 
@@ -101,15 +101,15 @@ export default function EditPhotographerPage() {
       )
 
       if (response.ok) {
-        toast.success(_('Фотограф обновлен успешно'))
+        toast.success(_(msg`Photographer updated successfully`))
         router.push(`/studio-admin/photographers/${photographerId}`)
       } else {
         const data = await response.json()
-        toast.error(data.error || _('Ошибка при обновлении фотографа'))
+        toast.error(data.error || _(msg`Error updating photographer`))
       }
     } catch (error) {
       console.error('Error updating photographer:', error)
-      toast.error(_('Ошибка при обновлении фотографа'))
+      toast.error(_(msg`Error updating photographer`))
     } finally {
       setSaving(false)
     }
@@ -118,8 +118,8 @@ export default function EditPhotographerPage() {
   if (loading) {
     return (
       <PageLayout
-        title={_('Редактирование фотографа')}
-        description={_('Изменение данных фотографа')}
+        title={_(msg`Edit Photographer`)}
+        description={_(msg`Update photographer information`)}
       >
         <div className="flex justify-center items-center py-12">
           <Spinner size="lg" />
@@ -131,16 +131,17 @@ export default function EditPhotographerPage() {
   if (!photographer) {
     return (
       <PageLayout
-        title={_('Фотограф не найден')}
-        description={_('Запрашиваемый фотограф не существует')}
+        title={_(msg`Photographer Not Found`)}
+        description={_(msg`The requested photographer does not exist`)}
       >
         <div className="text-center py-16">
           <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
-            <Trans>Фотограф не найден</Trans>
+            <Trans>Photographer Not Found</Trans>
           </h3>
           <p className="text-slate-600 dark:text-slate-400 mb-6">
             <Trans>
-              Возможно, фотограф был удален или вы указали неверный ID
+              The photographer may have been deleted or you may have entered an
+              incorrect ID
             </Trans>
           </p>
           <Button onClick={() => router.push('/studio-admin/photographers')}>
@@ -154,8 +155,8 @@ export default function EditPhotographerPage() {
 
   return (
     <PageLayout
-      title={_('Редактирование фотографа')}
-      description={_('Изменение данных фотографа')}
+      title={_(msg`Edit Photographer`)}
+      description={_(msg`Update photographer information`)}
     >
       <div className="max-w-2xl mx-auto px-4">
         <div className="mb-6">
@@ -174,43 +175,43 @@ export default function EditPhotographerPage() {
         <Card>
           <CardHeader>
             <CardTitle>
-              <Trans>Основная информация</Trans>
+              <Trans>Basic Information</Trans>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <FormField label={_('Имя')} required>
+              <FormField label={_(msg`Name`)} required>
                 <Input
                   type="text"
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  placeholder={_('Введите имя фотографа')}
+                  placeholder={_(msg`Enter photographer name`)}
                   required
                 />
               </FormField>
 
-              <FormField label={_('Email')} required>
+              <FormField label={_(msg`Email`)} required>
                 <Input
                   type="email"
                   value={formData.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  placeholder={_('Введите email')}
+                  placeholder={_(msg`Enter email`)}
                   required
                 />
               </FormField>
 
-              <FormField label={_('Телефон')} description={_('Необязательно')}>
+              <FormField label={_(msg`Phone`)} description={_(msg`Optional`)}>
                 <Input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) =>
                     setFormData({ ...formData, phone: e.target.value })
                   }
-                  placeholder={_('Введите номер телефона')}
+                  placeholder={_(msg`Enter phone number`)}
                 />
               </FormField>
 
@@ -224,7 +225,7 @@ export default function EditPhotographerPage() {
                   disabled={saving}
                   className="w-full sm:w-auto order-2 sm:order-1"
                 >
-                  <Trans>Отмена</Trans>
+                  <Trans>Cancel</Trans>
                 </Button>
                 <Button
                   type="submit"
@@ -234,7 +235,7 @@ export default function EditPhotographerPage() {
                 >
                   {saving && <Spinner size="sm" />}
                   <Save className="w-4 h-4" />
-                  {saving ? <Trans>Saving...</Trans> : <Trans>Сохранить</Trans>}
+                  {saving ? <Trans>Saving...</Trans> : <Trans>Save</Trans>}
                 </Button>
               </div>
             </form>
