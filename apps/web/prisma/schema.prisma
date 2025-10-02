@@ -54,6 +54,7 @@ model Studio {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
+  studioAdmins  StudioAdmin[]
   photographers Photographer[]
   photos        Photo[]
   photoSessions PhotoSession[]
@@ -62,6 +63,20 @@ model Studio {
   pricing       Pricing[]
 
   @@map("studios")
+}
+
+model StudioAdmin {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  name      String?
+  phone     String?
+  studioId  String   @map("studio_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  studio Studio @relation(fields: [studioId], references: [id], onDelete: Cascade)
+
+  @@map("studio_admins")
 }
 
 model Photographer {

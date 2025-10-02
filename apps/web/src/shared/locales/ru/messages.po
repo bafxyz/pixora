@@ -275,14 +275,7 @@ msgstr "Основная информация"
 msgid "Brand Color"
 msgstr "Цвет бренда"
 
-#: src/app/studio-admin/settings/page.tsx:251
-#: src/features/auth/components/login-page.tsx:231
-msgid "Branding"
-msgstr "Брендинг"
 
-#: src/features/photographer/components/photographer-dashboard.tsx:419
-msgid "Branding Settings"
-msgstr "Настройки брендинга"
 
 #: src/app/page.tsx:37
 #~ msgid "Browse Gallery"
@@ -401,9 +394,7 @@ msgstr "Закрыть"
 msgid "Code Scanned"
 msgstr "Код отсканирован"
 
-#: src/features/auth/components/login-page.tsx:234
-msgid "Complete customization for your style"
-msgstr "Полная кастомизация для вашего стиля"
+
 
 #: src/app/admin/orders/page.tsx:133
 #: src/features/photographer/components/admin-panel.tsx:126
@@ -3047,6 +3038,27 @@ msgstr "Фотограф мог быть удален или вы ввели н�
 #: src/app/studio-admin/photographers/[id]/photos/page.tsx:174
 msgid "The requested photographer does not exist"
 msgstr "Запрошенный фотограф не существует"
+
+msgid "Take Photo"
+msgstr "Сделать фото"
+
+msgid "Uploading photos..."
+msgstr "Загрузка фотографий..."
+
+msgid "Drag & drop photos here or click to select"
+msgstr "Перетащите фотографии сюда или нажмите для выбора"
+
+msgid "Upload multiple photos at once from your device"
+msgstr "Загружайте множество фотографий одновременно с вашего устройства"
+
+msgid "Accepts: JPG, PNG, HEIC, RAW files"
+msgstr "Поддерживаются: JPG, PNG, HEIC, RAW файлы"
+
+msgid "Max size: 10MB per file (auto-compressed)"
+msgstr "Макс. размер: 10МБ за файл (авто-сжатие)"
+
+msgid "Max files: 100 photos at once"
+msgstr "Макс. файлов: 100 фотографий за раз"
 
 #: src/app/photographer/page.tsx:299
 #: src/app/photographer/qr/page.tsx:120

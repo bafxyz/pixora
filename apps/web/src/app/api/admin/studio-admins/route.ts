@@ -26,12 +26,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Get all studio-admins (photographers with role studio-admin)
-    const studioAdmins = await prisma.photographer.findMany({
-      where: {
-        // We'll identify studio-admins by checking if they have a corresponding auth user
-        // with role 'studio-admin' in Supabase
-      },
+    // Get all studio-admins from dedicated table
+    const studioAdmins = await prisma.studioAdmin.findMany({
       include: {
         studio: {
           select: {
@@ -40,51 +36,19 @@ export async function GET(request: NextRequest) {
             email: true,
           },
         },
-        _count: {
-          select: {
-            photos: true,
-            photoSessions: true,
-          },
-        },
       },
       orderBy: {
         createdAt: 'desc',
       },
     })
 
-    // Get all Supabase users to filter studio-admins
-    const {
-      data: { users },
-      error: usersError,
-    } = await supabaseAdmin.auth.admin.listUsers()
-
-    if (usersError) {
-      console.error('Error fetching Supabase users:', usersError)
-      return NextResponse.json(
-        { error: 'Failed to fetch users' },
-        { status: 500 }
-      )
-    }
-
-    const studioAdminEmails = new Set(
-      users
-        ?.filter((u) => u.user_metadata?.role === 'studio-admin')
-        .map((u) => u.email) || []
-    )
-
-    const filteredAdmins = studioAdmins.filter(
-      (admin) => admin.email && studioAdminEmails.has(admin.email)
-    )
-
-    const formattedAdmins = filteredAdmins.map((admin) => ({
+    const formattedAdmins = studioAdmins.map((admin) => ({
       id: admin.id,
       name: admin.name,
       email: admin.email,
       phone: admin.phone,
       studio: admin.studio,
       createdAt: admin.createdAt,
-      photoCount: admin._count.photos,
-      sessionCount: admin._count.photoSessions,
     }))
 
     return NextResponse.json({ studioAdmins: formattedAdmins })
@@ -141,7 +105,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Studio not found' }, { status: 404 })
     }
 
-    // Check if photographer with this email already exists
+    // Check if studio admin with this email already exists
+    const existingStudioAdmin = await prisma.studioAdmin.findFirst({
+      where: {
+        email: email.trim().toLowerCase(),
+      },
+    })
+
+    if (existingStudioAdmin) {
+      return NextResponse.json(
+        { error: 'Studio admin with this email already exists' },
+        { status: 400 }
+      )
+    }
+
+    // Also check photographer table to prevent conflicts
     const existingPhotographer = await prisma.photographer.findFirst({
       where: {
         email: email.trim().toLowerCase(),
@@ -150,7 +128,7 @@ export async function POST(request: NextRequest) {
 
     if (existingPhotographer) {
       return NextResponse.json(
-        { error: 'User with this email already exists' },
+        { error: 'User with this email already exists as photographer' },
         { status: 400 }
       )
     }
@@ -176,8 +154,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create photographer record in database
-    const photographer = await prisma.photographer.create({
+    // Create studio admin record in database
+    const studioAdmin = await prisma.studioAdmin.create({
       data: {
         name: name.trim(),
         email: email.trim().toLowerCase(),
@@ -192,25 +170,17 @@ export async function POST(request: NextRequest) {
             email: true,
           },
         },
-        _count: {
-          select: {
-            photos: true,
-            photoSessions: true,
-          },
-        },
       },
     })
 
     const formattedAdmin = {
-      id: photographer.id,
-      name: photographer.name,
-      email: photographer.email,
-      phone: photographer.phone,
-      studio: photographer.studio,
+      id: studioAdmin.id,
+      name: studioAdmin.name,
+      email: studioAdmin.email,
+      phone: studioAdmin.phone,
+      studio: studioAdmin.studio,
       authUserId: authUser.user.id,
-      createdAt: photographer.createdAt,
-      photoCount: photographer._count.photos,
-      sessionCount: photographer._count.photoSessions,
+      createdAt: studioAdmin.createdAt,
     }
 
     return NextResponse.json({

@@ -1,6 +1,6 @@
 'use client'
 
-import { msg, Trans } from '@lingui/macro'
+import { Trans } from '@lingui/macro'
 import { useLingui } from '@lingui/react'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
@@ -17,9 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/tabs'
 import {
   Camera,
   Eye,
-  Image as ImageIcon,
   LogOut,
-  Palette,
   Settings,
   ShoppingCart,
   Upload,
@@ -33,7 +31,6 @@ import { useAuthStore } from '@/shared/stores/auth.store'
 
 const supabase = createClient()
 
-import { ImageWithFallback } from '@/features/gallery/components/image-with-fallback'
 import { PhotoUpload } from './photo-upload'
 
 interface User {
@@ -58,11 +55,6 @@ interface PhotographerProfile {
   studioName: string
   firstName: string
   lastName: string
-  settings: {
-    brandColor: string
-    logoUrl: string
-    welcomeMessage: string
-  }
 }
 
 interface Order {
@@ -86,15 +78,8 @@ export function PhotographerDashboard({
   const signOut = useAuthStore((state) => state.signOut)
   const [activeTab, setActiveTab] = useState('upload')
   const [profile, setProfile] = useState<PhotographerProfile | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [orders, setOrders] = useState<Order[]>([])
 
-  // Settings form
-  const [settingsForm, setSettingsForm] = useState({
-    brandColor: '#3B82F6',
-    logoUrl: '',
-    welcomeMessage: '',
-  })
+  const [orders, setOrders] = useState<Order[]>([])
 
   const getAccessToken = useCallback(async () => {
     const {
@@ -135,13 +120,6 @@ export function PhotographerDashboard({
         if (response.ok) {
           const profileData = await response.json()
           setProfile(profileData)
-          setSettingsForm({
-            brandColor: profileData.settings?.brandColor || '#3B82F6',
-            logoUrl: profileData.settings?.logoUrl || '',
-            welcomeMessage:
-              profileData.settings?.welcomeMessage ||
-              `Welcome to ${profileData.studioName}!`,
-          })
         }
       } catch (error) {
         console.error('Profile loading error:', error)
@@ -180,42 +158,6 @@ export function PhotographerDashboard({
   }, [activeTab, loadOrders])
 
   // Brand settings update
-  const handleSettingsUpdate = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
-    try {
-      const accessToken = await getAccessToken()
-
-      const response = await fetch('/api/photographer/settings', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(settingsForm),
-      })
-
-      if (response.ok) {
-        toast.success(_(msg`Settings successfully updated`))
-        // Reload profile
-        if (profile) {
-          setProfile({
-            ...profile,
-            settings: settingsForm,
-          })
-        }
-      } else {
-        const error = await response.json()
-        throw new Error(error.error)
-      }
-    } catch (error) {
-      console.error('Settings update error:', error)
-      toast.error(_(msg`Error updating settings`))
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -224,10 +166,7 @@ export function PhotographerDashboard({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center gap-3">
-              <Camera
-                className="w-8 h-8"
-                style={{ color: profile?.settings?.brandColor || '#3B82F6' }}
-              />
+              <Camera className="w-8 h-8" style={{ color: '#3B82F6' }} />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
                   {profile?.studioName || 'Pixora Studio'}
@@ -407,138 +346,6 @@ export function PhotographerDashboard({
                     ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="settings" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  <Palette className="w-5 h-5 inline mr-2" />
-                  <Trans>Branding Settings</Trans>
-                </CardTitle>
-                <CardDescription>
-                  <Trans>
-                    Customize the appearance of galleries for your guests
-                  </Trans>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSettingsUpdate} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="brandColor">
-                      <Trans>Primary Color</Trans>
-                    </Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="brandColor"
-                        type="color"
-                        value={settingsForm.brandColor}
-                        onChange={(e) =>
-                          setSettingsForm((prev) => ({
-                            ...prev,
-                            brandColor: e.target.value,
-                          }))
-                        }
-                        className="w-20"
-                      />
-                      <Input
-                        value={settingsForm.brandColor}
-                        onChange={(e) =>
-                          setSettingsForm((prev) => ({
-                            ...prev,
-                            brandColor: e.target.value,
-                          }))
-                        }
-                        placeholder="#3B82F6"
-                        className="flex-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="logoUrl">
-                      <Trans>Logo URL</Trans>
-                    </Label>
-                    <Input
-                      id="logoUrl"
-                      type="url"
-                      placeholder="https://example.com/logo.png"
-                      value={settingsForm.logoUrl}
-                      onChange={(e) =>
-                        setSettingsForm((prev) => ({
-                          ...prev,
-                          logoUrl: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="welcomeMessage">
-                      <Trans>Welcome Message</Trans>
-                    </Label>
-                    <Input
-                      id="welcomeMessage"
-                      placeholder={_(msg`Welcome to our studio!`)}
-                      value={settingsForm.welcomeMessage}
-                      onChange={(e) =>
-                        setSettingsForm((prev) => ({
-                          ...prev,
-                          welcomeMessage: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? _(msg`Saving...`) : _(msg`Save Settings`)}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            {/* Preview */}
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  <Trans>Preview</Trans>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className="p-6 rounded-lg border-2 border-dashed"
-                  style={{ borderColor: settingsForm.brandColor }}
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    {settingsForm.logoUrl && (
-                      <ImageWithFallback
-                        src={settingsForm.logoUrl}
-                        alt="Logo"
-                        className="w-10 h-10 object-cover rounded"
-                      />
-                    )}
-                    <div>
-                      <h3
-                        className="font-semibold"
-                        style={{ color: settingsForm.brandColor }}
-                      >
-                        {profile?.studioName}
-                      </h3>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 mb-4">
-                    {settingsForm.welcomeMessage}
-                  </p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[1, 2, 3].map((i) => (
-                      <div
-                        key={i}
-                        className="aspect-square bg-gray-200 rounded flex items-center justify-center"
-                      >
-                        <ImageIcon className="w-6 h-6 text-gray-400" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </TabsContent>

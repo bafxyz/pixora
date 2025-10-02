@@ -65,7 +65,7 @@ export default function StudioAdminPhotographersPage() {
   const [editPhotographer, setEditPhotographer] =
     useState<EditPhotographer | null>(null)
   const router = useRouter()
-  const { confirm } = useConfirmation()
+  const { confirm, dialog } = useConfirmation()
 
   useEffect(() => {
     const fetchPhotographers = async () => {
@@ -504,6 +504,9 @@ export default function StudioAdminPhotographersPage() {
           </div>
         )}
       </div>
+
+      {/* Confirmation Dialog */}
+      {dialog}
     </PageLayout>
   )
 }

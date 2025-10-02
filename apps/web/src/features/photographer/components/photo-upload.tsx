@@ -1,10 +1,12 @@
+import { Trans } from '@lingui/macro'
+import { useLingui } from '@lingui/react'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
 import { Dropzone } from '@repo/ui/dropzone'
 import { Input } from '@repo/ui/input'
 import { Label } from '@repo/ui/label'
 import { Spinner } from '@repo/ui/spinner'
-import { AlertCircle, Upload, X } from 'lucide-react'
+import { AlertCircle, Upload, X, Zap } from 'lucide-react'
 import Image from 'next/image'
 import React, { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/shared/lib/supabase/client'
@@ -29,6 +31,7 @@ export function PhotoUpload({
   onUploadError,
   presetSessionId,
 }: PhotoUploadProps) {
+  const { _ } = useLingui()
   const [files, setFiles] = useState<UploadFile[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [sessionId, setSessionId] = useState(presetSessionId || '')
@@ -41,24 +44,87 @@ export function PhotoUpload({
     }
   }, [presetSessionId])
 
+  const compressImage = useCallback(async (file: File): Promise<File> => {
+    // If file is already small enough, return as-is
+    if (file.size <= 2 * 1024 * 1024) return file // 2MB threshold
+
+    return new Promise<File>((resolve) => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        resolve(file)
+        return
+      }
+
+      const img = document.createElement('img')
+
+      img.onload = () => {
+        // Calculate new dimensions (max 1920x1080)
+        let { width, height } = img
+        const maxWidth = 1920
+        const maxHeight = 1080
+
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height)
+          width *= ratio
+          height *= ratio
+        }
+
+        canvas.width = width
+        canvas.height = height
+
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height)
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              })
+              resolve(compressedFile)
+            } else {
+              resolve(file)
+            }
+          },
+          'image/jpeg',
+          0.85 // Quality
+        )
+      }
+
+      img.onerror = () => resolve(file)
+      img.src = URL.createObjectURL(file)
+    })
+  }, [])
+
   const handleFileSelect = useCallback(
-    (selectedFiles: File[] | FileList | null) => {
+    async (selectedFiles: File[] | FileList | null) => {
       if (!selectedFiles) return
 
       const filesArray = Array.isArray(selectedFiles)
         ? selectedFiles
         : Array.from(selectedFiles)
-      const newFiles: UploadFile[] = filesArray.map((file) => ({
-        id: `${file.name}-${Date.now()}-${Math.random()}`,
-        file,
-        preview: URL.createObjectURL(file),
-        progress: 0,
-        status: 'pending' as const,
-      }))
 
-      setFiles((prev) => [...prev, ...newFiles])
+      // Process files with compression
+      const processedFiles = await Promise.all(
+        filesArray.map(async (file) => {
+          const processedFile = file.type.startsWith('image/')
+            ? await compressImage(file)
+            : file
+          return {
+            id: `${file.name}-${Date.now()}-${Math.random()}`,
+            file: processedFile,
+            preview: URL.createObjectURL(processedFile),
+            progress: 0,
+            status: 'pending' as const,
+          }
+        })
+      )
+
+      setFiles((prev) => [...prev, ...processedFiles])
     },
-    []
+    [compressImage]
   )
 
   const uploadFile = useCallback(
@@ -117,30 +183,43 @@ export function PhotoUpload({
     const uploadedUrls: string[] = []
 
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        if (!file) continue
+      // Upload files in batches of 5 to avoid overwhelming the browser
+      const batchSize = 5
+      for (
+        let batchStart = 0;
+        batchStart < files.length;
+        batchStart += batchSize
+      ) {
+        const batch = files.slice(batchStart, batchStart + batchSize)
 
-        // Update status to uploading
-        setFiles((prev) =>
-          prev.map((f, index) =>
-            index === i
-              ? { ...f, status: 'uploading' as const, progress: 0 }
-              : f
-          )
-        )
+        // Upload batch in parallel
+        const uploadPromises = batch.map(async (file, batchIndex) => {
+          const actualIndex = batchStart + batchIndex
 
-        const url = await uploadFile(file, i)
-        if (url) {
-          uploadedUrls.push(url)
+          // Update status to uploading
           setFiles((prev) =>
             prev.map((f, index) =>
-              index === i
-                ? { ...f, status: 'completed' as const, progress: 100 }
+              index === actualIndex
+                ? { ...f, status: 'uploading' as const, progress: 0 }
                 : f
             )
           )
-        }
+
+          const url = await uploadFile(file, actualIndex)
+          if (url) {
+            uploadedUrls.push(url)
+            setFiles((prev) =>
+              prev.map((f, index) =>
+                index === actualIndex
+                  ? { ...f, status: 'completed' as const, progress: 100 }
+                  : f
+              )
+            )
+          }
+          return url
+        })
+
+        await Promise.all(uploadPromises)
       }
 
       if (uploadedUrls.length > 0) {
@@ -194,7 +273,30 @@ export function PhotoUpload({
           accept="image/*"
           multiple={true}
           maxSize={10 * 1024 * 1024} // 10MB
-        />
+          maxFiles={100} // Allow up to 100 files at once
+          showCameraButton={true}
+        >
+          <div className="flex flex-col items-center justify-center p-6 text-center">
+            <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+            <p className="text-gray-600 mb-2">
+              <Trans>Drag & drop photos here or click to select</Trans>
+            </p>
+            <p className="text-sm text-gray-500 mb-2">
+              <Trans>Upload multiple photos at once from your device</Trans>
+            </p>
+            <div className="text-xs text-gray-400 space-y-1">
+              <p>
+                <Trans>Accepts: JPG, PNG, HEIC, RAW files</Trans>
+              </p>
+              <p>
+                <Trans>Max size: 10MB per file (auto-compressed)</Trans>
+              </p>
+              <p>
+                <Trans>Max files: 100 photos at once</Trans>
+              </p>
+            </div>
+          </div>
+        </Dropzone>
 
         {/* Session ID Input - only show if not preset */}
 
@@ -295,6 +397,29 @@ export function PhotoUpload({
           </div>
         )}
 
+        {/* Upload Progress */}
+        {isUploading && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-blue-900">
+                <Trans>Uploading photos...</Trans>
+              </span>
+              <span className="text-sm text-blue-700">
+                {files.filter((f) => f.status === 'completed').length} /{' '}
+                {files.length}
+              </span>
+            </div>
+            <div className="w-full bg-blue-200 rounded-full h-2">
+              <div
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: `${(files.filter((f) => f.status === 'completed').length / files.length) * 100}%`,
+                }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Upload Button */}
         {files.length > 0 && (
           <Button
@@ -309,7 +434,7 @@ export function PhotoUpload({
               </>
             ) : (
               <>
-                <Upload className="w-4 h-4 mr-2" />
+                <Zap className="w-4 h-4 mr-2" />
                 Upload {files.length} Photo{files.length > 1 ? 's' : ''}
               </>
             )}

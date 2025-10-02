@@ -1,4 +1,4 @@
-import { Upload } from 'lucide-react'
+import { Camera, Upload } from 'lucide-react'
 import * as React from 'react'
 import { cn } from './utils'
 
@@ -11,6 +11,7 @@ interface DropzoneProps {
   disabled?: boolean
   className?: string
   children?: React.ReactNode
+  showCameraButton?: boolean
 }
 
 interface DropzoneContentProps {
@@ -99,6 +100,7 @@ const Dropzone = React.forwardRef<HTMLButtonElement, DropzoneProps>(
       disabled = false,
       className,
       children,
+      showCameraButton = false,
       ...props
     },
     ref
@@ -211,6 +213,23 @@ const Dropzone = React.forwardRef<HTMLButtonElement, DropzoneProps>(
       }
     }
 
+    const handleCameraCapture = () => {
+      if (!disabled) {
+        const cameraInput = document.createElement('input')
+        cameraInput.type = 'file'
+        cameraInput.accept = accept || 'image/*'
+        cameraInput.capture = 'environment' // Use rear camera by default
+        cameraInput.multiple = multiple
+
+        cameraInput.onchange = (e) => {
+          const target = e.target as HTMLInputElement
+          handleFiles(target.files)
+        }
+
+        cameraInput.click()
+      }
+    }
+
     const handleFileInputChange = React.useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
         handleFiles(e.target.files)
@@ -221,51 +240,69 @@ const Dropzone = React.forwardRef<HTMLButtonElement, DropzoneProps>(
     )
 
     return (
-      <button
-        ref={ref}
-        type="button"
-        className={cn(
-          'border-2 border-dashed rounded-lg transition-colors cursor-pointer w-full',
-          isDragActive
-            ? 'border-blue-400 bg-blue-50'
-            : disabled
-              ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
-              : 'border-gray-300 hover:border-gray-400',
-          error && 'border-red-300 bg-red-50',
-          className
-        )}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={handleClick}
-        disabled={disabled}
-        {...props}
-      >
-        {children || (
-          <DropzoneContent
+      <div className="space-y-3">
+        <button
+          ref={ref}
+          type="button"
+          className={cn(
+            'border-2 border-dashed rounded-lg transition-colors cursor-pointer w-full',
+            isDragActive
+              ? 'border-blue-400 bg-blue-50'
+              : disabled
+                ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
+                : 'border-gray-300 hover:border-gray-400',
+            error && 'border-red-300 bg-red-50',
+            className
+          )}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={handleClick}
+          disabled={disabled}
+          {...props}
+        >
+          {children || (
+            <DropzoneContent
+              accept={accept}
+              multiple={multiple}
+              maxSize={maxSize}
+              maxFiles={maxFiles}
+            />
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
             accept={accept}
             multiple={multiple}
-            maxSize={maxSize}
-            maxFiles={maxFiles}
+            onChange={handleFileInputChange}
+            className="hidden"
+            disabled={disabled}
           />
-        )}
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={accept}
-          multiple={multiple}
-          onChange={handleFileInputChange}
-          className="hidden"
-          disabled={disabled}
-        />
+          {error && (
+            <div className="mt-2 text-sm text-red-600 text-center px-4">
+              {error}
+            </div>
+          )}
+        </button>
 
-        {error && (
-          <div className="mt-2 text-sm text-red-600 text-center px-4">
-            {error}
-          </div>
+        {/* Camera Button */}
+        {showCameraButton && (
+          <button
+            type="button"
+            onClick={handleCameraCapture}
+            disabled={disabled}
+            className={cn(
+              'w-full py-2 px-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white rounded-lg transition-colors flex items-center justify-center gap-2',
+              disabled && 'cursor-not-allowed'
+            )}
+          >
+            <Camera className="w-4 h-4" />
+            Take Photo
+          </button>
         )}
-      </button>
+      </div>
     )
   }
 )

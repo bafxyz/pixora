@@ -51,7 +51,7 @@ export default function PhotographerDetailsPage() {
   const router = useRouter()
   const params = useParams()
   const photographerId = params.id as string
-  const { confirm } = useConfirmation()
+  const { confirm, dialog } = useConfirmation()
 
   useEffect(() => {
     const fetchPhotographerDetails = async () => {
@@ -360,6 +360,9 @@ export default function PhotographerDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      {dialog}
     </PageLayout>
   )
 }

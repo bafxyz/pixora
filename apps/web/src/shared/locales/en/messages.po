@@ -276,13 +276,7 @@ msgid "Brand Color"
 msgstr "Brand Color"
 
 #: src/app/studio-admin/settings/page.tsx:251
-#: src/features/auth/components/login-page.tsx:231
-msgid "Branding"
-msgstr "Branding"
 
-#: src/features/photographer/components/photographer-dashboard.tsx:419
-msgid "Branding Settings"
-msgstr "Branding Settings"
 
 #: src/app/page.tsx:37
 #~ msgid "Browse Gallery"
@@ -401,9 +395,7 @@ msgstr "Close"
 msgid "Code Scanned"
 msgstr "Code Scanned"
 
-#: src/features/auth/components/login-page.tsx:234
-msgid "Complete customization for your style"
-msgstr "Complete customization for your style"
+
 
 #: src/app/admin/orders/page.tsx:133
 #: src/features/photographer/components/admin-panel.tsx:126
@@ -3047,6 +3039,27 @@ msgstr "The photographer may have been deleted or you may have entered an incorr
 #: src/app/studio-admin/photographers/[id]/photos/page.tsx:174
 msgid "The requested photographer does not exist"
 msgstr "The requested photographer does not exist"
+
+msgid "Take Photo"
+msgstr "Take Photo"
+
+msgid "Uploading photos..."
+msgstr "Uploading photos..."
+
+msgid "Drag & drop photos here or click to select"
+msgstr "Drag & drop photos here or click to select"
+
+msgid "Upload multiple photos at once from your device"
+msgstr "Upload multiple photos at once from your device"
+
+msgid "Accepts: JPG, PNG, HEIC, RAW files"
+msgstr "Accepts: JPG, PNG, HEIC, RAW files"
+
+msgid "Max size: 10MB per file (auto-compressed)"
+msgstr "Max size: 10MB per file (auto-compressed)"
+
+msgid "Max files: 100 photos at once"
+msgstr "Max files: 100 photos at once"
 
 #: src/app/photographer/page.tsx:299
 #: src/app/photographer/qr/page.tsx:120

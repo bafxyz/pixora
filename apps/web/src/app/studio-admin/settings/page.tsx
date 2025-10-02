@@ -9,7 +9,7 @@ import { Label } from '@repo/ui/label'
 import { PageLayout } from '@repo/ui/page-layout'
 // Components not available
 // import { Separator, ColorPicker } from '@repo/ui'
-import { Camera, CreditCard, Loader2, Mail, Palette, Save } from 'lucide-react'
+import { Camera, CreditCard, Loader2, Mail, Save } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -242,52 +242,6 @@ export default function StudioAdminSettingsPage() {
           </Card>
 
           <div className="border-t my-8"></div>
-
-          {/* Branding */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="w-5 h-5" />
-                <Trans>Branding</Trans>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="logoUrl">
-                  <Trans>Logo URL</Trans>
-                </Label>
-                <Input
-                  id="logoUrl"
-                  name="logoUrl"
-                  value={settings.logoUrl}
-                  onChange={handleInputChange}
-                  placeholder="https://example.com/logo.png"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>
-                  <Trans>Brand Color</Trans>
-                </Label>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="color"
-                    value={settings.brandColor}
-                    onChange={(e) =>
-                      setSettings((prev) => ({
-                        ...prev,
-                        brandColor: e.target.value,
-                      }))
-                    }
-                    className="w-10 h-10 border border-slate-300 rounded cursor-pointer"
-                  />
-                  <span className="text-sm text-slate-600 dark:text-slate-400">
-                    {settings.brandColor}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           <div className="border-t my-8"></div>
 
