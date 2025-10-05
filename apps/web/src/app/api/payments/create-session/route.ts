@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       Email: order.guestEmail,
       Taxation: 'osn',
       Items: order.items.map((item) => ({
-        Name: `Photo: ${item.photo.fileName}`,
+        Name: item.photo ? `Photo: ${item.photo.fileName}` : item.productType,
         Price: Math.round(Number(item.price) * 100), // Convert to kopecks
         Quantity: 1,
         Amount: Math.round(Number(item.price) * 100), // Convert to kopecks

@@ -593,19 +593,14 @@ function SessionGallery({
                         size="sm"
                         variant={inCartPrint ? 'default' : 'outline'}
                         style={
-                          brandColor && !inCartPrint
-                            ? {
-                                borderColor: brandColor,
-                                color: brandColor,
-                              }
-                            : brandColor && inCartPrint
-                              ? { backgroundColor: brandColor, color: 'white' }
-                              : inCartPrint
-                                ? {
-                                    backgroundColor: brandColor,
-                                    color: 'white',
-                                  }
-                                : undefined
+                          brandColor && inCartPrint
+                            ? { backgroundColor: brandColor, color: 'white' }
+                            : brandColor && !inCartPrint
+                              ? {
+                                  borderColor: brandColor,
+                                  color: brandColor,
+                                }
+                              : undefined
                         }
                       >
                         <Trans>Print</Trans>
@@ -618,19 +613,14 @@ function SessionGallery({
                         size="sm"
                         variant={inCartMagnet ? 'default' : 'outline'}
                         style={
-                          brandColor && !inCartMagnet
-                            ? {
-                                borderColor: brandColor,
-                                color: brandColor,
-                              }
-                            : brandColor && inCartMagnet
-                              ? { backgroundColor: brandColor, color: 'white' }
-                              : inCartMagnet
-                                ? {
-                                    backgroundColor: brandColor,
-                                    color: 'white',
-                                  }
-                                : undefined
+                          brandColor && inCartMagnet
+                            ? { backgroundColor: brandColor, color: 'white' }
+                            : brandColor && !inCartMagnet
+                              ? {
+                                  borderColor: brandColor,
+                                  color: brandColor,
+                                }
+                              : undefined
                         }
                       >
                         <Trans>Magnet</Trans>

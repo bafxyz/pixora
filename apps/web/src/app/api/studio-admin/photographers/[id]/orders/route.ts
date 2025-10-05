@@ -92,8 +92,8 @@ export async function GET(
       items: order.items.map((item) => ({
         id: item.id,
         photoId: item.photoId,
-        photoFilename: item.photo.fileName,
-        photoThumbnailUrl: item.photo.filePath,
+        photoFilename: item.photo?.fileName || null,
+        photoThumbnailUrl: item.photo?.filePath || null,
         quantity: item.quantity,
         price: Number(item.price),
         size: item.productType,

@@ -136,13 +136,15 @@ export async function GET(
       items: order.items.map((item) => ({
         id: item.id,
         price: Number(item.price),
-        photo: {
-          id: item.photo.id,
-          fileName: item.photo.fileName,
-          filePath: item.photo.filePath,
-          fileSize: item.photo.fileSize,
-          uploadedAt: item.photo.createdAt,
-        },
+        photo: item.photo
+          ? {
+              id: item.photo.id,
+              fileName: item.photo.fileName,
+              filePath: item.photo.filePath,
+              fileSize: item.photo.fileSize,
+              uploadedAt: item.photo.createdAt,
+            }
+          : null,
       })),
       summary: {
         totalItems: order.items.length,
