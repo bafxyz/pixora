@@ -10,6 +10,7 @@ const PROTECTED_ROUTES = {
   '/api/admin/': ['admin'],
   '/api/studio-admin/': ['studio-admin', 'admin'],
   '/api/photographer/': ['photographer', 'studio-admin', 'admin'],
+  '/api/orders/list': ['photographer', 'studio-admin', 'admin'],
   '/admin/': ['admin'],
   '/studio-admin/': ['studio-admin', 'admin'],
   '/photographer/': ['photographer', 'studio-admin', 'admin'],

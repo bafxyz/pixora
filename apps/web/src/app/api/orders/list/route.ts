@@ -53,15 +53,19 @@ export async function GET(request: NextRequest) {
       whereClause.photographerId = photographer.id
     } else if (userRole === 'studio-admin') {
       // Studio admin sees orders from their studio
-      const studio = await prisma.studio.findUnique({
+      const studioAdmin = await prisma.studioAdmin.findUnique({
         where: { email: user.email },
-        select: { id: true },
+        select: { studioId: true },
       })
 
-      if (studio) {
-        // Add studio filter instead of photographer filter
-        whereClause.studioId = studio.id
+      if (!studioAdmin) {
+        return NextResponse.json(
+          { error: 'Studio admin not found' },
+          { status: 404 }
+        )
       }
+
+      whereClause.studioId = studioAdmin.studioId
     }
     // Admin sees all orders (no filter)
 

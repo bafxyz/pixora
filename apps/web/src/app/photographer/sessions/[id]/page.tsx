@@ -1,7 +1,8 @@
 'use client'
 
-import { Trans } from '@lingui/macro'
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react'
+import { Trans } from '@lingui/react/macro'
 import { Badge } from '@repo/ui/badge'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card'
@@ -67,6 +68,7 @@ export default function SessionDetailsPage({
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set())
   const [isUpdatingPhotos, setIsUpdatingPhotos] = useState(false)
   const [sessionLink, setSessionLink] = useState<string>('')
+  const [isDownloading, setIsDownloading] = useState(false)
 
   const fetchSessionDetails = useCallback(async () => {
     try {
@@ -102,7 +104,7 @@ export default function SessionDetailsPage({
       setSessionLink(link)
     } catch (error) {
       console.error('Error fetching session details:', error)
-      toast.error(_('Error loading photo session data'))
+      toast.error(_(msg`Error loading photo session data`))
     } finally {
       setLoading(false)
     }
@@ -151,11 +153,11 @@ export default function SessionDetailsPage({
         throw new Error('Failed to update photo selection')
       }
 
-      toast.success(_('Photo selection saved'))
+      toast.success(_(msg`Photo selection saved`))
       await fetchSessionDetails() // Refresh data
     } catch (error) {
       console.error('Error updating photo selection:', error)
-      toast.error(_('Error saving photo selection'))
+      toast.error(_(msg`Error saving photo selection`))
     } finally {
       setIsUpdatingPhotos(false)
     }
@@ -163,10 +165,10 @@ export default function SessionDetailsPage({
 
   const deletePhoto = async (photoId: string) => {
     const confirmed = await confirm({
-      title: _('Delete Photo'),
-      description: _('Are you sure you want to delete this photo?'),
-      confirmText: _('Delete'),
-      cancelText: _('Cancel'),
+      title: _(msg`Delete Photo`),
+      description: _(msg`Are you sure you want to delete this photo?`),
+      confirmText: _(msg`Delete`),
+      cancelText: _(msg`Cancel`),
       variant: 'danger',
     })
 
@@ -187,18 +189,18 @@ export default function SessionDetailsPage({
         throw new Error(errorData.error || 'Failed to delete photo')
       }
 
-      toast.success(_('Photo deleted'))
+      toast.success(_(msg`Photo deleted`))
       await fetchSessionDetails() // Refresh data
     } catch (error) {
       console.error('Error deleting photo:', error)
       toast.error(
-        error instanceof Error ? error.message : _('Error deleting photo')
+        error instanceof Error ? error.message : _(msg`Error deleting photo`)
       )
     }
   }
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return _('Not scheduled')
+    if (!dateString) return _(msg`Not scheduled`)
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -224,23 +226,68 @@ export default function SessionDetailsPage({
   const getStatusText = (status: string) => {
     switch (status.toLowerCase()) {
       case 'created':
-        return _('Created')
+        return _(msg`Created`)
       case 'active':
-        return _('Active')
+        return _(msg`Active`)
       case 'completed':
-        return _('Completed')
+        return _(msg`Completed`)
       case 'archived':
-        return _('Archived')
+        return _(msg`Archived`)
       default:
         return status
+    }
+  }
+
+  const handleDownloadAll = async () => {
+    if (!session || session.photos.length === 0) {
+      toast.error(_(msg`No photos available to download`))
+      return
+    }
+
+    try {
+      setIsDownloading(true)
+      toast.loading(_(msg`Preparing photos for download...`))
+
+      const response = await fetch(
+        `/api/photographer/sessions/${sessionId}/download`
+      )
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to download photos')
+      }
+
+      // Download the ZIP file
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${session.name.replace(/[^a-zA-Z0-9]/g, '_')}_photos.zip`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      toast.dismiss()
+      toast.success(_(msg`Photos downloaded successfully!`))
+    } catch (error) {
+      console.error('Error downloading photos:', error)
+      toast.dismiss()
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : _(msg`Failed to download photos`)
+      )
+    } finally {
+      setIsDownloading(false)
     }
   }
 
   if (loading) {
     return (
       <PageLayout
-        title={_('Photo Session Details')}
-        description={_('View and manage photo session')}
+        title={_(msg`Photo Session Details`)}
+        description={_(msg`View and manage photo session`)}
       >
         <div className="flex justify-center items-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -252,15 +299,15 @@ export default function SessionDetailsPage({
   if (!session) {
     return (
       <PageLayout
-        title={_('Photo Session Not Found')}
-        description={_('The requested photo session does not exist')}
+        title={_(msg`Photo Session Not Found`)}
+        description={_(msg`The requested photo session does not exist`)}
       >
         <div className="text-center py-12">
           <p className="text-muted-foreground mb-4">
-            {_('Photo session not found')}
+            {_(msg`Photo session not found`)}
           </p>
           <Button onClick={() => router.push('/photographer/sessions')}>
-            {_('Back to sessions')}
+            {_(msg`Back to sessions`)}
           </Button>
         </div>
       </PageLayout>
@@ -274,7 +321,7 @@ export default function SessionDetailsPage({
   return (
     <PageLayout
       title={session.name}
-      description={_('Photo session details and photo management')}
+      description={_(msg`Photo session details and photo management`)}
     >
       {dialog}
       <div>
@@ -293,7 +340,7 @@ export default function SessionDetailsPage({
             <Button
               onClick={() => {
                 navigator.clipboard.writeText(sessionLink)
-                toast.success(_('Link copied to clipboard'))
+                toast.success(_(msg`Link copied to clipboard`))
               }}
               variant="outline"
               className="flex items-center gap-2 w-full sm:w-auto hover:cursor-pointer"
@@ -309,6 +356,17 @@ export default function SessionDetailsPage({
             >
               <QrCode className="w-4 h-4" />
               <Trans>QR code</Trans>
+            </Button>
+            <Button
+              onClick={handleDownloadAll}
+              disabled={
+                isDownloading || !session || session.photos.length === 0
+              }
+              variant="outline"
+              className="flex items-center gap-2 w-full sm:w-auto hover:cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              <Trans>Download all</Trans>
             </Button>
             <Button
               onClick={() =>
@@ -340,19 +398,19 @@ export default function SessionDetailsPage({
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
                 <span>
-                  {_('Scheduled')}: {formatDate(session.scheduledAt)}
+                  {_(msg`Scheduled`)}: {formatDate(session.scheduledAt)}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-muted-foreground" />
                 <span>
-                  {_('Created')}: {formatDate(session.createdAt)}
+                  {_(msg`Created`)}: {formatDate(session.createdAt)}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <Image className="w-4 h-4 text-muted-foreground" />
                 <span>
-                  {_('Photos')}: {session.photos.length}
+                  {_(msg`Photos`)}: {session.photos.length}
                 </span>
               </div>
             </div>
@@ -365,7 +423,7 @@ export default function SessionDetailsPage({
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Image className="w-5 h-5" />
-                {_('Photo Management')}
+                {_(msg`Photo Management`)}
               </CardTitle>
               {hasChanges && (
                 <Button
@@ -376,17 +434,17 @@ export default function SessionDetailsPage({
                   {isUpdatingPhotos ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {_('Saving...')}
+                      {_(msg`Saving...`)}
                     </>
                   ) : (
-                    _('Save changes')
+                    _(msg`Save changes`)
                   )}
                 </Button>
               )}
             </div>
             <p className="text-sm text-muted-foreground">
-              {_('Select photos that will be visible to clients. Selected:')}{' '}
-              {selectedPhotos.size} {_('of')} {session.photos.length}
+              {_(msg`Select photos that will be visible to clients. Selected:`)}{' '}
+              {selectedPhotos.size} {_(msg`of`)} {session.photos.length}
             </p>
           </CardHeader>
           <CardContent>
@@ -394,7 +452,7 @@ export default function SessionDetailsPage({
               <div className="text-center py-12">
                 <Image className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground mb-4">
-                  {_('No photos in this photo session yet')}
+                  {_(msg`No photos in this photo session yet`)}
                 </p>
                 <Button
                   onClick={() =>
@@ -403,7 +461,7 @@ export default function SessionDetailsPage({
                   className="bg-green-600 hover:bg-green-700"
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  {_('Upload first photos')}
+                  {_(msg`Upload first photos`)}
                 </Button>
               </div>
             ) : (
@@ -465,7 +523,7 @@ export default function SessionDetailsPage({
                       <p className="text-xs text-muted-foreground">
                         {photo.fileSize
                           ? `${(photo.fileSize / 1024 / 1024).toFixed(1)} MB`
-                          : _('Size unknown')}
+                          : _(msg`Size unknown`)}
                       </p>
                     </div>
                   </div>
@@ -524,7 +582,7 @@ export default function SessionDetailsPage({
                   <Button
                     onClick={() => {
                       navigator.clipboard.writeText(sessionLink)
-                      toast.success(_('Link copied'))
+                      toast.success(_(msg`Link copied`))
                     }}
                     variant="outline"
                     size="sm"
@@ -564,9 +622,9 @@ export default function SessionDetailsPage({
                       downloadLink.click()
                       document.body.removeChild(downloadLink)
                       URL.revokeObjectURL(svgUrl)
-                      toast.success(_('QR code downloaded'))
+                      toast.success(_(msg`QR code downloaded`))
                     } else {
-                      toast.error(_('Failed to find QR code'))
+                      toast.error(_(msg`Failed to find QR code`))
                     }
                   }}
                   className="flex-1 hover:cursor-pointer"

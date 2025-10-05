@@ -5,11 +5,12 @@ import { useLingui } from '@lingui/react'
 import { Button } from '@repo/ui/button'
 import { Card, CardContent } from '@repo/ui/card'
 import { LoadingScreen } from '@repo/ui/loading-screen'
-import { Check, ShoppingCart, X } from 'lucide-react'
+import { Check, Download, ShoppingCart, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { LanguageSwitcher } from '@/shared/components/language-switcher'
 
 interface PhotoSession {
@@ -18,12 +19,28 @@ interface PhotoSession {
   description?: string | null
   photographerName: string
   photoCount: number
+  hasPaidOrder?: boolean
   photos: Array<{
     id: string
     filePath: string
     fileName: string
     createdAt: string
   }>
+  studio?: {
+    name: string | null
+    logoUrl: string | null
+    brandColor: string | null
+    welcomeMessage: string | null
+  }
+  pricing?: {
+    digital: number
+    print: number
+    magnet: number
+    currency: string
+    enableDigital?: boolean
+    enablePrint?: boolean
+    enableMagnet?: boolean
+  }
 }
 
 export default function SessionPage() {
@@ -35,14 +52,33 @@ export default function SessionPage() {
   const [session, setSession] = useState<PhotoSession | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [cart, setCart] = useState<string[]>([])
+  const [cart, setCart] = useState<
+    Array<{ photoId: string; productType: string }>
+  >([])
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
+  const [isDownloading, setIsDownloading] = useState(false)
 
   // Load cart from localStorage on mount
   useEffect(() => {
     const savedCart = localStorage.getItem(`cart_${sessionId}`)
     if (savedCart) {
-      setCart(JSON.parse(savedCart))
+      try {
+        const parsed = JSON.parse(savedCart)
+        // Handle legacy format (array of strings)
+        if (
+          Array.isArray(parsed) &&
+          parsed.length > 0 &&
+          typeof parsed[0] === 'string'
+        ) {
+          setCart(parsed.map((id) => ({ photoId: id, productType: 'digital' })))
+        } else if (Array.isArray(parsed)) {
+          setCart(parsed)
+        } else {
+          setCart([])
+        }
+      } catch {
+        setCart([])
+      }
     }
   }, [sessionId])
 
@@ -80,12 +116,93 @@ export default function SessionPage() {
     fetchSession()
   }, [sessionId])
 
-  const toggleCart = (photoId: string) => {
-    setCart((prev) =>
-      prev.includes(photoId)
-        ? prev.filter((id) => id !== photoId)
-        : [...prev, photoId]
+  const addToCart = (photoId: string, productType: string) => {
+    setCart((prev) => {
+      // Check if this combination already exists
+      const exists = prev.some(
+        (item) => item.photoId === photoId && item.productType === productType
+      )
+      if (exists) {
+        // Remove it
+        return prev.filter(
+          (item) =>
+            !(item.photoId === photoId && item.productType === productType)
+        )
+      }
+      // Add it
+      return [...prev, { photoId, productType }]
+    })
+  }
+
+  const addDigitalPackage = () => {
+    // Check if digital package already exists
+    const hasDigital = cart.some((item) => item.productType === 'digital')
+
+    if (hasDigital) {
+      // Remove all digital items
+      setCart((prev) => prev.filter((item) => item.productType !== 'digital'))
+      toast.info(_(msg`Digital package removed from cart`))
+    } else {
+      // Add digital package (just one item with special ID)
+      setCart((prev) => [
+        ...prev,
+        { photoId: 'digital-package', productType: 'digital' },
+      ])
+      toast.success(_(msg`Digital package added to cart`))
+    }
+  }
+
+  const hasDigitalInCart = () => {
+    return cart.some((item) => item.productType === 'digital')
+  }
+
+  const isInCart = (photoId: string, productType: string) => {
+    return cart.some(
+      (item) => item.photoId === photoId && item.productType === productType
     )
+  }
+
+  const handleDownloadAll = async () => {
+    if (!session?.hasPaidOrder) {
+      toast.error(_(msg`Payment required to download photos`))
+      return
+    }
+
+    try {
+      setIsDownloading(true)
+      toast.loading(_(msg`Preparing your photos for download...`))
+
+      const response = await fetch(`/api/session/${sessionId}/download`)
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to download photos')
+      }
+
+      // Download the ZIP file
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${session.name.replace(/[^a-zA-Z0-9]/g, '_')}_photos.zip`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      toast.dismiss()
+      toast.success(_(msg`Photos downloaded successfully!`))
+    } catch (error) {
+      console.error('Error downloading photos:', error)
+      toast.dismiss()
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : _(msg`Failed to download photos`)
+      )
+    } finally {
+      setIsDownloading(false)
+    }
   }
 
   if (loading) {
@@ -124,31 +241,92 @@ export default function SessionPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
       {/* Header */}
-      <header className="bg-white/70 backdrop-blur-sm border-b border-white/20 sticky top-0 z-30 shadow-sm">
+      <header
+        className="bg-white/70 backdrop-blur-sm border-b border-white/20 sticky top-0 z-30 shadow-sm"
+        style={
+          session.studio?.brandColor
+            ? { borderBottomColor: `${session.studio.brandColor}30` }
+            : undefined
+        }
+      >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link
-              href="/"
-              className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent"
-            >
-              Pixora
-            </Link>
+            {session.studio?.logoUrl ? (
+              <div className="relative h-12 w-32">
+                <Image
+                  src={session.studio.logoUrl}
+                  alt={session.studio.name || 'Studio Logo'}
+                  fill
+                  className="object-contain object-left"
+                />
+              </div>
+            ) : (
+              <Link
+                href="/"
+                className="text-2xl font-bold"
+                style={
+                  session.studio?.brandColor
+                    ? { color: session.studio.brandColor }
+                    : undefined
+                }
+              >
+                {session.studio?.name || 'Pixora'}
+              </Link>
+            )}
 
             {/* Right side actions */}
             <div className="flex items-center gap-3">
               {/* Language Switcher */}
               <LanguageSwitcher />
 
+              {/* Download All Photos Button (shown after payment) */}
+              {session.hasPaidOrder && session.photoCount > 0 && (
+                <Button
+                  onClick={handleDownloadAll}
+                  disabled={isDownloading}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  style={
+                    session.studio?.brandColor
+                      ? {
+                          borderColor: session.studio.brandColor,
+                          color: session.studio.brandColor,
+                        }
+                      : undefined
+                  }
+                >
+                  <Download className="w-5 h-5" />
+                  <span className="hidden sm:inline">
+                    <Trans>Download All</Trans>
+                  </span>
+                </Button>
+              )}
+
               {/* Cart Button */}
               <Button
                 onClick={() => router.push(`/session/${sessionId}/cart`)}
                 variant="outline"
                 className="relative"
+                style={
+                  session.studio?.brandColor
+                    ? {
+                        borderColor: session.studio.brandColor,
+                        color: session.studio.brandColor,
+                      }
+                    : undefined
+                }
               >
                 <ShoppingCart className="w-5 h-5" />
                 {cart.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  <span
+                    className="absolute -top-2 -right-2 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    style={
+                      session.studio?.brandColor
+                        ? { backgroundColor: session.studio.brandColor }
+                        : { backgroundColor: '#ef4444' }
+                    }
+                  >
                     {cart.length}
                   </span>
                 )}
@@ -189,9 +367,22 @@ export default function SessionPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Session Header */}
         <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-4">
+          <h1
+            className="text-3xl md:text-4xl font-bold mb-4"
+            style={
+              session.studio?.brandColor
+                ? { color: session.studio.brandColor }
+                : undefined
+            }
+          >
             {session.name}
           </h1>
+
+          {session.studio?.welcomeMessage && (
+            <p className="text-lg text-slate-700 dark:text-slate-300 mb-4 max-w-2xl mx-auto font-medium">
+              {session.studio.welcomeMessage}
+            </p>
+          )}
 
           {session.description && (
             <p className="text-lg text-slate-600 dark:text-slate-300 mb-4 max-w-2xl mx-auto">
@@ -233,6 +424,68 @@ export default function SessionPage() {
           </div>
         )}
 
+        {/* Digital Photos Order Button - if enabled */}
+        {session.photoCount > 0 && session.pricing?.enableDigital && (
+          <div className="max-w-7xl mx-auto mb-6">
+            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-1">
+                      <Trans>Digital Photos Package</Trans>
+                    </h3>
+                    <p className="text-sm text-slate-600">
+                      <Trans>
+                        Order all photos as digital copies and download them as
+                        a ZIP archive after payment
+                      </Trans>
+                    </p>
+                  </div>
+                  <Button
+                    onClick={addDigitalPackage}
+                    className="whitespace-nowrap"
+                    variant={hasDigitalInCart() ? 'default' : 'outline'}
+                    style={
+                      session.studio?.brandColor && !hasDigitalInCart()
+                        ? {
+                            borderColor: session.studio.brandColor,
+                            color: session.studio.brandColor,
+                          }
+                        : session.studio?.brandColor && hasDigitalInCart()
+                          ? {
+                              backgroundColor: session.studio.brandColor,
+                              color: 'white',
+                            }
+                          : hasDigitalInCart()
+                            ? { backgroundColor: '#16a34a', color: 'white' }
+                            : undefined
+                    }
+                  >
+                    {hasDigitalInCart() ? (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        <Trans>In Cart</Trans>
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-4 h-4 mr-2" />
+                        <Trans>Order All Digital</Trans>
+                      </>
+                    )}{' '}
+                    -{' '}
+                    {session.pricing.currency === 'USD'
+                      ? '$'
+                      : session.pricing.currency === 'EUR'
+                        ? '€'
+                        : '₽'}
+                    {session.pricing.digital}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Photos Gallery */}
         {session.photoCount > 0 && (
           <>
@@ -240,8 +493,11 @@ export default function SessionPage() {
               sessionId={sessionId}
               photos={session.photos}
               cart={cart}
-              onToggleCart={toggleCart}
+              onAddToCart={addToCart}
+              isInCart={isInCart}
               onSelectPhoto={setSelectedPhoto}
+              brandColor={session.studio?.brandColor}
+              pricing={session.pricing}
             />
 
             {/* Floating Cart Button */}
@@ -250,7 +506,14 @@ export default function SessionPage() {
                 <Button
                   size="lg"
                   onClick={() => router.push(`/session/${sessionId}/cart`)}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-xl hover:shadow-2xl transition-all"
+                  className="shadow-xl hover:shadow-2xl transition-all text-white"
+                  style={
+                    session.studio?.brandColor
+                      ? {
+                          backgroundColor: session.studio.brandColor,
+                        }
+                      : undefined
+                  }
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   <span className="font-semibold">
@@ -270,22 +533,31 @@ export default function SessionPage() {
 function SessionGallery({
   sessionId: _sessionId,
   photos,
-  cart,
-  onToggleCart,
+  cart: _cart,
+  onAddToCart,
+  isInCart,
   onSelectPhoto,
+  brandColor,
+  pricing,
 }: {
   sessionId: string
   photos: PhotoSession['photos']
-  cart: string[]
-  onToggleCart: (photoId: string) => void
+  cart: Array<{ photoId: string; productType: string }>
+  onAddToCart: (photoId: string, productType: string) => void
+  isInCart: (photoId: string, productType: string) => boolean
   onSelectPhoto: (photoPath: string) => void
+  brandColor?: string | null
+  pricing?: PhotoSession['pricing']
 }) {
   return (
     <div className="max-w-7xl mx-auto">
       {/* Gallery Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {photos.map((photo, index) => {
-          const isInCart = cart.includes(photo.id)
+          const inCartPrint = isInCart(photo.id, 'print')
+          const inCartMagnet = isInCart(photo.id, 'magnet')
+          const inCartDigital = isInCart(photo.id, 'digital')
+          const hasAnyInCart = inCartPrint || inCartMagnet || inCartDigital
 
           return (
             <Card
@@ -304,34 +576,68 @@ function SessionGallery({
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                   priority={index < 8}
                 />
-                {isInCart && (
+                {hasAnyInCart && (
                   <div className="absolute top-2 right-2 bg-green-500 text-white p-1.5 rounded-full shadow-lg">
                     <Check className="w-4 h-4" />
                   </div>
                 )}
               </button>
-              <CardContent className="p-3">
-                <Button
-                  onClick={() => onToggleCart(photo.id)}
-                  className={`w-full transition-all ${
-                    isInCart
-                      ? 'bg-green-600 hover:bg-green-700'
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  }`}
-                  size="sm"
-                >
-                  {isInCart ? (
-                    <>
-                      <Check className="w-4 h-4 mr-1" />
-                      <Trans>In Cart</Trans>
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart className="w-4 h-4 mr-1" />
-                      <Trans>Add</Trans>
-                    </>
-                  )}
-                </Button>
+              <CardContent className="p-3 space-y-2">
+                {/* Show print/magnet buttons based on what's enabled */}
+                {(pricing?.enablePrint || pricing?.enableMagnet) && (
+                  <div className="flex gap-2 flex-wrap">
+                    {pricing?.enablePrint && (
+                      <Button
+                        onClick={() => onAddToCart(photo.id, 'print')}
+                        className="flex-1 transition-all text-xs min-w-[70px]"
+                        size="sm"
+                        variant={inCartPrint ? 'default' : 'outline'}
+                        style={
+                          brandColor && !inCartPrint
+                            ? {
+                                borderColor: brandColor,
+                                color: brandColor,
+                              }
+                            : brandColor && inCartPrint
+                              ? { backgroundColor: brandColor, color: 'white' }
+                              : inCartPrint
+                                ? {
+                                    backgroundColor: brandColor,
+                                    color: 'white',
+                                  }
+                                : undefined
+                        }
+                      >
+                        <Trans>Print</Trans>
+                      </Button>
+                    )}
+                    {pricing?.enableMagnet && (
+                      <Button
+                        onClick={() => onAddToCart(photo.id, 'magnet')}
+                        className="flex-1 transition-all text-xs min-w-[70px]"
+                        size="sm"
+                        variant={inCartMagnet ? 'default' : 'outline'}
+                        style={
+                          brandColor && !inCartMagnet
+                            ? {
+                                borderColor: brandColor,
+                                color: brandColor,
+                              }
+                            : brandColor && inCartMagnet
+                              ? { backgroundColor: brandColor, color: 'white' }
+                              : inCartMagnet
+                                ? {
+                                    backgroundColor: brandColor,
+                                    color: 'white',
+                                  }
+                                : undefined
+                        }
+                      >
+                        <Trans>Magnet</Trans>
+                      </Button>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           )

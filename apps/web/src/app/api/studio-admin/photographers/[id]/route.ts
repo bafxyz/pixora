@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { ApiErrors, handleApiError } from '@/shared/lib/api-error-handler'
 import { withRoleCheck } from '@/shared/lib/auth/role-guard'
 import { prisma } from '@/shared/lib/prisma/client'
 
@@ -7,13 +8,10 @@ interface RouteParams {
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
-  // Check studio-admin or admin role
-  const auth = await withRoleCheck(['studio-admin', 'admin'], request)
-  if (auth instanceof NextResponse) {
-    return auth // Return 403/401 error
-  }
-
   try {
+    // Check studio-admin or admin role
+    const auth = await withRoleCheck(['studio-admin', 'admin'], request)
+
     const { id } = await params
 
     // Get photographer details
@@ -30,10 +28,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     })
 
     if (!photographer) {
-      return NextResponse.json(
-        { error: 'Photographer not found' },
-        { status: 404 }
-      )
+      throw ApiErrors.notFound('Photographer not found')
     }
 
     // Check access permissions
@@ -41,7 +36,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       auth.user.role === 'studio-admin' &&
       photographer.studioId !== auth.studioId
     ) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+      throw ApiErrors.forbidden('Access denied')
     }
 
     // Format response
@@ -57,22 +52,18 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ photographer: formattedPhotographer })
   } catch (error) {
-    console.error('Photographer fetch error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch photographer' },
-      { status: 500 }
+    return handleApiError(
+      error instanceof Error ? error : new Error(String(error)),
+      'GET /api/studio-admin/photographers/[id]',
+      request
     )
   }
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
-  // Check studio-admin or admin role
-  const auth = await withRoleCheck(['studio-admin', 'admin'], request)
-  if (auth instanceof NextResponse) {
-    return auth // Return 403/401 error
-  }
-
   try {
+    // Check studio-admin or admin role
+    const auth = await withRoleCheck(['studio-admin', 'admin'], request)
     const { id } = await params
     const body = await request.json()
     const { name, email, phone } = body
@@ -88,10 +79,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     })
 
     if (!existingPhotographer) {
-      return NextResponse.json(
-        { error: 'Photographer not found' },
-        { status: 404 }
-      )
+      throw ApiErrors.notFound('Photographer not found')
     }
 
     // Check access permissions
@@ -99,7 +87,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       auth.user.role === 'studio-admin' &&
       existingPhotographer.studioId !== auth.studioId
     ) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+      throw ApiErrors.forbidden('Access denied')
     }
 
     // If email is being changed, check for duplicates
@@ -113,9 +101,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       })
 
       if (emailExists) {
-        return NextResponse.json(
-          { error: 'Photographer with this email already exists' },
-          { status: 400 }
+        throw ApiErrors.badRequest(
+          'Photographer with this email already exists'
         )
       }
     }
@@ -155,22 +142,18 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       message: 'Photographer updated successfully',
     })
   } catch (error) {
-    console.error('Photographer update error:', error)
-    return NextResponse.json(
-      { error: 'Failed to update photographer' },
-      { status: 500 }
+    return handleApiError(
+      error instanceof Error ? error : new Error(String(error)),
+      'PATCH /api/studio-admin/photographers/[id]',
+      request
     )
   }
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  // Check studio-admin or admin role
-  const auth = await withRoleCheck(['studio-admin', 'admin'], request)
-  if (auth instanceof NextResponse) {
-    return auth // Return 403/401 error
-  }
-
   try {
+    // Check studio-admin or admin role
+    const auth = await withRoleCheck(['studio-admin', 'admin'], request)
     const { id } = await params
 
     // Check if photographer exists and user has permission
@@ -190,10 +173,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     })
 
     if (!existingPhotographer) {
-      return NextResponse.json(
-        { error: 'Photographer not found' },
-        { status: 404 }
-      )
+      throw ApiErrors.notFound('Photographer not found')
     }
 
     // Check access permissions
@@ -201,7 +181,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       auth.user.role === 'studio-admin' &&
       existingPhotographer.studioId !== auth.studioId
     ) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+      throw ApiErrors.forbidden('Access denied')
     }
 
     // Check if photographer has associated data
@@ -209,12 +189,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       existingPhotographer._count.photos > 0 ||
       existingPhotographer._count.photoSessions > 0
     ) {
-      return NextResponse.json(
-        {
-          error:
-            'Cannot delete photographer with associated photos or sessions. Please transfer or delete their data first.',
-        },
-        { status: 400 }
+      throw ApiErrors.badRequest(
+        'Cannot delete photographer with associated photos or sessions. Please transfer or delete their data first.'
       )
     }
 
@@ -227,10 +203,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       message: 'Photographer deleted successfully',
     })
   } catch (error) {
-    console.error('Photographer deletion error:', error)
-    return NextResponse.json(
-      { error: 'Failed to delete photographer' },
-      { status: 500 }
+    return handleApiError(
+      error instanceof Error ? error : new Error(String(error)),
+      'DELETE /api/studio-admin/photographers/[id]',
+      request
     )
   }
 }

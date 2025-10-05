@@ -1,5 +1,6 @@
-import { Trans, t } from '@lingui/macro'
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react'
+import { Trans } from '@lingui/react/macro'
 import { Button } from '@repo/ui/button'
 import {
   Card,
@@ -47,7 +48,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || _(t`Login failed`))
+        throw new Error(result.error || _(msg`Login failed`))
       }
 
       onLogin(result.user)
@@ -137,7 +138,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                     <Input
                       id="email"
                       type="email"
-                      placeholder={_(t`your@email.com`)}
+                      placeholder={_(msg`your@email.com`)}
                       value={loginForm.email}
                       onChange={(e) =>
                         setLoginForm((prev) => ({
@@ -175,7 +176,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                     className="w-full h-11 bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/90 hover:to-indigo-600/90 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
                     disabled={isLoading}
                   >
-                    {isLoading ? _(t`Signing in...`) : _(t`Sign in`)}
+                    {isLoading ? _(msg`Signing in...`) : _(msg`Sign in`)}
                   </Button>
                 </form>
               </CardContent>

@@ -20,7 +20,6 @@ import {
   Monitor,
   Settings,
   ShieldCheck,
-  ShoppingCart,
   Users,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -241,32 +240,6 @@ export default function AdminPage() {
             </CardDescription>
             <Button className="w-full" variant="outline">
               <Trans>View Monitoring</Trans>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card
-          className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1"
-          onClick={() => router.push('/admin/orders')}
-        >
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-lg flex items-center justify-center">
-                <ShoppingCart className="w-5 h-5 text-white" />
-              </div>
-              <CardTitle className="text-lg">
-                <Trans>Orders Management</Trans>
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <CardDescription className="mb-4">
-              <Trans>
-                View and manage orders, update statuses and track payments
-              </Trans>
-            </CardDescription>
-            <Button className="w-full" variant="outline">
-              <Trans>Manage Orders</Trans>
             </Button>
           </CardContent>
         </Card>

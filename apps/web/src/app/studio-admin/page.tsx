@@ -272,7 +272,7 @@ export default function StudioAdminPage() {
 
           <Card
             className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1"
-            onClick={() => router.push('/admin/orders')}
+            onClick={() => router.push('/studio-admin/orders')}
           >
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3">

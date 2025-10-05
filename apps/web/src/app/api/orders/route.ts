@@ -51,7 +51,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const photoIds = items.map((item: { photoId: string }) => item.photoId)
+    // Separate digital package from regular photos and get unique IDs
+    const photoIds = [
+      ...new Set(
+        items
+          .filter(
+            (item: { photoId: string }) => item.photoId !== 'digital-package'
+          )
+          .map((item: { photoId: string }) => item.photoId)
+      ),
+    ]
 
     // Get session with studio and photographer info
     const session = await prisma.photoSession.findUnique({
@@ -59,11 +68,7 @@ export async function POST(request: NextRequest) {
       include: {
         studio: true,
         photographer: true,
-        photos: {
-          where: {
-            id: { in: photoIds },
-          },
-        },
+        photos: true,
       },
     })
 
@@ -71,12 +76,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    // Check if all photos exist and belong to this session
-    if (session.photos.length !== photoIds.length) {
-      return NextResponse.json(
-        { error: 'Some photos not found in this session' },
-        { status: 400 }
+    // Check if all unique regular photos exist and belong to this session
+    if (photoIds.length > 0) {
+      const foundPhotos = session.photos.filter((photo) =>
+        photoIds.includes(photo.id)
       )
+      if (foundPhotos.length !== photoIds.length) {
+        return NextResponse.json(
+          { error: 'Some photos not found in this session' },
+          { status: 400 }
+        )
+      }
     }
 
     // Calculate total amount from items
@@ -111,7 +121,7 @@ export async function POST(request: NextRequest) {
               quantity: number
               price: number
             }) => ({
-              photoId: item.photoId,
+              photoId: item.photoId === 'digital-package' ? null : item.photoId,
               productType: item.productType,
               quantity: item.quantity,
               price: item.price,
@@ -120,11 +130,7 @@ export async function POST(request: NextRequest) {
         },
       },
       include: {
-        items: {
-          include: {
-            photo: true,
-          },
-        },
+        items: true,
       },
     })
 
@@ -151,8 +157,16 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Create order error:', error)
+    console.error('Error details:', JSON.stringify(error, null, 2))
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     )
   }

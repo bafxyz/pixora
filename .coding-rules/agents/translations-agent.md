@@ -8,7 +8,9 @@ globs: "**/*.po, **/*.tsx, **/*.ts, **/lingui.config.ts"
 This agent specializes in managing internationalization (i18n) using [Lingui.dev](https://lingui.dev/). It handles translation extraction, management of message catalogs, and ensures proper i18n implementation across the codebase.
 
 ### Important Migration Note
-As of recent updates, the `t` macro from `@lingui/macro` is deprecated. Use the `_` function from `useLingui` hook instead. The `Trans` component should be imported from `@lingui/react/macro`.
+As of recent updates, the `t` macro from `@lingui/macro` is deprecated. Use the `_` function from `useLingui` hook with the `msg` macro from `@lingui/core/macro` instead. The `Trans` component should be imported from `@lingui/react/macro`.
+
+**CRITICAL**: The `_()` function alone does NOT extract strings for translation. You MUST wrap strings with the `msg` macro for proper extraction.
 
 ## Project i18n Setup
 
@@ -74,13 +76,16 @@ pnpm extract && pnpm compile && pnpm dev
 ### Import Patterns
 ```tsx
 // ✅ Recommended imports
-import { Trans } from '@lingui/react/macro'  // For static text
-import { plural } from '@lingui/macro'       // For pluralization
-import { useLingui } from '@lingui/react'    // For dynamic text
+import { msg } from '@lingui/core/macro'      // REQUIRED for _() function to extract strings
+import { Trans } from '@lingui/react/macro'   // For static JSX text
+import { plural } from '@lingui/macro'        // For pluralization
+import { useLingui } from '@lingui/react'     // For dynamic text access
 
 // ❌ Deprecated (don't use)
-import { Trans, t } from '@lingui/macro'
+import { Trans, t } from '@lingui/macro'      // Old pattern - don't use
 ```
+
+**Important**: The `msg` macro is REQUIRED when using `_()` function. Without it, strings won't be extracted!
 
 ### 1. Static Text Translation
 ```tsx
@@ -94,14 +99,15 @@ import { Trans } from '@lingui/macro'
 
 ### 2. Dynamic Text Translation
 ```tsx
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react'
 
 function MyComponent() {
   const { _ } = useLingui()
 
-  // Use the _ function for dynamic text (t macro is deprecated)
-  const buttonText = isLoading ? _('Loading...') : _('Submit')
-  const errorMessage = _('Invalid email address')
+  // ✅ CORRECT: Use msg macro to wrap strings for extraction
+  const buttonText = isLoading ? _(msg`Loading...`) : _(msg`Submit`)
+  const errorMessage = _(msg`Invalid email address`)
 
   return (
     <div>
@@ -112,8 +118,11 @@ function MyComponent() {
 }
 ```
 
+**Common Mistake**: Using `_('string')` without `msg` will NOT extract the string for translation!
+
 ### 3. Attribute Translation
 ```tsx
+import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react'
 
 function FormComponent() {
@@ -121,8 +130,8 @@ function FormComponent() {
 
   return (
     <input
-      placeholder={_('Enter your email')}
-      aria-label={_('Email address field')}
+      placeholder={_(msg`Enter your email`)}
+      aria-label={_(msg`Email address field`)}
     />
   )
 }

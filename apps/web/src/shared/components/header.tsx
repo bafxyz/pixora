@@ -1,5 +1,7 @@
 'use client'
 
+import { msg } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react'
 import { Button } from '@repo/ui/button'
 import { Camera, Home, LogOut, Settings, Shield } from 'lucide-react'
 import Link from 'next/link'
@@ -12,6 +14,7 @@ export function Header() {
   const router = useRouter()
   const pathname = usePathname()
   const { user, loading, signOut } = useAuth()
+  const { _ } = useLingui()
 
   const handleLogout = async () => {
     try {
@@ -37,23 +40,31 @@ export function Header() {
 
     switch (user.role) {
       case 'admin':
-        return [{ href: '/admin', label: 'Dashboard', icon: Shield }]
+        return [{ href: '/admin', label: _(msg`Dashboard`), icon: Shield }]
       case 'studio-admin':
         return [
-          { href: '/studio-admin', label: 'Dashboard', icon: Home },
+          { href: '/studio-admin', label: _(msg`Dashboard`), icon: Home },
           {
             href: '/studio-admin/photographers',
-            label: 'Photographers',
+            label: _(msg`Photographers`),
             icon: Camera,
           },
-          { href: '/studio-admin/settings', label: 'Settings', icon: Settings },
-          { href: '/photographer', label: 'Photographer', icon: Camera },
+          {
+            href: '/studio-admin/settings',
+            label: _(msg`Settings`),
+            icon: Settings,
+          },
+          { href: '/photographer', label: _(msg`Photographer`), icon: Camera },
         ]
       case 'photographer':
         return [
-          { href: '/photographer', label: 'Dashboard', icon: Home },
-          { href: '/photographer/sessions', label: 'Sessions', icon: Camera },
-          { href: '/photographer/upload', label: 'Upload', icon: Camera },
+          { href: '/photographer', label: _(msg`Dashboard`), icon: Home },
+          {
+            href: '/photographer/sessions',
+            label: _(msg`Sessions`),
+            icon: Camera,
+          },
+          { href: '/photographer/upload', label: _(msg`Upload`), icon: Camera },
         ]
       case 'guest':
         return []
@@ -135,13 +146,13 @@ export function Header() {
                   className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span className="hidden sm:inline">Logout</span>
+                  <span className="hidden sm:inline">{_(msg`Logout`)}</span>
                 </Button>
               </div>
             ) : (
               <Link href="/login">
                 <Button variant="outline" size="sm">
-                  Login
+                  {_(msg`Login`)}
                 </Button>
               </Link>
             )}

@@ -1,3 +1,5 @@
+'use client'
+
 import { Camera, Upload } from 'lucide-react'
 import * as React from 'react'
 import { cn } from './utils'

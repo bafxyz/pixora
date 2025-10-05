@@ -11,9 +11,18 @@ import { validateRequestBody } from '@/shared/lib/utils/validation'
 // Define validation schema using Zod
 const SavePhotosSchema = z.object({
   photoSessionId: z.string().min(1, 'Photo session ID is required'),
+  photos: z
+    .array(
+      z.object({
+        url: z.string().url({ message: 'Invalid photo URL format' }),
+        fileSize: z.number().int().nonnegative().optional(),
+      })
+    )
+    .min(1, 'At least one photo is required'),
+  // Legacy support
   photoUrls: z
     .array(z.string().url({ message: 'Invalid photo URL format' }))
-    .min(1, 'At least one photo URL is required'),
+    .optional(),
 })
 
 export const POST = withApiHandler(async (request: NextRequest) => {
@@ -41,10 +50,14 @@ export const POST = withApiHandler(async (request: NextRequest) => {
   const body = await request.json()
 
   // Validate request body using Zod schema
-  const { photoUrls, photoSessionId } = validateRequestBody(
-    body,
-    SavePhotosSchema
-  )
+  const validatedData = validateRequestBody(body, SavePhotosSchema)
+  const { photoSessionId } = validatedData
+
+  // Support both new format (photos with metadata) and legacy format (photoUrls)
+  const photos =
+    validatedData.photos ||
+    validatedData.photoUrls?.map((url) => ({ url, fileSize: undefined })) ||
+    []
 
   // Verify photo session exists and check access rights
   const photoSession = await prisma.photoSession.findFirst({
@@ -82,14 +95,17 @@ export const POST = withApiHandler(async (request: NextRequest) => {
   const expirationDate = new Date()
   expirationDate.setDate(expirationDate.getDate() + expirationDays)
 
-  const photosToInsert = photoUrls.map((url: string) => ({
-    photoSessionId,
-    photographerId: targetPhotographerId,
-    studioId: targetStudioId,
-    filePath: url,
-    fileName: url.split('/').pop() || 'photo.jpg',
-    expiresAt: expirationDate,
-  }))
+  const photosToInsert = photos.map(
+    (photo: { url: string; fileSize?: number }) => ({
+      photoSessionId,
+      photographerId: targetPhotographerId,
+      studioId: targetStudioId,
+      filePath: photo.url,
+      fileName: photo.url.split('/').pop() || 'photo.jpg',
+      fileSize: photo.fileSize || null,
+      expiresAt: expirationDate,
+    })
+  )
 
   // Insert photos into database using transaction for atomicity
   const insertedPhotos = await prisma.$transaction(

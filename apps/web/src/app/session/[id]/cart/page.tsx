@@ -24,7 +24,7 @@ import {
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { LanguageSwitcher } from '@/shared/components/language-switcher'
 
@@ -48,6 +48,15 @@ interface PhotoSession {
     print: number
     magnet: number
     currency: string
+    enableDigital?: boolean
+    enablePrint?: boolean
+    enableMagnet?: boolean
+  }
+  studio?: {
+    name: string | null
+    logoUrl: string | null
+    brandColor: string | null
+    welcomeMessage: string | null
   }
 }
 
@@ -74,17 +83,21 @@ export default function CartPage() {
   })
 
   // Pricing per product type - dynamically loaded from session
-  const priceMap: Record<ProductType, number> = session?.pricing
-    ? {
-        digital: session.pricing.digital,
-        print: session.pricing.print,
-        magnet: session.pricing.magnet,
-      }
-    : {
-        digital: 500,
-        print: 750,
-        magnet: 750,
-      }
+  const priceMap: Record<ProductType, number> = useMemo(
+    () =>
+      session?.pricing
+        ? {
+            digital: session.pricing.digital,
+            print: session.pricing.print,
+            magnet: session.pricing.magnet,
+          }
+        : {
+            digital: 500,
+            print: 750,
+            magnet: 750,
+          },
+    [session?.pricing]
+  )
 
   const productTypeLabels: Record<ProductType, string> = {
     print: _(msg`Print Photo`),
@@ -111,29 +124,99 @@ export default function CartPage() {
           const data = await response.json()
           setSession(data.session)
 
+          // Get pricing from session data
+          const pricing = data.session.pricing || {
+            digital: 500,
+            print: 750,
+            magnet: 750,
+          }
+
           const savedCart = localStorage.getItem(`cart_${sessionId}`)
           if (savedCart) {
-            const cartPhotoIds = JSON.parse(savedCart) as string[]
-            const cartItems: CartItem[] = data.session.photos
-              .filter(
-                (photo: { id: string; filePath: string; fileName: string }) =>
-                  cartPhotoIds.includes(photo.id)
+            try {
+              const parsed = JSON.parse(savedCart)
+              let cartData: Array<{ photoId: string; productType: string }>
+
+              // Handle legacy format (array of strings)
+              if (
+                Array.isArray(parsed) &&
+                parsed.length > 0 &&
+                typeof parsed[0] === 'string'
+              ) {
+                cartData = parsed.map((id) => ({
+                  photoId: id,
+                  productType: 'digital',
+                }))
+              } else if (Array.isArray(parsed)) {
+                cartData = parsed
+              } else {
+                cartData = []
+              }
+
+              // Handle digital package items - deduplicate
+              const hasDigitalPackage = cartData.some(
+                (item) => item.productType === 'digital'
               )
-              .map(
-                (photo: {
-                  id: string
-                  filePath: string
-                  fileName: string
-                }) => ({
-                  id: photo.id,
-                  filePath: photo.filePath,
-                  fileName: photo.fileName,
+
+              const cartItems: CartItem[] = cartData
+                .map((item) => {
+                  // Handle digital package separately (deduplicate)
+                  if (
+                    item.productType === 'digital' &&
+                    item.photoId === 'digital-package'
+                  ) {
+                    return {
+                      id: 'digital-package',
+                      filePath: '',
+                      fileName: 'Digital Photos Package',
+                      productType: 'digital' as ProductType,
+                      quantity: 1,
+                      price: pricing.digital,
+                    }
+                  }
+
+                  // Skip legacy digital items
+                  if (item.productType === 'digital') {
+                    return null
+                  }
+
+                  // Handle regular photos
+                  const photo = data.session.photos.find(
+                    (p: { id: string }) => p.id === item.photoId
+                  )
+                  if (!photo) return null
+
+                  const productType = item.productType as ProductType
+                  return {
+                    id: photo.id,
+                    filePath: photo.filePath,
+                    fileName: photo.fileName,
+                    productType,
+                    quantity: 1,
+                    price: pricing[productType] || pricing.digital,
+                  }
+                })
+                .filter(Boolean) as CartItem[]
+
+              // Add digital package if we have legacy digital items
+              if (
+                hasDigitalPackage &&
+                !cartItems.some((item) => item.id === 'digital-package')
+              ) {
+                cartItems.unshift({
+                  id: 'digital-package',
+                  filePath: '',
+                  fileName: 'Digital Photos Package',
                   productType: 'digital' as ProductType,
                   quantity: 1,
-                  price: priceMap.digital,
+                  price: pricing.digital,
                 })
-              )
-            setCart(cartItems)
+              }
+
+              setCart(cartItems)
+            } catch {
+              setCart([])
+            }
           }
         }
       } catch (error) {
@@ -144,16 +227,22 @@ export default function CartPage() {
     }
 
     fetchSessionAndCart()
-  }, [sessionId, priceMap.digital])
+  }, [sessionId])
 
   const updateProductType = (photoId: string, newType: ProductType) => {
-    setCart((prev) =>
-      prev.map((item) =>
+    setCart((prev) => {
+      const newCart = prev.map((item) =>
         item.id === photoId
           ? { ...item, productType: newType, price: priceMap[newType] }
           : item
       )
-    )
+      const cartData = newCart.map((item) => ({
+        photoId: item.id,
+        productType: item.productType,
+      }))
+      localStorage.setItem(`cart_${sessionId}`, JSON.stringify(cartData))
+      return newCart
+    })
   }
 
   const updateQuantity = (photoId: string, newQuantity: number) => {
@@ -171,8 +260,11 @@ export default function CartPage() {
   const removeFromCart = (photoId: string) => {
     setCart((prev) => {
       const newCart = prev.filter((item) => item.id !== photoId)
-      const cartIds = newCart.map((item) => item.id)
-      localStorage.setItem(`cart_${sessionId}`, JSON.stringify(cartIds))
+      const cartData = newCart.map((item) => ({
+        photoId: item.id,
+        productType: item.productType,
+      }))
+      localStorage.setItem(`cart_${sessionId}`, JSON.stringify(cartData))
       return newCart
     })
   }
@@ -259,21 +351,52 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Header */}
-      <header className="bg-white/70 backdrop-blur-sm border-b border-white/20 sticky top-0 z-30 shadow-sm">
+      <header
+        className="bg-white/70 backdrop-blur-sm border-b border-white/20 sticky top-0 z-30 shadow-sm"
+        style={
+          session?.studio?.brandColor
+            ? { borderBottomColor: `${session.studio.brandColor}30` }
+            : undefined
+        }
+      >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-            <Link
-              href="/"
-              className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent"
-            >
-              Pixora
-            </Link>
+            {session?.studio?.logoUrl ? (
+              <div className="relative h-12 w-32">
+                <Image
+                  src={session.studio.logoUrl}
+                  alt={session.studio.name || 'Studio Logo'}
+                  fill
+                  className="object-contain object-left"
+                />
+              </div>
+            ) : (
+              <Link
+                href="/"
+                className="text-2xl font-bold"
+                style={
+                  session?.studio?.brandColor
+                    ? { color: session.studio.brandColor }
+                    : undefined
+                }
+              >
+                {session?.studio?.name || 'Pixora'}
+              </Link>
+            )}
 
             <div className="flex items-center gap-3">
               <LanguageSwitcher />
               <Button
                 onClick={() => router.push(`/session/${sessionId}`)}
                 variant="outline"
+                style={
+                  session?.studio?.brandColor
+                    ? {
+                        borderColor: session.studio.brandColor,
+                        color: session.studio.brandColor,
+                      }
+                    : undefined
+                }
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 <Trans>Back to Gallery</Trans>
@@ -285,7 +408,14 @@ export default function CartPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-2">
+          <h1
+            className="text-3xl md:text-4xl font-bold mb-2"
+            style={
+              session?.studio?.brandColor
+                ? { color: session.studio.brandColor }
+                : undefined
+            }
+          >
             {showCheckout ? <Trans>Checkout</Trans> : <Trans>Your Cart</Trans>}
           </h1>
           {session && (
@@ -467,7 +597,12 @@ export default function CartPage() {
                     <Button
                       onClick={handlePlaceOrder}
                       disabled={isProcessing || !selectedPaymentMethod}
-                      className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600"
+                      className="flex-1 text-white"
+                      style={
+                        session?.studio?.brandColor
+                          ? { backgroundColor: session.studio.brandColor }
+                          : undefined
+                      }
                     >
                       {isProcessing ? (
                         <Trans>Processing...</Trans>
@@ -485,104 +620,131 @@ export default function CartPage() {
             <div className="grid gap-4 mb-6">
               {cart.map((item) => (
                 <Card
-                  key={item.id}
+                  key={`${item.id}-${item.productType}`}
                   className="bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg"
                 >
                   <CardContent className="p-4">
                     <div className="flex items-start gap-4">
-                      <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                        <Image
-                          src={item.filePath}
-                          alt={item.fileName}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
+                      {item.id === 'digital-package' ? (
+                        <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+                          <ShoppingCart className="w-12 h-12 text-blue-600" />
+                        </div>
+                      ) : (
+                        <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                          <Image
+                            src={item.filePath}
+                            alt={item.fileName}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      )}
                       <div className="flex-1 space-y-4">
                         <h3 className="font-medium text-slate-800">
-                          {item.fileName}
+                          {item.id === 'digital-package'
+                            ? _(msg`All Photos - Digital Package`)
+                            : item.fileName}
                         </h3>
 
-                        <div className="space-y-2">
-                          <Label className="text-sm text-slate-600">
-                            <Trans>Product Type</Trans>
-                          </Label>
-                          <Select
-                            value={item.productType}
-                            onValueChange={(value: string) =>
-                              updateProductType(item.id, value as ProductType)
-                            }
-                          >
-                            <SelectTrigger className="w-full bg-white">
-                              <SelectValue>
-                                {productTypeLabels[item.productType]}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="print">
-                                <Trans>Print Photo</Trans> -{' '}
-                                {session?.pricing.currency === 'USD'
-                                  ? '$'
-                                  : session?.pricing.currency === 'EUR'
-                                    ? '€'
-                                    : '₽'}
-                                {priceMap.print}
-                              </SelectItem>
-                              <SelectItem value="magnet">
-                                <Trans>Photo Magnet</Trans> -{' '}
-                                {session?.pricing.currency === 'USD'
-                                  ? '$'
-                                  : session?.pricing.currency === 'EUR'
-                                    ? '€'
-                                    : '₽'}
-                                {priceMap.magnet}
-                              </SelectItem>
-                              <SelectItem value="digital">
-                                <Trans>Digital Copy</Trans> -{' '}
-                                {session?.pricing.currency === 'USD'
-                                  ? '$'
-                                  : session?.pricing.currency === 'EUR'
-                                    ? '€'
-                                    : '₽'}
-                                {priceMap.digital}
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        {/* Hide product type selector for digital package */}
+                        {item.id !== 'digital-package' && (
+                          <div className="space-y-2">
+                            <Label className="text-sm text-slate-600">
+                              <Trans>Product Type</Trans>
+                            </Label>
+                            <Select
+                              value={item.productType}
+                              onValueChange={(value: string) =>
+                                updateProductType(item.id, value as ProductType)
+                              }
+                            >
+                              <SelectTrigger className="w-full bg-white">
+                                <SelectValue>
+                                  {productTypeLabels[item.productType]}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {session?.pricing.enablePrint !== false && (
+                                  <SelectItem value="print">
+                                    <Trans>Print Photo</Trans> -{' '}
+                                    {session?.pricing.currency === 'USD'
+                                      ? '$'
+                                      : session?.pricing.currency === 'EUR'
+                                        ? '€'
+                                        : '₽'}
+                                    {priceMap.print}
+                                  </SelectItem>
+                                )}
+                                {session?.pricing.enableMagnet !== false && (
+                                  <SelectItem value="magnet">
+                                    <Trans>Photo Magnet</Trans> -{' '}
+                                    {session?.pricing.currency === 'USD'
+                                      ? '$'
+                                      : session?.pricing.currency === 'EUR'
+                                        ? '€'
+                                        : '₽'}
+                                    {priceMap.magnet}
+                                  </SelectItem>
+                                )}
+                                {session?.pricing.enableDigital !== false && (
+                                  <SelectItem value="digital">
+                                    <Trans>Digital Copy</Trans> -{' '}
+                                    {session?.pricing.currency === 'USD'
+                                      ? '$'
+                                      : session?.pricing.currency === 'EUR'
+                                        ? '€'
+                                        : '₽'}
+                                    {priceMap.digital}
+                                  </SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
 
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Label className="text-sm text-slate-600">
-                              <Trans>Quantity</Trans>:
-                            </Label>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                onClick={() =>
-                                  updateQuantity(item.id, item.quantity - 1)
-                                }
-                                variant="outline"
-                                size="sm"
-                                className="w-8 h-8 rounded-full p-0"
-                              >
-                                -
-                              </Button>
-                              <span className="w-8 text-center font-medium">
-                                {item.quantity}
-                              </span>
-                              <Button
-                                onClick={() =>
-                                  updateQuantity(item.id, item.quantity + 1)
-                                }
-                                variant="outline"
-                                size="sm"
-                                className="w-8 h-8 rounded-full p-0"
-                              >
-                                +
-                              </Button>
+                          {/* Show quantity controls only for print/magnet, not for digital */}
+                          {item.productType !== 'digital' ? (
+                            <div className="flex items-center gap-3">
+                              <Label className="text-sm text-slate-600">
+                                <Trans>Quantity</Trans>:
+                              </Label>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  onClick={() =>
+                                    updateQuantity(item.id, item.quantity - 1)
+                                  }
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-8 h-8 rounded-full p-0"
+                                >
+                                  -
+                                </Button>
+                                <span className="w-8 text-center font-medium">
+                                  {item.quantity}
+                                </span>
+                                <Button
+                                  onClick={() =>
+                                    updateQuantity(item.id, item.quantity + 1)
+                                  }
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-8 h-8 rounded-full p-0"
+                                >
+                                  +
+                                </Button>
+                              </div>
                             </div>
-                          </div>
+                          ) : (
+                            <div className="text-sm text-slate-600">
+                              <Trans>Digital package</Trans>
+                            </div>
+                          )}
                           <span className="text-lg font-semibold text-slate-800">
-                            ₽{(item.price * item.quantity).toFixed(0)}
+                            ₽
+                            {item.productType === 'digital'
+                              ? item.price.toFixed(0)
+                              : (item.price * item.quantity).toFixed(0)}
                           </span>
                         </div>
                       </div>
@@ -628,8 +790,13 @@ export default function CartPage() {
                 </div>
                 <Button
                   onClick={handleProceedToCheckout}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600"
+                  className="w-full text-white"
                   size="lg"
+                  style={
+                    session?.studio?.brandColor
+                      ? { backgroundColor: session.studio.brandColor }
+                      : undefined
+                  }
                 >
                   <Trans>Proceed to Checkout</Trans>
                 </Button>

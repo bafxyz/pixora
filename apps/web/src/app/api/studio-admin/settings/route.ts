@@ -15,6 +15,9 @@ interface StudioSettings {
     print: number
     magnet: number
     currency: string
+    enableDigital?: boolean
+    enablePrint?: boolean
+    enableMagnet?: boolean
   }
 }
 
@@ -68,23 +71,36 @@ export async function GET(request: NextRequest) {
 
     const activePricing = studio.pricing[0]
 
+    // Parse settings from JSON
+    const studioSettings = (studio.settings as Record<string, unknown>) || {}
+
     return NextResponse.json({
+      studioId: studio.id,
       studioName: studio.name,
       contactEmail: studio.email,
       contactPhone: studio.phone || '',
       contactAddress: studio.address || '',
+      brandColor: studioSettings.brandColor || '#000000',
+      logoUrl: studioSettings.logoUrl || '',
+      welcomeMessage: studioSettings.welcomeMessage || '',
       pricing: activePricing
         ? {
             digital: Number(activePricing.priceDigital),
             print: Number(activePricing.pricePrint),
             magnet: Number(activePricing.priceMagnet),
             currency: activePricing.currency,
+            enableDigital: activePricing.enableDigital,
+            enablePrint: activePricing.enablePrint,
+            enableMagnet: activePricing.enableMagnet,
           }
         : {
             digital: 500,
             print: 750,
             magnet: 750,
             currency: 'RUB',
+            enableDigital: true,
+            enablePrint: true,
+            enableMagnet: true,
           },
     })
   } catch (error) {
@@ -132,6 +148,32 @@ export async function PATCH(request: NextRequest) {
       ...(settings.contactAddress && { address: settings.contactAddress }),
     }
 
+    // Update branding settings in JSON field
+    if (
+      settings.brandColor !== undefined ||
+      settings.logoUrl !== undefined ||
+      settings.welcomeMessage !== undefined
+    ) {
+      const currentStudio = await prisma.studio.findUnique({
+        where: { id: studioId },
+        select: { settings: true },
+      })
+
+      const currentSettings =
+        (currentStudio?.settings as Record<string, unknown>) || {}
+
+      updateData.settings = {
+        ...currentSettings,
+        ...(settings.brandColor !== undefined && {
+          brandColor: settings.brandColor,
+        }),
+        ...(settings.logoUrl !== undefined && { logoUrl: settings.logoUrl }),
+        ...(settings.welcomeMessage !== undefined && {
+          welcomeMessage: settings.welcomeMessage,
+        }),
+      }
+    }
+
     // Update studio in database
     const updatedStudio = await prisma.studio.update({
       where: { id: studioId },
@@ -142,6 +184,7 @@ export async function PATCH(request: NextRequest) {
         email: true,
         phone: true,
         address: true,
+        settings: true,
       },
     })
 
@@ -161,6 +204,9 @@ export async function PATCH(request: NextRequest) {
           pricePrint: settings.pricing.print,
           priceMagnet: settings.pricing.magnet,
           currency: settings.pricing.currency,
+          enableDigital: settings.pricing.enableDigital ?? true,
+          enablePrint: settings.pricing.enablePrint ?? true,
+          enableMagnet: settings.pricing.enableMagnet ?? true,
           isActive: true,
         },
       })
@@ -172,6 +218,9 @@ export async function PATCH(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     })
 
+    const savedSettings =
+      (updatedStudio.settings as Record<string, unknown>) || {}
+
     return NextResponse.json({
       success: true,
       settings: {
@@ -179,18 +228,27 @@ export async function PATCH(request: NextRequest) {
         contactEmail: updatedStudio.email,
         contactPhone: updatedStudio.phone || '',
         contactAddress: updatedStudio.address || '',
+        brandColor: savedSettings.brandColor || '#000000',
+        logoUrl: savedSettings.logoUrl || '',
+        welcomeMessage: savedSettings.welcomeMessage || '',
         pricing: latestPricing
           ? {
               digital: Number(latestPricing.priceDigital),
               print: Number(latestPricing.pricePrint),
               magnet: Number(latestPricing.priceMagnet),
               currency: latestPricing.currency,
+              enableDigital: latestPricing.enableDigital,
+              enablePrint: latestPricing.enablePrint,
+              enableMagnet: latestPricing.enableMagnet,
             }
           : {
               digital: 500,
               print: 750,
               magnet: 750,
               currency: 'RUB',
+              enableDigital: true,
+              enablePrint: true,
+              enableMagnet: true,
             },
       },
     })

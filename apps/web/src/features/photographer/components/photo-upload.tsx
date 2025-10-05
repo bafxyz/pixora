@@ -180,7 +180,7 @@ export function PhotoUpload({
     if (files.length === 0 || !sessionId.trim()) return
 
     setIsUploading(true)
-    const uploadedUrls: string[] = []
+    const uploadedPhotos: Array<{ url: string; fileSize: number }> = []
 
     try {
       // Upload files in batches of 5 to avoid overwhelming the browser
@@ -207,7 +207,10 @@ export function PhotoUpload({
 
           const url = await uploadFile(file, actualIndex)
           if (url) {
-            uploadedUrls.push(url)
+            uploadedPhotos.push({
+              url,
+              fileSize: file.file.size,
+            })
             setFiles((prev) =>
               prev.map((f, index) =>
                 index === actualIndex
@@ -222,7 +225,7 @@ export function PhotoUpload({
         await Promise.all(uploadPromises)
       }
 
-      if (uploadedUrls.length > 0) {
+      if (uploadedPhotos.length > 0) {
         // Call the API to save photo metadata
         const saveResponse = await fetch('/api/photos/save', {
           method: 'POST',
@@ -231,7 +234,7 @@ export function PhotoUpload({
           },
           body: JSON.stringify({
             photoSessionId: sessionId,
-            photoUrls: uploadedUrls,
+            photos: uploadedPhotos,
           }),
         })
 
@@ -240,7 +243,10 @@ export function PhotoUpload({
           throw new Error(errorData.error || 'Failed to save photos')
         }
 
-        onUploadComplete(uploadedUrls, sessionId)
+        onUploadComplete(
+          uploadedPhotos.map((p) => p.url),
+          sessionId
+        )
         // Clear completed files
         setFiles((prev) => prev.filter((f) => f.status !== 'completed'))
       }

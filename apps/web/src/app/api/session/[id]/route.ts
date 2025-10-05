@@ -29,12 +29,23 @@ export async function GET(
         studio: {
           select: {
             id: true,
+            name: true,
+            settings: true,
             pricing: {
               where: { isActive: true },
               take: 1,
               orderBy: { createdAt: 'desc' },
             },
           },
+        },
+        orders: {
+          where: {
+            paymentStatus: 'paid',
+          },
+          select: {
+            id: true,
+          },
+          take: 1,
         },
       },
     })
@@ -44,6 +55,8 @@ export async function GET(
     }
 
     const activePricing = session.studio.pricing[0]
+    const studioSettings =
+      (session.studio.settings as Record<string, unknown>) || {}
 
     return NextResponse.json({
       session: {
@@ -52,19 +65,32 @@ export async function GET(
         description: session.description,
         photographerName: session.photographer.name,
         photoCount: session.photos.length,
+        hasPaidOrder: session.orders.length > 0,
         photos: session.photos,
+        studio: {
+          name: session.studio.name,
+          logoUrl: (studioSettings.logoUrl as string) || null,
+          brandColor: (studioSettings.brandColor as string) || null,
+          welcomeMessage: (studioSettings.welcomeMessage as string) || null,
+        },
         pricing: activePricing
           ? {
               digital: Number(activePricing.priceDigital),
               print: Number(activePricing.pricePrint),
               magnet: Number(activePricing.priceMagnet),
               currency: activePricing.currency,
+              enableDigital: activePricing.enableDigital,
+              enablePrint: activePricing.enablePrint,
+              enableMagnet: activePricing.enableMagnet,
             }
           : {
               digital: 500,
               print: 750,
               magnet: 750,
               currency: 'RUB',
+              enableDigital: true,
+              enablePrint: true,
+              enableMagnet: true,
             },
       },
     })
